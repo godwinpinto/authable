@@ -1,0 +1,17 @@
+spring:
+  config:
+    import: application-rest.yml,domain.yml,infrastructure-coredb.yml,infrastructure-crypto.yml
+  jpa:
+    show_sql: true
+    format_sql: true
+
+logging:
+  level:
+    #    root: DEBUG
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE

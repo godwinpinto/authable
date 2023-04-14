@@ -1,0 +1,17 @@
+spring:
+  r2dbc:
+    url: r2dbc:mariadb://${AUTHABLE_DB_IP}:${AUTHABLE_DB_PORT}/AUTHABLE
+    username: ${AUTHABLE_DB_USERNAME}
+    password: ${AUTHABLE_DB_PASSWORD}
+    pool:
+      initial-size: 5
+      max-size: 30
+      max-idle-time: 30m
+      validation-query: SELECT 1
+
+infrastructure-coredb:
+  system-id-padding: 5
+  totp-user-id-padding: 50
+
+
+
