@@ -60,9 +60,9 @@ public class TOtpUserMasterEntity implements Persistable<String> {
     @Column("CREATION_DATE_TIME")
     private LocalDateTime creationDateTime;
 
-    @org.springframework.data.annotation.Transient
+    @Transient
     @AccessType(AccessType.Type.FIELD)
-    private transient boolean isNew;
+    private boolean isNew;
 
     @Override
     public String getId() {

@@ -49,7 +49,6 @@ public class TOtpService {
         // allow codes valid for 2 time periods before/after to pass as valid
         verifier.setAllowedTimePeriodDiscrepancy(allowedDiscrepancy);
         String userPlainTextSecret = tOtpSecretEncryption.decrypt(userId, encryptedSecret);
-        System.out.println(userPlainTextSecret + "...." + plainTextOtp);
         return verifier.isValidCode(userPlainTextSecret, plainTextOtp);
     }
 

@@ -32,13 +32,9 @@ public class TOtpUserMasterAdapter implements TOtpUserMasterSPI {
 
     @Override
     public Mono<TOtpUserMasterDto> findById(String userId) {
-        System.out.println("HERE STARTS");
         return tOtpUserMasterRepository.findById(StringUtils.rightPad(userId, tOtpUserIdPadding, ApplicationConstants.DB_PAD_CHAR)).
                 log()
-                .flatMap(entity -> {
-                            System.out.println("HERE 2");
-                            return Mono.just(TOtpUserMasterMapper.INSTANCE.tOtpUserMasterToDto(entity));
-                        }
+                .flatMap(entity -> Mono.just(TOtpUserMasterMapper.INSTANCE.tOtpUserMasterToDto(entity))
                 );
     }
 
@@ -62,12 +58,9 @@ public class TOtpUserMasterAdapter implements TOtpUserMasterSPI {
         TOtpUserMasterEntity tOtpUserMasterEntity = TOtpUserMasterMapper.INSTANCE.dtoToEntity(tOtpUserMasterDto);
         tOtpUserMasterEntity.setUserId(StringUtils.rightPad(tOtpUserMasterEntity.getUserId(), tOtpUserIdPadding, ApplicationConstants.DB_PAD_CHAR));
         tOtpUserMasterEntity.setAsNew(false);
-        System.out.println(tOtpUserMasterEntity);
         try {
             return tOtpUserMasterRepository.save(tOtpUserMasterEntity)
-                    .flatMap(tOtpUserMasterEntity1 -> {
-                        return Mono.just(1L);
-                    })
+                    .flatMap(tOtpUserMasterEntity1 -> Mono.just(1L))
                     .switchIfEmpty(Mono.just(0L));
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,16 +75,10 @@ public class TOtpUserMasterAdapter implements TOtpUserMasterSPI {
         tOtpUserMasterEntity.setCreationDateTime(DateTimeUtils.getCurrentLocalDateTime());
         tOtpUserMasterEntity.setModificationDateTime(DateTimeUtils.getCurrentLocalDateTime());
         try {
-            System.out.println("TRY");
             return tOtpUserMasterRepository.save(tOtpUserMasterEntity)
-                    .log()
-                    .flatMap(tOtpUserMasterEntity1 -> {
-                        return Mono.just(true);
-                    })
-                    .log()
+                    .flatMap(tOtpUserMasterEntity1 -> Mono.just(true))
                     .onErrorResume(e -> Mono.error(new SQLException("" + e.getMessage())));
         } catch (Exception e) {
-            System.out.println("CATCH");
             return Mono.just(false);
         }
     }

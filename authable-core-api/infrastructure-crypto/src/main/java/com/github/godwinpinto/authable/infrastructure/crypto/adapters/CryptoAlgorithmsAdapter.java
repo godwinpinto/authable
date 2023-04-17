@@ -23,7 +23,6 @@ public class CryptoAlgorithmsAdapter implements CryptoAlgorithmsSPI {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
 
-            //md.update(systemId.getBytes(StandardCharsets.UTF_8));
             byte[] bytes =
                     md.digest((systemId + ApplicationConstants.SECRET_SEPARATOR + userId + ApplicationConstants.SECRET_SEPARATOR + secret).getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();

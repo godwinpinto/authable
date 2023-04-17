@@ -12,11 +12,10 @@ public class FetchPrincipalComponent {
     public Mono<UserDto> getAuthDetails() {
         return ReactiveSecurityContextHolder.getContext()
                 .switchIfEmpty(Mono.error(new AuthorizationServiceException("Invalid Login")))
-                .flatMap(securityContext -> {
-                    return Mono.just((UserDto)
-                            securityContext.getAuthentication()
-                                    .getPrincipal());
-                });
+                .flatMap(securityContext -> Mono.just((UserDto)
+                        securityContext.getAuthentication()
+                                .getPrincipal())
+                );
     }
 
 

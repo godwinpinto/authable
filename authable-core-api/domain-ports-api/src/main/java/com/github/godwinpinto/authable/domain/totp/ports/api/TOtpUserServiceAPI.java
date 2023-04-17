@@ -1,6 +1,5 @@
 package com.github.godwinpinto.authable.domain.totp.ports.api;
 
-import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
 import com.github.godwinpinto.authable.domain.totp.dto.*;
 import reactor.core.publisher.Mono;
 
@@ -10,6 +9,7 @@ public interface TOtpUserServiceAPI {
      * A- Active
      * N-Not registered
      * D-Disabled
+     *
      * @param systemId
      * @param userId
      * @return
@@ -18,6 +18,7 @@ public interface TOtpUserServiceAPI {
 
     /**
      * To be accessible only to admin and changes status from D- Disabled to N - Not Active
+     *
      * @param systemId
      * @param userId
      * @return
@@ -26,6 +27,7 @@ public interface TOtpUserServiceAPI {
 
     /**
      * Generate a new TOTP secret, if one exists then disable previous and generate new
+     *
      * @param systemId
      * @param userId
      * @return
@@ -34,6 +36,7 @@ public interface TOtpUserServiceAPI {
 
     /**
      * Generates QR Image for the existing TOTP secret
+     *
      * @param systemId
      * @param userId
      * @return
@@ -42,6 +45,7 @@ public interface TOtpUserServiceAPI {
 
     /**
      * Deregister an active registered TOTP
+     *
      * @param systemId
      * @param userId
      * @return
@@ -50,6 +54,7 @@ public interface TOtpUserServiceAPI {
 
     /**
      * Verify the TOTP sent by user/ front-end system and the generated TOTP from server
+     *
      * @param systemId
      * @param userId
      * @param otp

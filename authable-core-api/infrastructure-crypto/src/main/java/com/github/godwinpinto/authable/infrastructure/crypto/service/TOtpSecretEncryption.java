@@ -1,6 +1,8 @@
 package com.github.godwinpinto.authable.infrastructure.crypto.service;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,8 @@ import java.util.Base64;
 @Component
 public class TOtpSecretEncryption {
 
+    Logger logger = LoggerFactory.getLogger(TOtpSecretEncryption.class);
+
     @Value("${infrastructure-crypto.totp.secret-key}")
     private String secretKey;
 
@@ -29,13 +33,13 @@ public class TOtpSecretEncryption {
                     .getBytes();
             IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
-            SecretKeySpec secretKey = getSecretKeySpecs(salt);
+            SecretKeySpec secretKeySpec = getSecretKeySpecs(salt);
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
             return Base64.getEncoder()
                     .encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
-            System.out.println("Error while encrypting: " + e.toString());
+            logger.error("Error in encryption", e);
         }
         return null;
     }
@@ -46,13 +50,13 @@ public class TOtpSecretEncryption {
                     .substring(0, 16)
                     .getBytes();
             IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
-            SecretKeySpec secretKey = getSecretKeySpecs(salt);
+            SecretKeySpec secretKeySpec = getSecretKeySpecs(salt);
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
             return new String(cipher.doFinal(Base64.getDecoder()
                     .decode(strToDecrypt)));
         } catch (Exception e) {
-            System.out.println("Error while decrypting: " + e.toString());
+            logger.error("Error in encryption", e);
         }
         return null;
     }
@@ -61,7 +65,6 @@ public class TOtpSecretEncryption {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec spec = new PBEKeySpec(secretKey.toCharArray(), salt.getBytes(), 65536, 256);
         SecretKey tmp = factory.generateSecret(spec);
-        SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
-        return secretKey;
+        return new SecretKeySpec(tmp.getEncoded(), "AES");
     }
 }
