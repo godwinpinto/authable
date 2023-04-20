@@ -12,5 +12,4 @@ import lombok.NoArgsConstructor;
 public class GenericResponse {
     private String statusCode;
     private String statusDescription;
-    private String secretKey;
 }

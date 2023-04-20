@@ -1,0 +1,70 @@
+package com.github.godwinpinto.authable.infrastructure.crypto.service;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import java.security.NoSuchAlgorithmException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
+
+@ExtendWith(SpringExtension.class)
+@Import(TOtpSecretEncryption.class)
+@TestPropertySource(properties = {"infrastructure-crypto.totp.secret-key=1234567890123456"})
+public class SecretEncryptionTest {
+
+    @Autowired
+    private TOtpSecretEncryption tOtpSecretEncryption;
+
+    private MockedStatic<Cipher> mockedStatic;
+
+
+    @Test
+    public void validateEncryptionDecryptionTest() {
+        String data = "hello";
+        String salt = "ask";
+
+        String encryptedData = tOtpSecretEncryption.encrypt(salt, data);
+        String decryptedData = tOtpSecretEncryption.decrypt(salt, encryptedData);
+        assertEquals(data, decryptedData);
+    }
+
+    @Test
+    public void encryptionExceptionTest() throws NoSuchAlgorithmException, NoSuchPaddingException {
+        String data = "hello";
+        String salt = "ask";
+
+        mockedStatic = mockStatic(Cipher.class);
+        when(Cipher.getInstance(anyString())).thenThrow(new NoSuchAlgorithmException());
+
+        assertNull(tOtpSecretEncryption.encrypt(salt, data), "Got correct null");
+
+        mockedStatic.close();
+    }
+
+    @Test
+    public void decryptionExceptionTest() throws NoSuchAlgorithmException, NoSuchPaddingException {
+        String data = "hello";
+        String salt = "ask";
+        String encryptedData = tOtpSecretEncryption.encrypt(salt, data);
+
+        mockedStatic = mockStatic(Cipher.class);
+        when(Cipher.getInstance(anyString())).thenThrow(new NoSuchAlgorithmException());
+
+        assertNull(tOtpSecretEncryption.decrypt(salt, encryptedData), "Got correct null");
+        mockedStatic.close();
+
+    }
+
+}

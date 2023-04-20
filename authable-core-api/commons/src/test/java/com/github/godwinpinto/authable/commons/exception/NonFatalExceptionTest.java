@@ -1,9 +1,9 @@
 package com.github.godwinpinto.authable.commons.exception;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import org.junit.jupiter.api.Test;
+
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NonFatalExceptionTest {
     /**
@@ -16,12 +16,12 @@ class NonFatalExceptionTest {
      */
     @Test
     void testConstructor() {
-        assertNull((new NonFatalException()).getErrCode());
-        assertNull((new NonFatalException("An error occurred")).getErrCode());
+        assertNotNull((new NonFatalException()).getErrCode());
+        assertNotNull((new NonFatalException("An error occurred")).getErrCode());
         assertEquals("Err Code", (new NonFatalException("Err Code", "An error occurred")).getErrCode());
         assertEquals("Err Code",
                 (new NonFatalException("Err Code", "An error occurred", new Throwable())).getErrCode());
-        assertNull((new NonFatalException("An error occurred", new Throwable())).getErrCode());
+        assertNotNull((new NonFatalException("An error occurred", new Throwable())).getErrCode());
     }
 }
 

@@ -36,9 +36,9 @@ public class TOtpUnSubscribeUserHelper {
                         ApplicationConstants.RecordStatus.INACTIVE.getValue())
                 .flatMap(status -> {
                     return status == 1L ? formatSuccessMessage() :
-                            Mono.error(new RuntimeException("Failure in updating"));
+                            Mono.error(new NonFatalException("300", "Failure in updating"));
                 })
-                .switchIfEmpty(Mono.error(new RuntimeException("Failure in updating")));
+                .switchIfEmpty(Mono.error(new NonFatalException("300", "Failure in updating")));
     }
 
     private static Mono<TOtpUnSubscribeUserDto> formatSuccessMessage() {

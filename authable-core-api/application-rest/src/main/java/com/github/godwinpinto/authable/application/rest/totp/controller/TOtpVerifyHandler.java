@@ -16,7 +16,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-@Component("tOtpVerifyHandler")
+@Component
 public class TOtpVerifyHandler extends AbstractValidationHandler<VerifyTOtpRequest, Validator> {
 
     private final TOtpUserServiceAPI tOtpUserServiceAPI;

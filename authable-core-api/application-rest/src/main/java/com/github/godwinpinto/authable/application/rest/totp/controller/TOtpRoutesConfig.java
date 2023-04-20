@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -75,7 +74,6 @@ public class TOtpRoutesConfig {
                                     schema = @Schema(implementation = GenericRequest.class)))))
     })
     RouterFunction<ServerResponse> getStatus(TOtpStatusHandler tOtpStatusHandler,
-            @Qualifier("tOtpVerifyHandler")
             TOtpVerifyHandler tOtpVerifyHandler,
             TOtpUnBlockHandler tOtpUnBlockHandler,
             TOtpUnSubscribeHandler tOtpUnSubscribeHandler,

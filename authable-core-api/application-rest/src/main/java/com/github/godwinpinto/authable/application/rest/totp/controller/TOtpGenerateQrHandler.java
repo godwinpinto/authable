@@ -1,21 +1,20 @@
 package com.github.godwinpinto.authable.application.rest.totp.controller;
 
 import com.github.godwinpinto.authable.application.rest.totp.json.GenericRequest;
-import com.github.godwinpinto.authable.application.rest.totp.json.GenericResponse;
 import com.github.godwinpinto.authable.application.rest.totp.mappers.TOtpRequestResponseDtoMapper;
 import com.github.godwinpinto.authable.application.rest.validator.AbstractValidationHandler;
 import com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpGenerateQrDto;
 import com.github.godwinpinto.authable.domain.totp.ports.api.TOtpUserServiceAPI;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-@Controller
+@Component
 public class TOtpGenerateQrHandler extends AbstractValidationHandler<GenericRequest, Validator> {
 
     private final TOtpUserServiceAPI tOtpUserServiceAPI;
@@ -53,7 +52,7 @@ public class TOtpGenerateQrHandler extends AbstractValidationHandler<GenericRequ
     private Mono<ServerResponse> processEmpty() {
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(GenericResponse.builder()
+                .body(BodyInserters.fromValue(TOtpGenerateQrDto.builder()
                         .statusCode("300")
                         .statusDescription("No active subscription")
                         .build()));

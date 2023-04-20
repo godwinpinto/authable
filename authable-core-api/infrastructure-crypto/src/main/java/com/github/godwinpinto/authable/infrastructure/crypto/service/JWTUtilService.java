@@ -57,6 +57,10 @@ public class JWTUtilService {
     }
 
     public String generateToken(UserDto userDto) {
+
+        if (userDto == null || userDto.getUsername() == null || userDto.getSystemId() == null || userDto.getRoles() == null) {
+            throw new JwtException("Error in creating JWT because all fields are not supplied");
+        }
         Map<String, Object> claims = new HashMap<>();
         claims.put(ApplicationConstants.JWT_ROLE_KEY, userDto.getRoles());
         claims.put(ApplicationConstants.JWT_SYSTEM_ID_KEY, userDto.getSystemId());

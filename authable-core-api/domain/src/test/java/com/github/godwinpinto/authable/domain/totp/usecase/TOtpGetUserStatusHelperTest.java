@@ -1,16 +1,13 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {TOtpGetUserStatusHelper.class})
 @ExtendWith(SpringExtension.class)

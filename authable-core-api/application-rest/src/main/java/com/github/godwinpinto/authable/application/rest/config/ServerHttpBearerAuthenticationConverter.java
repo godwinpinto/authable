@@ -18,9 +18,9 @@ import java.util.function.Predicate;
 
 public class ServerHttpBearerAuthenticationConverter
         implements ServerAuthenticationConverter {
-    private static final String BEARER = "Bearer ";
-    private static final Predicate<String> matchBearerLength = authValue -> authValue.length() > BEARER.length();
-    private static final Function<String, Mono<String>> isolateBearerValue =
+    private final String BEARER = "Bearer ";
+    private final Predicate<String> matchBearerLength = authValue -> authValue.length() > BEARER.length();
+    private final Function<String, Mono<String>> isolateBearerValue =
             authValue -> Mono.justOrEmpty(authValue.substring(BEARER.length()));
     private AuthServiceAPI authServiceAPI;
 
@@ -31,9 +31,10 @@ public class ServerHttpBearerAuthenticationConverter
     @Override
     public Mono<Authentication> convert(ServerWebExchange serverWebExchange) {
         return Mono.justOrEmpty(serverWebExchange)
-                .flatMap(ServerHttpBearerAuthenticationConverter::extract)
+                .flatMap(this::extract)
                 .filter(matchBearerLength)
                 .flatMap(isolateBearerValue)
+                .switchIfEmpty(Mono.empty())
                 .flatMap(token -> Mono.just(authServiceAPI.validateToken(token))
                         .filter(valid -> valid)
                         .switchIfEmpty(Mono.empty())
@@ -56,7 +57,7 @@ public class ServerHttpBearerAuthenticationConverter
                         }));
     }
 
-    public static Mono<String> extract(ServerWebExchange serverWebExchange) {
+    private Mono<String> extract(ServerWebExchange serverWebExchange) {
         return Mono.justOrEmpty(serverWebExchange.getRequest()
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION));

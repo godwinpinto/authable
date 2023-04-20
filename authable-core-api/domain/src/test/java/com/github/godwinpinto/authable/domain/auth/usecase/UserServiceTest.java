@@ -1,257 +1,305 @@
 package com.github.godwinpinto.authable.domain.auth.usecase;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
+import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
+import com.github.godwinpinto.authable.domain.auth.dto.SystemMasterDto;
+import com.github.godwinpinto.authable.domain.auth.dto.SystemUserMasterDto;
 import com.github.godwinpinto.authable.domain.auth.ports.spi.JWTUtilSPI;
+import com.github.godwinpinto.authable.domain.auth.ports.spi.SystemMasterSPI;
+import com.github.godwinpinto.authable.domain.auth.ports.spi.SystemUserMasterSPI;
 import com.github.godwinpinto.authable.domain.security.ports.spi.CryptoAlgorithmsSPI;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.HashMap;
-import java.util.Map;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Mono;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 
-@ContextConfiguration(classes = {UserService.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
+@TestPropertySource(properties = {"domain.auth.max-failed-login-attempts=5"})
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserServiceTest {
-    @Autowired
+    @Mock
+    SystemMasterSPI systemMasterSPI;
+
+    @Mock
+    JWTUtilSPI jwtUtilSPI;
+
+    @Mock
+    CryptoAlgorithmsSPI cryptoAlgorithmsSPI;
+
+    @Mock
+    SystemUserMasterSPI systemUserMasterSPI;
+
+    @InjectMocks
     private UserService userService;
 
-    /**
-     * Method under test: {@link UserService#findByUsername(String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testFindByUsername() {
-        // TODO: Complete this test.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    SystemUserMasterDto userMasterDto;
 
-        // Arrange
-        // TODO: Populate arranged inputs
-        String accessId = "";
+    SystemMasterDto systemMasterDto;
 
-        // Act
-        Mono<UserDto> actualFindByUsernameResult = this.userService.findByUsername(accessId);
+    @BeforeEach
+    void setUpSystemUserMasterDto() {
+        userMasterDto = new SystemUserMasterDto();
+        userMasterDto.setUserName("TEST_USER");
+        userMasterDto.setNoOfAttempts((short) 0);
+        userMasterDto.setAccessId("TEST_ACCESS_ID");
+        userMasterDto.setStatus("A");
+        userMasterDto.setSystemId("TEST_SYSTEM");
+        userMasterDto.setUserFullName("GODWIN");
+        userMasterDto.setUserSecret("PASSWORD");
 
-        // Assert
-        // TODO: Add assertions on result
+        systemMasterDto = new SystemMasterDto();
+        systemMasterDto.setSystemId("TEST_SYSTEM");
+        systemMasterDto.setStatus("A");
     }
 
-    /**
-     * Method under test: {@link UserService#authenticate(String, String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testAuthenticate() {
-        // TODO: Complete this test.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        // Arrange
-        // TODO: Populate arranged inputs
-        String systemId = "";
-        String userId = "";
-        String password = "";
-
-        // Act
-        Mono<UserDto> actualAuthenticateResult = this.userService.authenticate(systemId, userId, password);
-
-        // Assert
-        // TODO: Add assertions on result
+    public void findByUsernameNoSystemUserTest() {
+        doReturn(Mono.empty()).when(this.systemUserMasterSPI)
+                .findById(anyString());
+        StepVerifier.create(userService.findByUsername("TEST"))
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link UserService#getUsernameFromToken(String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGetUsernameFromToken() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void findByUsernameUserExistsButDisabledTest() {
 
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "com.github.godwinpinto.authable.domain.auth.ports.spi.JWTUtilSPI.getUsernameFromToken(String)" because "this.jwtUtilspi" is null
-        //       at com.github.godwinpinto.authable.domain.auth.usecase.UserService.getUsernameFromToken(UserService.java:148)
-        //   See https://diff.blue/R013 to resolve this issue.
+        userMasterDto.setStatus("D");
+        doReturn(Mono.just(userMasterDto)).when(this.systemUserMasterSPI)
+                .findById(anyString());
 
-        (new UserService(null, null, mock(CryptoAlgorithmsSPI.class), null)).getUsernameFromToken("ABC123");
+        StepVerifier.create(userService.findByUsername("TEST_ACCESS_ID"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("User access is inactive or disabled")
+                )
+                .verify();
     }
 
-    /**
-     * Method under test: {@link UserService#getUsernameFromToken(String)}
-     */
     @Test
-    void testGetUsernameFromToken2() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void findByUsernameUserExistsTest() {
 
-        JWTUtilSPI jwtUtilspi = mock(JWTUtilSPI.class);
-        when(jwtUtilspi.getUsernameFromToken(Mockito.<String>any())).thenReturn("janedoe");
-        assertEquals("janedoe",
-                (new UserService(null, null, mock(CryptoAlgorithmsSPI.class), jwtUtilspi)).getUsernameFromToken("ABC123"));
-        verify(jwtUtilspi).getUsernameFromToken(Mockito.<String>any());
+        doReturn(Mono.just(userMasterDto)).when(this.systemUserMasterSPI)
+                .findById(anyString());
+
+        StepVerifier.create(userService.findByUsername("TEST_ACCESS_ID"))
+                .assertNext(userDto -> {
+                    assertEquals(userDto.getUsername(), userMasterDto.getAccessId());
+                })
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link UserService#validateToken(String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testValidateToken() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void isSystemNotInDatabaseTest() {
 
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "com.github.godwinpinto.authable.domain.auth.ports.spi.JWTUtilSPI.validateToken(String)" because "this.jwtUtilspi" is null
-        //       at com.github.godwinpinto.authable.domain.auth.usecase.UserService.validateToken(UserService.java:153)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        (new UserService(null, null, mock(CryptoAlgorithmsSPI.class), null)).validateToken("ABC123");
+        doReturn(Mono.empty()).when(this.systemMasterSPI)
+                .findById(anyString());
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("The system is not in active status")
+                )
+                .verify();
     }
 
-    /**
-     * Method under test: {@link UserService#validateToken(String)}
-     */
     @Test
-    void testValidateToken2() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void isSystemInActiveOrDisabledTest() {
+        systemMasterDto.setStatus("N");
+        doReturn(Mono.just(systemMasterDto)).when(this.systemMasterSPI)
+                .findById(anyString());
 
-        JWTUtilSPI jwtUtilspi = mock(JWTUtilSPI.class);
-        when(jwtUtilspi.validateToken(Mockito.<String>any())).thenReturn(true);
-        assertTrue((new UserService(null, null, mock(CryptoAlgorithmsSPI.class), jwtUtilspi)).validateToken("ABC123"));
-        verify(jwtUtilspi).validateToken(Mockito.<String>any());
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("System access is disabled")
+                )
+                .verify();
+
+        systemMasterDto.setStatus("D");
+        doReturn(Mono.just(systemMasterDto)).when(this.systemMasterSPI)
+                .findById(anyString());
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("System access is disabled")
+                )
+                .verify();
     }
 
-    /**
-     * Method under test: {@link UserService#validateToken(String)}
-     */
     @Test
-    void testValidateToken3() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void authenticate_userNotFoundInSystemTest() {
+        systemMasterDto.setStatus("A");
 
-        JWTUtilSPI jwtUtilspi = mock(JWTUtilSPI.class);
-        when(jwtUtilspi.validateToken(Mockito.<String>any())).thenReturn(false);
-        assertFalse((new UserService(null, null, mock(CryptoAlgorithmsSPI.class), jwtUtilspi)).validateToken("ABC123"));
-        verify(jwtUtilspi).validateToken(Mockito.<String>any());
+        doReturn(Mono.just(systemMasterDto)).when(this.systemMasterSPI)
+                .findById(anyString());
+
+        doReturn(Mono.empty()).when(this.systemUserMasterSPI)
+                .findBySystemUser(anyString(), anyString());
+
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("No User found for system")
+                )
+                .verify();
     }
 
-    /**
-     * Method under test: {@link UserService#getClaims(String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGetClaims() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void authenticate_userInActiveInSystemTest() {
+        systemMasterDto.setStatus("A");
+        userMasterDto.setStatus("N");
+        doReturn(Mono.just(systemMasterDto)).when(this.systemMasterSPI)
+                .findById(anyString());
 
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "com.github.godwinpinto.authable.domain.auth.ports.spi.JWTUtilSPI.getClaims(String)" because "this.jwtUtilspi" is null
-        //       at com.github.godwinpinto.authable.domain.auth.usecase.UserService.getClaims(UserService.java:158)
-        //   See https://diff.blue/R013 to resolve this issue.
+        doReturn(Mono.just(userMasterDto)).when(this.systemUserMasterSPI)
+                .findBySystemUser(anyString(), anyString());
 
-        (new UserService(null, null, mock(CryptoAlgorithmsSPI.class), null)).getClaims("ABC123");
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Your access is inactive or disabled")
+                )
+                .verify();
+
+        userMasterDto.setStatus("D");
+
+        doReturn(Mono.just(userMasterDto)).when(this.systemUserMasterSPI)
+                .findBySystemUser(anyString(), anyString());
+
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Your access is inactive or disabled")
+                )
+                .verify();
+
     }
 
-    /**
-     * Method under test: {@link UserService#getClaims(String)}
-     */
     @Test
-    void testGetClaims2() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.domain.auth.usecase.UserService.maxFailedAttempts
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void authenticate_PasswordIsCorrectTest() {
+        systemMasterDto.setStatus("A");
+        userMasterDto.setStatus("A");
+        doReturn(Mono.just(systemMasterDto)).when(this.systemMasterSPI)
+                .findById(anyString());
 
-        JWTUtilSPI jwtUtilspi = mock(JWTUtilSPI.class);
-        HashMap<String, Object> stringObjectMap = new HashMap<>();
-        when(jwtUtilspi.getClaims(Mockito.<String>any())).thenReturn(stringObjectMap);
-        Map<String, Object> actualClaims = (new UserService(null, null, mock(CryptoAlgorithmsSPI.class), jwtUtilspi))
-                .getClaims("ABC123");
-        assertSame(stringObjectMap, actualClaims);
-        assertTrue(actualClaims.isEmpty());
-        verify(jwtUtilspi).getClaims(Mockito.<String>any());
+        doReturn(Mono.just(userMasterDto)).when(this.systemUserMasterSPI)
+                .findBySystemUser(anyString(), anyString());
+
+        doReturn("PASSWORD").when(this.cryptoAlgorithmsSPI)
+                .generateHashFromSecret(anyString(), anyString(), anyString());
+
+        doReturn(Mono.just(1L)).when(this.systemUserMasterSPI)
+                .updateLoginSuccess(anyString(), any());
+
+        doReturn("TOKEN").when(this.jwtUtilSPI)
+                .generateToken(any());
+
+        doReturn(DateTimeUtils.getCurrentDate()).when(this.jwtUtilSPI)
+                .getExpirationDateFromToken(anyString());
+
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .assertNext(userDtoNew -> {
+                    assertEquals(userDtoNew.getUsername(), userMasterDto.getAccessId());
+                })
+                .verifyComplete();
+
+
     }
+
+    @Test
+    void authenticate_PasswordIsInCorrectTest() {
+        systemMasterDto.setStatus("A");
+        userMasterDto.setStatus("A");
+        doReturn(Mono.just(systemMasterDto)).when(this.systemMasterSPI)
+                .findById(anyString());
+
+        doReturn(Mono.just(userMasterDto)).when(this.systemUserMasterSPI)
+                .findBySystemUser(anyString(), anyString());
+
+        doReturn("PASSWORD1").when(this.cryptoAlgorithmsSPI)
+                .generateHashFromSecret(anyString(), anyString(), anyString());
+
+        doReturn(Mono.just(1L)).when(this.systemUserMasterSPI)
+                .updateInvalidAttempt(anyString(), any(), any());
+
+
+        ReflectionTestUtils.setField(this.userService, "maxFailedAttempts", 5);
+
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Invalid Credentials")
+                )
+                .verify();
+
+        doReturn(Mono.just(1L)).when(this.systemUserMasterSPI)
+                .updateDisable(anyString(), any(), any());
+
+
+        userMasterDto.setNoOfAttempts((short) 4);
+
+        StepVerifier.create(
+                        userService
+                                .authenticate("TEST_SYSTEM", "TEST_USER", "PASSWORD"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Account has been locked")
+                )
+                .verify();
+
+
+    }
+
+    @Test
+    void getUsernameFromTokenTest() {
+        doReturn("TOKEN").when(this.jwtUtilSPI)
+                .getUsernameFromToken(any());
+
+        assertDoesNotThrow(() -> userService.getUsernameFromToken("TEST"));
+    }
+
+    @Test
+    void validateTokenTest() {
+        doReturn(true).when(this.jwtUtilSPI)
+                .validateToken(any());
+        assertTrue(userService.validateToken("TOKEN"));
+    }
+
+    @Test
+    void getClaimsTest() {
+        doReturn(new HashMap<String, Object>()).when(this.jwtUtilSPI)
+                .getClaims(any());
+        assertDoesNotThrow(() -> userService.getClaims("TOKEN"));
+    }
+
 }
 

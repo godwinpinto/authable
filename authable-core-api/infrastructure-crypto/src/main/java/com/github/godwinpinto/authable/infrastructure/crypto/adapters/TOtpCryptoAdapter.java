@@ -1,5 +1,6 @@
 package com.github.godwinpinto.authable.infrastructure.crypto.adapters;
 
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpCryptoSPI;
 import com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpSecretEncryption;
 import com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpService;
@@ -16,7 +17,11 @@ public class TOtpCryptoAdapter implements TOtpCryptoSPI {
     }
 
     public String generateSecretKey(String userId) {
-        return tOtpService.generateSecretKey(userId);
+        try {
+            return tOtpService.generateSecretKey(userId);
+        } catch (NonFatalException nfe) {
+            return "";
+        }
     }
 
     public String getPlainTextSecret(String userId, String encryptedSecret) {

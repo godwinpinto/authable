@@ -13,7 +13,7 @@ public class VerifyTOtpRequest {
 
     @NotBlank(message = "User Id cannot be empty")
     private String userId;
-    
-    @NotBlank(message = "Secret cannot be empty")
+
+    @NotBlank(message = "OTP cannot be empty")
     private String otp;
 }

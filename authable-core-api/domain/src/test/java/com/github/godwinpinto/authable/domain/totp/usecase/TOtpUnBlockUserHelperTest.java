@@ -1,25 +1,19 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI;
-
-import java.time.LocalDateTime;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {TOtpUnBlockUserHelper.class})
 @ExtendWith(SpringExtension.class)
@@ -52,64 +46,70 @@ class TOtpUnBlockUserHelperTest {
         verify(user).getStatus();
     }
 
-    /**
-     * Method under test: {@link TOtpUnBlockUserHelper#changeFlagInDatabase(String, TOtpUserMasterDto)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testChangeFlagInDatabase() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.removeDisabledStatus(String, java.time.LocalDateTime, String)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUnBlockUserHelper.changeFlagInDatabase(TOtpUnBlockUserHelper.java:34)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void fallbackMethod_Test() {
 
-        when(tOtpUserMasterSPI.removeDisabledStatus(Mockito.<String>any(), Mockito.<LocalDateTime>any(),
-                Mockito.<String>any())).thenReturn(null);
-        tOtpUnBlockUserHelper.changeFlagInDatabase("42", mock(TOtpUserMasterDto.class));
+        NonFatalException nfe = new NonFatalException("300", "Sample Exception");
+
+        Exception e = new Exception("Sample Other Exception");
+
+        StepVerifier.create(tOtpUnBlockUserHelper.fallbackMethod(nfe))
+                .assertNext(tOtpUnBlockUserDto -> {
+                    assertEquals(tOtpUnBlockUserDto.getStatusDescription(), nfe.getMessage());
+                    assertEquals(tOtpUnBlockUserDto.getStatusCode(), nfe.getErrCode());
+                })
+                .verifyComplete();
+
+        StepVerifier.create(tOtpUnBlockUserHelper.fallbackMethod(e))
+                .assertNext(tOtpUnBlockUserDto -> {
+                    assertEquals(tOtpUnBlockUserDto.getStatusDescription(), "Unknown error occurred");
+                })
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUnBlockUserHelper#changeFlagInDatabase(String, TOtpUserMasterDto)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testChangeFlagInDatabase2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.switchIfEmpty(reactor.core.publisher.Mono)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUnBlockUserHelper.changeFlagInDatabase(TOtpUnBlockUserHelper.java:43)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void changeFlagInDatabase_Test() {
 
-        when(tOtpUserMasterSPI.removeDisabledStatus(Mockito.<String>any(), Mockito.<LocalDateTime>any(),
-                Mockito.<String>any())).thenReturn(mock(Mono.class));
-        tOtpUnBlockUserHelper.changeFlagInDatabase("42", mock(TOtpUserMasterDto.class));
+        TOtpUserMasterDto userMasterDto = TOtpUserMasterDto.builder()
+                .status("A")
+                .build();
+        doReturn(Mono.just(1L)).when(tOtpUserMasterSPI)
+                .removeDisabledStatus(any(), any(), any());
+
+        StepVerifier.create(tOtpUnBlockUserHelper.changeFlagInDatabase("TEST_SYSTEM", userMasterDto))
+                .assertNext(tOtpUnBlockUserDto -> {
+                    assertEquals(tOtpUnBlockUserDto.getStatusDescription(), "TOTP subscription cancelled for user");
+                })
+                .verifyComplete();
+
+        doReturn(Mono.empty()).when(tOtpUserMasterSPI)
+                .removeDisabledStatus(any(), any(), any());
+
+        StepVerifier.create(tOtpUnBlockUserHelper.changeFlagInDatabase("TEST_SYSTEM", userMasterDto))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Failure in updating")
+                )
+                .verify();
+
+        userMasterDto.setStatus("D");
+        doReturn(Mono.just(1L)).when(tOtpUserMasterSPI)
+                .removeDisabledStatus(any(), any(), any());
+
+        StepVerifier.create(tOtpUnBlockUserHelper.changeFlagInDatabase("TEST_SYSTEM", userMasterDto))
+                .assertNext(tOtpUnBlockUserDto -> {
+                    assertEquals(tOtpUnBlockUserDto.getStatusDescription(), "User unblocked successfully.");
+                })
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUnBlockUserHelper#formatNoSubscriptionMessage()}
-     */
     @Test
-    void testFormatNoSubscriptionMessage() {
-        // TODO: Complete this test.
-        //   Diffblue AI was unable to find a test
-
-        tOtpUnBlockUserHelper.formatNoSubscriptionMessage();
-    }
-
-    /**
-     * Method under test: {@link TOtpUnBlockUserHelper#fallbackMethod(Throwable)}
-     */
-    @Test
-    void testFallbackMethod() {
-        // TODO: Complete this test.
-        //   Diffblue AI was unable to find a test
-
-        tOtpUnBlockUserHelper.fallbackMethod(new Throwable());
+    void formatNoSubscriptionMessage_Test() {
+        StepVerifier.create(tOtpUnBlockUserHelper.formatNoSubscriptionMessage())
+                .assertNext(tOtpUnBlockUserDto -> {
+                    assertEquals(tOtpUnBlockUserDto.getStatusDescription(), "No active subscription found for user");
+                })
+                .verifyComplete();
     }
 }
 

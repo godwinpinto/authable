@@ -1,11 +1,8 @@
 package com.github.godwinpinto.authable.application.rest.totp.json;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class GenericResponseTest {
     /**
@@ -13,7 +10,7 @@ class GenericResponseTest {
      */
     @Test
     void testCanEqual() {
-        assertFalse((new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"))
+        assertFalse((new GenericResponse("Status Code", "Status Description"))
                 .canEqual("Other"));
     }
 
@@ -22,10 +19,9 @@ class GenericResponseTest {
      */
     @Test
     void testCanEqual2() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description");
         assertTrue(genericResponse.canEqual(
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY")));
+                new GenericResponse("Status Code", "Status Description")));
     }
 
     /**
@@ -33,11 +29,9 @@ class GenericResponseTest {
      *
      * <ul>
      *   <li>{@link GenericResponse#GenericResponse()}
-     *   <li>{@link GenericResponse#setSecretKey(String)}
      *   <li>{@link GenericResponse#setStatusCode(String)}
      *   <li>{@link GenericResponse#setStatusDescription(String)}
      *   <li>{@link GenericResponse#toString()}
-     *   <li>{@link GenericResponse#getSecretKey()}
      *   <li>{@link GenericResponse#getStatusCode()}
      *   <li>{@link GenericResponse#getStatusDescription()}
      * </ul>
@@ -45,45 +39,35 @@ class GenericResponseTest {
     @Test
     void testConstructor() {
         GenericResponse actualGenericResponse = new GenericResponse();
-        actualGenericResponse.setSecretKey("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
         actualGenericResponse.setStatusCode("Status Code");
         actualGenericResponse.setStatusDescription("Status Description");
         String actualToStringResult = actualGenericResponse.toString();
-        assertEquals("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY", actualGenericResponse.getSecretKey());
         assertEquals("Status Code", actualGenericResponse.getStatusCode());
         assertEquals("Status Description", actualGenericResponse.getStatusDescription());
-        assertEquals("GenericResponse(statusCode=Status Code, statusDescription=Status Description, secretKey=EXAMPLEKEYwj"
-                + "alrXUtnFEMI/K7MDENG/bPxRfiCY)", actualToStringResult);
+        assertEquals("GenericResponse(statusCode=Status Code, statusDescription=Status Description)", actualToStringResult);
     }
 
     /**
      * Methods under test:
      *
      * <ul>
-     *   <li>{@link GenericResponse#GenericResponse(String, String, String)}
-     *   <li>{@link GenericResponse#setSecretKey(String)}
      *   <li>{@link GenericResponse#setStatusCode(String)}
      *   <li>{@link GenericResponse#setStatusDescription(String)}
      *   <li>{@link GenericResponse#toString()}
-     *   <li>{@link GenericResponse#getSecretKey()}
      *   <li>{@link GenericResponse#getStatusCode()}
      *   <li>{@link GenericResponse#getStatusDescription()}
      * </ul>
      */
     @Test
     void testConstructor2() {
-        GenericResponse actualGenericResponse = new GenericResponse("Status Code", "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
-        actualGenericResponse.setSecretKey("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse actualGenericResponse = new GenericResponse("Status Code", "Status Description");
         actualGenericResponse.setStatusCode("Status Code");
         actualGenericResponse.setStatusDescription("Status Description");
         String actualToStringResult = actualGenericResponse.toString();
-        assertEquals("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY", actualGenericResponse.getSecretKey());
         assertEquals("Status Code", actualGenericResponse.getStatusCode());
         assertEquals("Status Description", actualGenericResponse.getStatusDescription());
         assertEquals(
-                "GenericResponse(statusCode=Status Code, statusDescription=Status Description, secretKey=EXAMPLEKEYwj"
-                        + "alrXUtnFEMI/K7MDENG/bPxRfiCY)",
+                "GenericResponse(statusCode=Status Code, statusDescription=Status Description)",
                 actualToStringResult);
     }
 
@@ -93,9 +77,9 @@ class GenericResponseTest {
     @Test
     void testEquals() {
         assertNotEquals(
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"), null);
+                new GenericResponse("Status Code", "Status Description"), null);
         assertNotEquals(
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"),
+                new GenericResponse("Status Code", "Status Description"),
                 "Different type to GenericResponse");
     }
 
@@ -109,8 +93,7 @@ class GenericResponseTest {
      */
     @Test
     void testEquals2() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description");
         assertEquals(genericResponse, genericResponse);
         int expectedHashCodeResult = genericResponse.hashCode();
         assertEquals(expectedHashCodeResult, genericResponse.hashCode());
@@ -126,10 +109,8 @@ class GenericResponseTest {
      */
     @Test
     void testEquals3() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
-        GenericResponse genericResponse2 = new GenericResponse("Status Code", "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description");
+        GenericResponse genericResponse2 = new GenericResponse("Status Code", "Status Description");
 
         assertEquals(genericResponse, genericResponse2);
         int expectedHashCodeResult = genericResponse.hashCode();
@@ -141,10 +122,9 @@ class GenericResponseTest {
      */
     @Test
     void testEquals4() {
-        GenericResponse genericResponse = new GenericResponse("Status Description", "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse("Status Description", "Status Description");
         assertNotEquals(genericResponse,
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"));
+                new GenericResponse("Status Code", "Status Description"));
     }
 
     /**
@@ -152,10 +132,9 @@ class GenericResponseTest {
      */
     @Test
     void testEquals5() {
-        GenericResponse genericResponse = new GenericResponse(null, "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse(null, "Status Description");
         assertNotEquals(genericResponse,
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"));
+                new GenericResponse("Status Code", "Status Description"));
     }
 
     /**
@@ -163,10 +142,9 @@ class GenericResponseTest {
      */
     @Test
     void testEquals6() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Code",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Code");
         assertNotEquals(genericResponse,
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"));
+                new GenericResponse("Status Code", "Status Description"));
     }
 
     /**
@@ -174,30 +152,9 @@ class GenericResponseTest {
      */
     @Test
     void testEquals7() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", null,
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse("Status Code", null);
         assertNotEquals(genericResponse,
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"));
-    }
-
-    /**
-     * Method under test: {@link GenericResponse#equals(Object)}
-     */
-    @Test
-    void testEquals8() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description", "Status Code");
-        assertNotEquals(genericResponse,
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"));
-    }
-
-    /**
-     * Method under test: {@link GenericResponse#equals(Object)}
-     */
-    @Test
-    void testEquals9() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description", null);
-        assertNotEquals(genericResponse,
-                new GenericResponse("Status Code", "Status Description", "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY"));
+                new GenericResponse("Status Code", "Status Description"));
     }
 
     /**
@@ -210,10 +167,8 @@ class GenericResponseTest {
      */
     @Test
     void testEquals10() {
-        GenericResponse genericResponse = new GenericResponse(null, "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
-        GenericResponse genericResponse2 = new GenericResponse(null, "Status Description",
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse(null, "Status Description");
+        GenericResponse genericResponse2 = new GenericResponse(null, "Status Description");
 
         assertEquals(genericResponse, genericResponse2);
         int expectedHashCodeResult = genericResponse.hashCode();
@@ -230,10 +185,8 @@ class GenericResponseTest {
      */
     @Test
     void testEquals11() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", null,
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
-        GenericResponse genericResponse2 = new GenericResponse("Status Code", null,
-                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        GenericResponse genericResponse = new GenericResponse("Status Code", null);
+        GenericResponse genericResponse2 = new GenericResponse("Status Code", null);
 
         assertEquals(genericResponse, genericResponse2);
         int expectedHashCodeResult = genericResponse.hashCode();
@@ -250,8 +203,8 @@ class GenericResponseTest {
      */
     @Test
     void testEquals12() {
-        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description", null);
-        GenericResponse genericResponse2 = new GenericResponse("Status Code", "Status Description", null);
+        GenericResponse genericResponse = new GenericResponse("Status Code", "Status Description");
+        GenericResponse genericResponse2 = new GenericResponse("Status Code", "Status Description");
 
         assertEquals(genericResponse, genericResponse2);
         int expectedHashCodeResult = genericResponse.hashCode();

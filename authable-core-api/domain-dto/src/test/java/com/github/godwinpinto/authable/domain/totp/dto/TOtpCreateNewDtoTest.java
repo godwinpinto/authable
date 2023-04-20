@@ -1,11 +1,8 @@
 package com.github.godwinpinto.authable.domain.totp.dto;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class TOtpCreateNewDtoTest {
     /**
@@ -256,6 +253,17 @@ class TOtpCreateNewDtoTest {
         assertEquals(tOtpCreateNewDto, tOtpCreateNewDto2);
         int expectedHashCodeResult = tOtpCreateNewDto.hashCode();
         assertEquals(expectedHashCodeResult, tOtpCreateNewDto2.hashCode());
+    }
+
+    @Test
+    void testBuilder() {
+        TOtpCreateNewDto tOtpCreateNewDto = new TOtpCreateNewDto("Status Code", null,
+                "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+        TOtpCreateNewDto tOtpCreateNewDto2 = TOtpCreateNewDto.builder()
+                .statusCode("Status Code")
+                .secretKey("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY")
+                .build();
+        assertEquals(tOtpCreateNewDto, tOtpCreateNewDto2);
     }
 }
 

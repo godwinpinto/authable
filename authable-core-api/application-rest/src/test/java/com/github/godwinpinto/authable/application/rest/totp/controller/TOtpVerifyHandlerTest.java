@@ -1,96 +1,263 @@
 package com.github.godwinpinto.authable.application.rest.totp.controller;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.github.godwinpinto.authable.application.rest.totp.json.VerifyTOtpRequest;
 import com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent;
+import com.github.godwinpinto.authable.domain.auth.dto.Role;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
+import com.github.godwinpinto.authable.domain.totp.dto.TOtpVerifyDto;
 import com.github.godwinpinto.authable.domain.totp.ports.api.TOtpUserServiceAPI;
-import org.junit.jupiter.api.Disabled;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.validation.Validator;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.support.ServerRequestWrapper;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+
+@Import({
+        TOtpRoutesConfig.class,
+        WebFluxSecurityConfig.class
+})
+@WebFluxTest
 @ContextConfiguration(classes = {TOtpVerifyHandler.class})
 @ExtendWith(SpringExtension.class)
+@AutoConfigureWebTestClient(timeout = "36000")
 class TOtpVerifyHandlerTest {
-    @MockBean
-    private FetchPrincipalComponent fetchPrincipalComponent;
+    @Autowired
+    private WebTestClient webClient;
 
     @MockBean
-    private TOtpUserServiceAPI tOtpUserServiceAPI;
+    private TOtpStatusHandler tOtpStatusHandler;
+
+    @MockBean
+    TOtpUserServiceAPI tOtpUserServiceAPI;
+
+    @MockBean
+    FetchPrincipalComponent fetchPrincipalComponent;
 
     @Autowired
-    private TOtpVerifyHandler tOtpVerifyHandler;
+    TOtpVerifyHandler tOtpVerifyHandler;
 
     @MockBean
-    private Validator validator;
+    TOtpUnSubscribeHandler tOtpUnSubscribeHandler;
 
-    /**
-     * Method under test: {@link TOtpVerifyHandler#processBody(VerifyTOtpRequest, ServerRequest)}
-     */
+    @MockBean
+    TOtpUnBlockHandler tOtpUnBlockHandler;
+
+    @MockBean
+    TOtpSubscribeHandler tOtpSubscribeHandler;
+
+    @MockBean
+    TOtpGenerateQrHandler tOtpGenerateQrHandler;
+
+
+    @Autowired
+    Validator validator;
+
     @Test
-    @Disabled("TODO: Complete this test")
-    void testProcessBody() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: Delegate must not be null
-        //   See https://diff.blue/R013 to resolve this issue.
+    public void processBody_NoSubscription_Test() {
 
-        VerifyTOtpRequest verifyTOtpRequest = new VerifyTOtpRequest("42", "Otp");
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
 
-        tOtpVerifyHandler.processBody(verifyTOtpRequest,
-                new ServerRequestWrapper(new ServerRequestWrapper(new ServerRequestWrapper(new ServerRequestWrapper(null)))));
+        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
+                .userId("TEST_USER")
+                .otp("123456")
+                .build();
+
+        webClient
+                .post()
+                .uri("/totp/verify")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(verifyTOtpRequest)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("No active subscription")
+                .jsonPath("$.statusCode")
+                .isEqualTo("300");
     }
 
-    /**
-     * Method under test: {@link TOtpVerifyHandler#processBody(VerifyTOtpRequest, ServerRequest)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testProcessBody2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent.getAuthDetails()" is null
-        //       at com.github.godwinpinto.authable.application.rest.totp.controller.TOtpVerifyHandler.processBody(TOtpVerifyHandler.java:36)
-        //   See https://diff.blue/R013 to resolve this issue.
+    public void processBody_Subscribed_Test() {
 
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(null);
-        VerifyTOtpRequest verifyTOtpRequest = mock(VerifyTOtpRequest.class);
-        tOtpVerifyHandler.processBody(verifyTOtpRequest, new ServerRequestWrapper(new ServerRequestWrapper(
-                new ServerRequestWrapper(new ServerRequestWrapper(mock(ServerRequestWrapper.class))))));
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+
+        TOtpVerifyDto tOtpUserStatusDto = TOtpVerifyDto.builder()
+                .statusCode("200")
+                .statusDescription("Verification success")
+                .build();
+
+
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.just(tOtpUserStatusDto));
+
+        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
+                .userId("TEST_USER")
+                .otp("123456")
+                .build();
+
+        webClient
+                .post()
+                .uri("/totp/verify")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(verifyTOtpRequest)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("Verification success")
+                .jsonPath("$.statusCode")
+                .isEqualTo("200");
     }
 
-    /**
-     * Method under test: {@link TOtpVerifyHandler#processBody(VerifyTOtpRequest, ServerRequest)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testProcessBody3() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.application.rest.totp.controller.TOtpVerifyHandler.processBody(TOtpVerifyHandler.java:37)
-        //   See https://diff.blue/R013 to resolve this issue.
+    public void processBody_EmptyInputField_Test() {
 
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(mock(Mono.class));
-        VerifyTOtpRequest verifyTOtpRequest = mock(VerifyTOtpRequest.class);
-        tOtpVerifyHandler.processBody(verifyTOtpRequest, new ServerRequestWrapper(new ServerRequestWrapper(
-                new ServerRequestWrapper(new ServerRequestWrapper(mock(ServerRequestWrapper.class))))));
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
+                .build();
+
+        webClient
+                .post()
+                .uri("/totp/verify")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(verifyTOtpRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .value(Matchers.in(List.of("User Id cannot be empty", "OTP cannot be empty")))
+                .jsonPath("$.statusCode")
+                .isEqualTo("300");
     }
+
+    @Test
+    public void processBody_NoUserIdField_Test() {
+
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
+                .otp("123456")
+                .build();
+
+        webClient
+                .post()
+                .uri("/totp/verify")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(verifyTOtpRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("User Id cannot be empty")
+                .jsonPath("$.statusCode")
+                .isEqualTo("300");
+    }
+
+    @Test
+    public void processBody_NoOtpField_Test() {
+
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
+                .userId("TEST_USER")
+                .build();
+
+        webClient
+                .post()
+                .uri("/totp/verify")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(verifyTOtpRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("OTP cannot be empty")
+                .jsonPath("$.statusCode")
+                .isEqualTo("300");
+    }
+
+    @Test
+    public void processBody_NoInput_Test() {
+
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+
+        webClient
+                .post()
+                .uri("/totp/verify")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("Invalid Parameters in request")
+                .jsonPath("$.statusCode")
+                .isEqualTo("300");
+    }
+
 }
 

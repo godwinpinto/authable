@@ -11,7 +11,7 @@ import java.util.Date;
 
 public final class DateTimeUtils {
     private DateTimeUtils() {
-        throw new IllegalStateException("Date Utility class");
+        
     }
 
     public static final String DAYS = "DAYS";

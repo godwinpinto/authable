@@ -23,7 +23,7 @@ public class SystemUserMasterAdapter implements SystemUserMasterSPI {
     }
 
     @Override
-    public Mono<Long> updateInvalidAttempt(String accessId, short noOfAttempts, LocalDateTime invalidAttemptDateTime) {
+    public Mono<Long> updateInvalidAttempt(String accessId, Short noOfAttempts, LocalDateTime invalidAttemptDateTime) {
         return systemUserMasterRepository.updateInvalidAttempt(StringUtils.rightPad(accessId, systemUserSpacePadding, ApplicationConstants.DB_PAD_CHAR), noOfAttempts, invalidAttemptDateTime);
     }
 

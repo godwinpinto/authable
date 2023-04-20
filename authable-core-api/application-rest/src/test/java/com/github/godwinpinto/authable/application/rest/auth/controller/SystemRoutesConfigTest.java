@@ -4,12 +4,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.validation.Validator;
 
-@WebMvcTest(controllers = {SystemHandler.class})
 @ExtendWith(SpringExtension.class)
+@Import({SystemHandler.class,
+        Validator.class})
 class SystemRoutesConfigTest {
+
     @Autowired
     private SystemHandler systemHandler;
 

@@ -118,15 +118,20 @@
         </dependency>
         <!-- Meant for downgrading spring from 3-> 2 for AI test generator only. upgrade and comment these lines-->
         <!-- <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <version>2.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <version>3.0.2</version>
-        </dependency> -->
+             <groupId>jakarta.annotation</groupId>
+             <artifactId>jakarta.annotation-api</artifactId>
+             <version>2.1.1</version>
+         </dependency>
+         <dependency>
+             <groupId>jakarta.validation</groupId>
+             <artifactId>jakarta.validation-api</artifactId>
+             <version>3.0.2</version>
+         </dependency>
+         <dependency>
+             <groupId>io.micrometer</groupId>
+             <artifactId>micrometer-core</artifactId>
+             <version>1.10.6</version>
+         </dependency>-->
     </dependencies>
     <build>
         <plugins>
@@ -156,6 +161,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 </project>

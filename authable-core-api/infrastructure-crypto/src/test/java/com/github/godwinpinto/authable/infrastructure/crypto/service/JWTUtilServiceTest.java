@@ -1,215 +1,133 @@
 package com.github.godwinpinto.authable.infrastructure.crypto.service;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
+import com.github.godwinpinto.authable.domain.auth.dto.Role;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
-
-import java.util.ArrayList;
-
-import org.junit.jupiter.api.Disabled;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 @ContextConfiguration(classes = {JWTUtilService.class})
 @ExtendWith(SpringExtension.class)
+@TestPropertySource(properties =
+        {"infrastructure-crypto.jwt.secret=ThisIsSecretForJWTHS512SignatureAlgorithmThatMUSTHave64ByteLength",
+                "infrastructure-crypto.jwt.expiry=3600"
+        })
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JWTUtilServiceTest {
     @Autowired
     private JWTUtilService jWTUtilService;
 
-    /**
-     * Method under test: {@link JWTUtilService#init()}
-     */
-    @Test
-    void testInit() {
-        assertThrows(RuntimeException.class, () -> jWTUtilService.init());
+    String token;
+
+    @BeforeAll
+    void createSampleToken() {
+        UserDto userDto = UserDto.builder()
+                .username("USER")
+                .systemId("TEST")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .build();
+        token = jWTUtilService.generateToken(userDto);
     }
 
-    /**
-     * Method under test: {@link JWTUtilService#getAllClaimsFromToken(String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
+    void testGenerateTokenWithNullUser() {
+        assertThrows(JwtException.class, () ->
+                jWTUtilService.generateToken(null));
+    }
+
+    @Test
+    void testGenerateTokenWithNullFields() {
+        UserDto userDto = new UserDto();
+        assertThrows(JwtException.class, () ->
+                jWTUtilService.generateToken(userDto));
+
+        userDto.setUsername("USER");
+
+        assertThrows(JwtException.class, () ->
+                jWTUtilService.generateToken(userDto));
+
+        userDto.setSystemId("TEST");
+        assertThrows(JwtException.class, () ->
+                jWTUtilService.generateToken(userDto));
+
+        userDto.setRoles(List.of(Role.ROLE_ADMIN));
+        assertDoesNotThrow(() ->
+                jWTUtilService.generateToken(userDto));
+    }
+
+
+    @Test
     void testGetAllClaimsFromToken() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: signing key cannot be null.
-        //       at io.jsonwebtoken.lang.Assert.notNull(Assert.java:82)
-        //       at io.jsonwebtoken.impl.DefaultJwtParserBuilder.setSigningKey(DefaultJwtParserBuilder.java:165)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getAllClaimsFromToken(JWTUtilService.java:39)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        jWTUtilService.getAllClaimsFromToken("ABC123");
+        Claims claim = jWTUtilService.getAllClaimsFromToken(this.token);
+        assertEquals(claim.getSubject(), "USER");
     }
 
-    /**
-     * Method under test: {@link JWTUtilService#getAllClaimsFromToken(String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGetAllClaimsFromToken2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: signing key cannot be null.
-        //       at io.jsonwebtoken.lang.Assert.notNull(Assert.java:82)
-        //       at io.jsonwebtoken.impl.DefaultJwtParserBuilder.setSigningKey(DefaultJwtParserBuilder.java:165)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getAllClaimsFromToken(JWTUtilService.java:39)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        jWTUtilService.getAllClaimsFromToken("Token");
-    }
-
-    /**
-     * Method under test: {@link JWTUtilService#getUsernameFromToken(String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
     void testGetUsernameFromToken() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: signing key cannot be null.
-        //       at io.jsonwebtoken.lang.Assert.notNull(Assert.java:82)
-        //       at io.jsonwebtoken.impl.DefaultJwtParserBuilder.setSigningKey(DefaultJwtParserBuilder.java:165)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getAllClaimsFromToken(JWTUtilService.java:39)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getUsernameFromToken(JWTUtilService.java:46)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        jWTUtilService.getUsernameFromToken("ABC123");
+        String username = jWTUtilService.getUsernameFromToken(this.token);
+        assertEquals(username, "USER");
     }
 
-    /**
-     * Method under test: {@link JWTUtilService#getExpirationDateFromToken(String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGetExpirationDateFromToken() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: signing key cannot be null.
-        //       at io.jsonwebtoken.lang.Assert.notNull(Assert.java:82)
-        //       at io.jsonwebtoken.impl.DefaultJwtParserBuilder.setSigningKey(DefaultJwtParserBuilder.java:165)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getAllClaimsFromToken(JWTUtilService.java:39)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getExpirationDateFromToken(JWTUtilService.java:50)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        jWTUtilService.getExpirationDateFromToken("ABC123");
+    void testIsTokenNotExpired() {
+        boolean isValidToken = jWTUtilService.validateToken(this.token);
+        assertEquals(true, isValidToken);
     }
 
-    /**
-     * Method under test: {@link JWTUtilService#generateToken(UserDto)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGenerateToken() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NumberFormatException: For input string: "${infrastructure-crypto.jwt.expiry}"
-        //       at java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)
-        //       at java.lang.Long.parseLong(Long.java:697)
-        //       at java.lang.Long.parseLong(Long.java:836)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.doGenerateToken(JWTUtilService.java:66)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.generateToken(JWTUtilService.java:62)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        jWTUtilService.generateToken(new UserDto());
+    void testGetAllClaimsFromInvalidToken() {
+        assertThrows(JwtException.class, () ->
+                jWTUtilService.getAllClaimsFromToken("Token"));
     }
 
-    /**
-     * Method under test: {@link JWTUtilService#generateToken(UserDto)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGenerateToken2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "com.github.godwinpinto.authable.domain.auth.dto.UserDto.getRoles()" because "userDto" is null
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.generateToken(JWTUtilService.java:60)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        jWTUtilService.generateToken(null);
-    }
-
-    /**
-     * Method under test: {@link JWTUtilService#generateToken(UserDto)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testGenerateToken3() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NumberFormatException: For input string: "${infrastructure-crypto.jwt.expiry}"
-        //       at java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)
-        //       at java.lang.Long.parseLong(Long.java:697)
-        //       at java.lang.Long.parseLong(Long.java:836)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.doGenerateToken(JWTUtilService.java:66)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.generateToken(JWTUtilService.java:62)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        UserDto userDto = mock(UserDto.class);
-        when(userDto.getSystemId()).thenReturn("42");
-        when(userDto.getUsername()).thenReturn("janedoe");
-        when(userDto.getRoles()).thenReturn(new ArrayList<>());
-        jWTUtilService.generateToken(userDto);
-    }
-
-    /**
-     * Method under test: {@link JWTUtilService#validateToken(String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testValidateToken() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: signing key cannot be null.
-        //       at io.jsonwebtoken.lang.Assert.notNull(Assert.java:82)
-        //       at io.jsonwebtoken.impl.DefaultJwtParserBuilder.setSigningKey(DefaultJwtParserBuilder.java:165)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getAllClaimsFromToken(JWTUtilService.java:39)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getExpirationDateFromToken(JWTUtilService.java:50)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.isTokenExpired(JWTUtilService.java:54)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.validateToken(JWTUtilService.java:80)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        jWTUtilService.validateToken("ABC123");
-    }
-
-    /**
-     * Method under test: {@link JWTUtilService#rolesFromClaim(String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
     void testRolesFromClaim() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: signing key cannot be null.
-        //       at io.jsonwebtoken.lang.Assert.notNull(Assert.java:82)
-        //       at io.jsonwebtoken.impl.DefaultJwtParserBuilder.setSigningKey(DefaultJwtParserBuilder.java:165)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.getAllClaimsFromToken(JWTUtilService.java:39)
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.JWTUtilService.rolesFromClaim(JWTUtilService.java:84)
-        //   See https://diff.blue/R013 to resolve this issue.
+        List<String> lstRoles = jWTUtilService.rolesFromClaim(token);
+        assertEquals("ROLE_ADMIN", lstRoles.get(0));
+    }
 
-        jWTUtilService.rolesFromClaim("ABC123");
+    @Test
+    void testExpiredJwt() {
+
+        String expiredToken =
+                "eyJhbGciOiJIUzUxMiJ9.eyJzeXN0ZW1JZCI6Ik5FVEJLIiwicm9sZSI6WyJST0xFX0FETUlOIl0sInN1YiI6IjAzODJiOWRlLWZlY2EtNDk0Ny1iYTcyLWM3NWNkNTJlNTFmMCIsImlhdCI6MTY4MTQ5MjMzNSwiZXhwIjoxNjgxNDk1OTM1fQ.-YJF3ZPaFjk8FIfq-O_q6bSYPDxWJKc0_P1s12-9brjqrJ_LMD5ncNSRWnJZvg94MnK42EscjHMHtIsemVai9g";
+
+        assertThrows(ExpiredJwtException.class, () ->
+                jWTUtilService.validateToken(expiredToken)
+        );
+    }
+
+    @Test
+    void shortKeyTest() {
+        ReflectionTestUtils.setField(jWTUtilService, "secret", "SHORTKEYFORJWT");
+        assertThrows(JwtException.class, () ->
+                jWTUtilService.init());
+
+    }
+
+    @Test
+    void validateToken_BranchUnitTest_Test() {
+        JWTUtilService jwtUtilService2 = spy(new JWTUtilService());
+        doReturn(DateTimeUtils.addDays(DateTimeUtils.getCurrentDate(), -1)).when(jwtUtilService2)
+                .getExpirationDateFromToken(anyString());
+        assertEquals(false, jwtUtilService2.validateToken("TEST_TOKEN"));
     }
 }
 

@@ -19,7 +19,7 @@ public class TOtpUnBlockUserHelper {
         this.tOtpUserMasterSPI = tOtpUserMasterSPI;
     }
 
-    Boolean isUserDisabledOrActive(TOtpUserMasterDto user) {
+    public Boolean isUserDisabledOrActive(TOtpUserMasterDto user) {
         if (user.getStatus()
                 .equals(ApplicationConstants.RecordStatus.INACTIVE.getValue())) {
             return true;

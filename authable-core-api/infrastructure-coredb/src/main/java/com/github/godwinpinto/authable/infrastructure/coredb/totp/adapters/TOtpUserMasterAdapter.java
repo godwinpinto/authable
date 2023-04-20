@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public class TOtpUserMasterAdapter implements TOtpUserMasterSPI {
@@ -32,8 +31,7 @@ public class TOtpUserMasterAdapter implements TOtpUserMasterSPI {
 
     @Override
     public Mono<TOtpUserMasterDto> findById(String userId) {
-        return tOtpUserMasterRepository.findById(StringUtils.rightPad(userId, tOtpUserIdPadding, ApplicationConstants.DB_PAD_CHAR)).
-                log()
+        return tOtpUserMasterRepository.findById(StringUtils.rightPad(userId, tOtpUserIdPadding, ApplicationConstants.DB_PAD_CHAR))
                 .flatMap(entity -> Mono.just(TOtpUserMasterMapper.INSTANCE.tOtpUserMasterToDto(entity))
                 );
     }
@@ -58,14 +56,11 @@ public class TOtpUserMasterAdapter implements TOtpUserMasterSPI {
         TOtpUserMasterEntity tOtpUserMasterEntity = TOtpUserMasterMapper.INSTANCE.dtoToEntity(tOtpUserMasterDto);
         tOtpUserMasterEntity.setUserId(StringUtils.rightPad(tOtpUserMasterEntity.getUserId(), tOtpUserIdPadding, ApplicationConstants.DB_PAD_CHAR));
         tOtpUserMasterEntity.setAsNew(false);
-        try {
-            return tOtpUserMasterRepository.save(tOtpUserMasterEntity)
-                    .flatMap(tOtpUserMasterEntity1 -> Mono.just(1L))
-                    .switchIfEmpty(Mono.just(0L));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Mono.just(0L);
-        }
+        return tOtpUserMasterRepository.save(tOtpUserMasterEntity)
+                .flatMap(tOtpUserMasterEntity1 -> Mono.just(1L))
+                .switchIfEmpty(Mono.just(0L))
+                .onErrorResume(e -> Mono.just(0L));
+
     }
 
     public Mono<Boolean> createEntity(TOtpUserMasterDto tOtpUserMasterDto) {
@@ -74,12 +69,11 @@ public class TOtpUserMasterAdapter implements TOtpUserMasterSPI {
         tOtpUserMasterEntity.setUserId(StringUtils.rightPad(tOtpUserMasterEntity.getUserId(), tOtpUserIdPadding, ApplicationConstants.DB_PAD_CHAR));
         tOtpUserMasterEntity.setCreationDateTime(DateTimeUtils.getCurrentLocalDateTime());
         tOtpUserMasterEntity.setModificationDateTime(DateTimeUtils.getCurrentLocalDateTime());
-        try {
-            return tOtpUserMasterRepository.save(tOtpUserMasterEntity)
-                    .flatMap(tOtpUserMasterEntity1 -> Mono.just(true))
-                    .onErrorResume(e -> Mono.error(new SQLException("" + e.getMessage())));
-        } catch (Exception e) {
-            return Mono.just(false);
-        }
+        return tOtpUserMasterRepository.save(tOtpUserMasterEntity)
+                .flatMap(tOtpUserMasterEntity1 -> Mono.just(true))
+                .switchIfEmpty(Mono.just(false))
+                .onErrorResume(e -> {
+                    return Mono.just(false);
+                });
     }
 }

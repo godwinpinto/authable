@@ -1,395 +1,156 @@
 package com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.anyShort;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
 import com.github.godwinpinto.authable.infrastructure.coredb.totp.entity.TOtpUserMasterEntity;
+import com.github.godwinpinto.authable.infrastructure.coredb.totp.mappers.TOtpUserMasterMapper;
 import com.github.godwinpinto.authable.infrastructure.coredb.totp.repository.TOtpUserMasterRepository;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.function.Function;
-
-import org.junit.jupiter.api.Disabled;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 
 @ContextConfiguration(classes = {TOtpUserMasterAdapter.class})
 @ExtendWith(SpringExtension.class)
+@TestPropertySource(properties = {"infrastructure-coredb.totp-user-id-padding=50"})
 class TOtpUserMasterAdapterTest {
     @Autowired
     private TOtpUserMasterAdapter tOtpUserMasterAdapter;
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#TOtpUserMasterAdapter(TOtpUserMasterRepository)}
-     */
-    @Test
-    void testConstructor() {
-        // TODO: Complete this test.
-        //   Reason: R002 Missing observers.
-        //   Diffblue Cover was unable to create an assertion.
-        //   Add getters for the following fields or make them package-private:
-        //     TOtpUserMasterAdapter.tOtpUserIdPadding
-        //     TOtpUserMasterAdapter.tOtpUserMasterRepository
+    @MockBean
+    TOtpUserMasterRepository tOtpUserMasterRepository;
 
-        new TOtpUserMasterAdapter(mock(TOtpUserMasterRepository.class));
+    @Test
+    void updateInvalidAttempt_Test() {
+        doReturn(Mono.just(1L)).when(tOtpUserMasterRepository)
+                .updateInvalidAttempt(any(), any(short.class), any());
+        StepVerifier.create(tOtpUserMasterAdapter.updateInvalidAttempt("ACCESS_ID", (short) 0, DateTimeUtils.getCurrentLocalDateTime()))
+                .assertNext(val -> assertEquals(val, 1L))
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#updateDisable(String, LocalDateTime, String)}
-     */
     @Test
-    void testUpdateDisable() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        TOtpUserMasterRepository tOtpUserMasterRepository = mock(TOtpUserMasterRepository.class);
-        when(tOtpUserMasterRepository.updateDisable(Mockito.<String>any(), Mockito.<LocalDateTime>any(),
-                Mockito.<String>any())).thenReturn(null);
-        TOtpUserMasterAdapter tOtpUserMasterAdapter = new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-        assertNull(tOtpUserMasterAdapter.updateDisable("42", LocalDate.of(1970, 1, 1)
-                .atStartOfDay(), "Status"));
-        verify(tOtpUserMasterRepository).updateDisable(Mockito.<String>any(), Mockito.<LocalDateTime>any(),
-                Mockito.<String>any());
+    void updateLoginSuccess_Test() {
+        doReturn(Mono.just(1L)).when(tOtpUserMasterRepository)
+                .updateLoginSuccess(any(), any());
+        StepVerifier.create(tOtpUserMasterAdapter.updateLoginSuccess("ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime()))
+                .assertNext(val -> assertEquals(val, 1L))
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#findById(String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testFindById() {
-        // TODO: Complete this test.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void updateDisable_Test() {
+        doReturn(Mono.just(1L)).when(tOtpUserMasterRepository)
+                .updateDisable(any(), any(), any());
+        StepVerifier.create(tOtpUserMasterAdapter.updateDisable("ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
+                .assertNext(val -> assertEquals(val, 1L))
+                .verifyComplete();
 
-        // Arrange
-        // TODO: Populate arranged inputs
-        String userId = "";
-
-        // Act
-        Mono<TOtpUserMasterDto> actualFindByIdResult = this.tOtpUserMasterAdapter.findById(userId);
-
-        // Assert
-        // TODO: Add assertions on result
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#updateInvalidAttempt(String, short, LocalDateTime)}
-     */
     @Test
-    void testUpdateInvalidAttempt() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void findById_Test() {
+        TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder()
+                .userId("TEST_USER")
+                .build();
 
-        TOtpUserMasterRepository tOtpUserMasterRepository = mock(TOtpUserMasterRepository.class);
-        when(tOtpUserMasterRepository.updateInvalidAttempt(Mockito.<String>any(), anyShort(),
-                Mockito.<LocalDateTime>any())).thenReturn(null);
-        TOtpUserMasterAdapter tOtpUserMasterAdapter = new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-        assertNull(tOtpUserMasterAdapter.updateInvalidAttempt("42", (short) 1, LocalDate.of(1970, 1, 1)
-                .atStartOfDay()));
-        verify(tOtpUserMasterRepository).updateInvalidAttempt(Mockito.<String>any(), anyShort(),
-                Mockito.<LocalDateTime>any());
+        TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
+        tOtpUserMasterEntity.setUserId("TEST_USER");
+
+        doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository)
+                .findById(any(String.class));
+        StepVerifier.create(tOtpUserMasterAdapter.findById("TEST_USER"))
+                .assertNext(res -> assertEquals(res.getUserId(), tOtpUserMasterDto.getUserId()))
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#updateLoginSuccess(String, LocalDateTime)}
-     */
     @Test
-    void testUpdateLoginSuccess() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        TOtpUserMasterRepository tOtpUserMasterRepository = mock(TOtpUserMasterRepository.class);
-        when(tOtpUserMasterRepository.updateLoginSuccess(Mockito.<String>any(), Mockito.<LocalDateTime>any()))
-                .thenReturn(null);
-        TOtpUserMasterAdapter tOtpUserMasterAdapter = new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-        assertNull(tOtpUserMasterAdapter.updateLoginSuccess("42", LocalDate.of(1970, 1, 1)
-                .atStartOfDay()));
-        verify(tOtpUserMasterRepository).updateLoginSuccess(Mockito.<String>any(), Mockito.<LocalDateTime>any());
+    void removeDisabledStatus_Test() {
+        doReturn(Mono.just(1L)).when(tOtpUserMasterRepository)
+                .removeDisabledStatus(any(), any(), any());
+        StepVerifier.create(tOtpUserMasterAdapter.removeDisabledStatus("ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
+                .assertNext(val -> assertEquals(val, 1L))
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#removeDisabledStatus(String, LocalDateTime, String)}
-     */
     @Test
-    void testRemoveDisabledStatus() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void updateEntity_Test() {
+        TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
+        tOtpUserMasterEntity.setUserId("TEST_USER");
+        TOtpUserMasterDto userMasterDto = TOtpUserMasterDto.builder()
+                .build();
+        doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository)
+                .save(any());
+        StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
+                .assertNext(val -> assertEquals(val, 1L))
+                .verifyComplete();
 
-        TOtpUserMasterRepository tOtpUserMasterRepository = mock(TOtpUserMasterRepository.class);
-        when(tOtpUserMasterRepository.removeDisabledStatus(Mockito.<String>any(), Mockito.<LocalDateTime>any(),
-                Mockito.<String>any())).thenReturn(null);
-        TOtpUserMasterAdapter tOtpUserMasterAdapter = new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-        assertNull(tOtpUserMasterAdapter.removeDisabledStatus("42", LocalDate.of(1970, 1, 1)
-                .atStartOfDay(), "Status"));
-        verify(tOtpUserMasterRepository).removeDisabledStatus(Mockito.<String>any(), Mockito.<LocalDateTime>any(),
-                Mockito.<String>any());
+        doReturn(Mono.error(new Exception("Some Exception"))).when(tOtpUserMasterRepository)
+                .save(any());
+
+        StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
+                .assertNext(val -> assertEquals(val, 0L))
+                .verifyComplete();
+
+        doReturn(Mono.empty()).when(tOtpUserMasterRepository)
+                .save(any());
+
+        StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
+                .assertNext(val -> assertEquals(val, 0L))
+                .verifyComplete();
+
+
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#updateEntity(TOtpUserMasterDto)}
-     */
     @Test
-    void testUpdateEntity() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    void createEntity_Test() {
+        TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
+        tOtpUserMasterEntity.setUserId("TEST_USER");
+        TOtpUserMasterDto userMasterDto = TOtpUserMasterDto.builder()
+                .build();
+        doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository)
+                .save(any());
+        StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
+                .assertNext(val -> assertEquals(true, val))
+                .verifyComplete();
 
-        TOtpUserMasterRepository tOtpUserMasterRepository = mock(TOtpUserMasterRepository.class);
-        when(tOtpUserMasterRepository.save(Mockito.<TOtpUserMasterEntity>any())).thenReturn(null);
-        TOtpUserMasterAdapter tOtpUserMasterAdapter = new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-        TOtpUserMasterDto tOtpUserMasterDto = mock(TOtpUserMasterDto.class);
-        when(tOtpUserMasterDto.getAccessType()).thenReturn("Access Type");
-        when(tOtpUserMasterDto.getCreationId()).thenReturn("42");
-        when(tOtpUserMasterDto.getModificationId()).thenReturn("42");
-        when(tOtpUserMasterDto.getStatus()).thenReturn("Status");
-        when(tOtpUserMasterDto.getSystemId()).thenReturn("42");
-        when(tOtpUserMasterDto.getUserId()).thenReturn("42");
-        when(tOtpUserMasterDto.getUserSecret()).thenReturn("User Secret");
-        when(tOtpUserMasterDto.getCreationDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getInvalidAttemptDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getLastLoginDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getLockedDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getModificationDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getNoOfAttempts()).thenReturn((short) 1);
-        tOtpUserMasterAdapter.updateEntity(tOtpUserMasterDto);
-        verify(tOtpUserMasterRepository).save(Mockito.<TOtpUserMasterEntity>any());
-        verify(tOtpUserMasterDto).getAccessType();
-        verify(tOtpUserMasterDto).getCreationId();
-        verify(tOtpUserMasterDto).getModificationId();
-        verify(tOtpUserMasterDto).getStatus();
-        verify(tOtpUserMasterDto).getSystemId();
-        verify(tOtpUserMasterDto).getUserId();
-        verify(tOtpUserMasterDto).getUserSecret();
-        verify(tOtpUserMasterDto).getCreationDateTime();
-        verify(tOtpUserMasterDto).getInvalidAttemptDateTime();
-        verify(tOtpUserMasterDto).getLastLoginDateTime();
-        verify(tOtpUserMasterDto).getLockedDateTime();
-        verify(tOtpUserMasterDto).getModificationDateTime();
-        verify(tOtpUserMasterDto).getNoOfAttempts();
+        doReturn(Mono.error(new Exception("Some Exception"))).when(tOtpUserMasterRepository)
+                .save(any());
+
+        StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
+                .assertNext(val -> assertEquals(false, val))
+                .verifyComplete();
+
+        doReturn(Mono.empty()).when(tOtpUserMasterRepository)
+                .save(any());
+
+        StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
+                .assertNext(val -> assertEquals(false, val))
+                .verifyComplete();
+
+
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#updateEntity(TOtpUserMasterDto)}
-     */
     @Test
-    void testUpdateEntity2() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        Mono<TOtpUserMasterEntity> mono = mock(Mono.class);
-        when(mono.flatMap(Mockito.<Function<TOtpUserMasterEntity, Mono<Object>>>any())).thenReturn(null);
-        TOtpUserMasterRepository tOtpUserMasterRepository = mock(TOtpUserMasterRepository.class);
-        when(tOtpUserMasterRepository.save(Mockito.<TOtpUserMasterEntity>any())).thenReturn(mono);
-        TOtpUserMasterAdapter tOtpUserMasterAdapter = new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-        TOtpUserMasterDto tOtpUserMasterDto = mock(TOtpUserMasterDto.class);
-        when(tOtpUserMasterDto.getAccessType()).thenReturn("Access Type");
-        when(tOtpUserMasterDto.getCreationId()).thenReturn("42");
-        when(tOtpUserMasterDto.getModificationId()).thenReturn("42");
-        when(tOtpUserMasterDto.getStatus()).thenReturn("Status");
-        when(tOtpUserMasterDto.getSystemId()).thenReturn("42");
-        when(tOtpUserMasterDto.getUserId()).thenReturn("42");
-        when(tOtpUserMasterDto.getUserSecret()).thenReturn("User Secret");
-        when(tOtpUserMasterDto.getCreationDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getInvalidAttemptDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getLastLoginDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getLockedDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getModificationDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getNoOfAttempts()).thenReturn((short) 1);
-        tOtpUserMasterAdapter.updateEntity(tOtpUserMasterDto);
-        verify(tOtpUserMasterRepository).save(Mockito.<TOtpUserMasterEntity>any());
-        verify(mono).flatMap(Mockito.<Function<TOtpUserMasterEntity, Mono<Object>>>any());
-        verify(tOtpUserMasterDto).getAccessType();
-        verify(tOtpUserMasterDto).getCreationId();
-        verify(tOtpUserMasterDto).getModificationId();
-        verify(tOtpUserMasterDto).getStatus();
-        verify(tOtpUserMasterDto).getSystemId();
-        verify(tOtpUserMasterDto).getUserId();
-        verify(tOtpUserMasterDto).getUserSecret();
-        verify(tOtpUserMasterDto).getCreationDateTime();
-        verify(tOtpUserMasterDto).getInvalidAttemptDateTime();
-        verify(tOtpUserMasterDto).getLastLoginDateTime();
-        verify(tOtpUserMasterDto).getLockedDateTime();
-        verify(tOtpUserMasterDto).getModificationDateTime();
-        verify(tOtpUserMasterDto).getNoOfAttempts();
+    void entityToDto_Test() {
+        assertNull(TOtpUserMasterMapper.INSTANCE.tOtpUserMasterToDto(null));
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#createEntity(TOtpUserMasterDto)}
-     */
     @Test
-    void testCreateEntity() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        TOtpUserMasterRepository tOtpUserMasterRepository = mock(TOtpUserMasterRepository.class);
-        when(tOtpUserMasterRepository.save(Mockito.<TOtpUserMasterEntity>any())).thenReturn(null);
-        TOtpUserMasterAdapter tOtpUserMasterAdapter = new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-        TOtpUserMasterDto tOtpUserMasterDto = mock(TOtpUserMasterDto.class);
-        when(tOtpUserMasterDto.getAccessType()).thenReturn("Access Type");
-        when(tOtpUserMasterDto.getCreationId()).thenReturn("42");
-        when(tOtpUserMasterDto.getModificationId()).thenReturn("42");
-        when(tOtpUserMasterDto.getStatus()).thenReturn("Status");
-        when(tOtpUserMasterDto.getSystemId()).thenReturn("42");
-        when(tOtpUserMasterDto.getUserId()).thenReturn("42");
-        when(tOtpUserMasterDto.getUserSecret()).thenReturn("User Secret");
-        when(tOtpUserMasterDto.getCreationDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getInvalidAttemptDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getLastLoginDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getLockedDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getModificationDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getNoOfAttempts()).thenReturn((short) 1);
-        tOtpUserMasterAdapter.createEntity(tOtpUserMasterDto);
-        verify(tOtpUserMasterRepository).save(Mockito.<TOtpUserMasterEntity>any());
-        verify(tOtpUserMasterDto).getAccessType();
-        verify(tOtpUserMasterDto).getCreationId();
-        verify(tOtpUserMasterDto).getModificationId();
-        verify(tOtpUserMasterDto).getStatus();
-        verify(tOtpUserMasterDto).getSystemId();
-        verify(tOtpUserMasterDto).getUserId();
-        verify(tOtpUserMasterDto).getUserSecret();
-        verify(tOtpUserMasterDto).getCreationDateTime();
-        verify(tOtpUserMasterDto).getInvalidAttemptDateTime();
-        verify(tOtpUserMasterDto).getLastLoginDateTime();
-        verify(tOtpUserMasterDto).getLockedDateTime();
-        verify(tOtpUserMasterDto).getModificationDateTime();
-        verify(tOtpUserMasterDto).getNoOfAttempts();
+    void dtoToEntity_Test() {
+        assertNull(TOtpUserMasterMapper.INSTANCE.dtoToEntity(null));
     }
 
-    /**
-     * Method under test: {@link TOtpUserMasterAdapter#createEntity(TOtpUserMasterDto)}
-     */
-    @Test
-    void testCreateEntity2() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters.TOtpUserMasterAdapter.tOtpUserIdPadding
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
 
-        Mono<TOtpUserMasterEntity> mono = mock(Mono.class);
-        when(mono.log()).thenReturn(null);
-        TOtpUserMasterRepository tOtpUserMasterRepository = mock(TOtpUserMasterRepository.class);
-        when(tOtpUserMasterRepository.save(Mockito.<TOtpUserMasterEntity>any())).thenReturn(mono);
-        TOtpUserMasterAdapter tOtpUserMasterAdapter = new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-        TOtpUserMasterDto tOtpUserMasterDto = mock(TOtpUserMasterDto.class);
-        when(tOtpUserMasterDto.getAccessType()).thenReturn("Access Type");
-        when(tOtpUserMasterDto.getCreationId()).thenReturn("42");
-        when(tOtpUserMasterDto.getModificationId()).thenReturn("42");
-        when(tOtpUserMasterDto.getStatus()).thenReturn("Status");
-        when(tOtpUserMasterDto.getSystemId()).thenReturn("42");
-        when(tOtpUserMasterDto.getUserId()).thenReturn("42");
-        when(tOtpUserMasterDto.getUserSecret()).thenReturn("User Secret");
-        when(tOtpUserMasterDto.getCreationDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getInvalidAttemptDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getLastLoginDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getLockedDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getModificationDateTime()).thenReturn(LocalDate.of(1970, 1, 1)
-                .atStartOfDay());
-        when(tOtpUserMasterDto.getNoOfAttempts()).thenReturn((short) 1);
-        tOtpUserMasterAdapter.createEntity(tOtpUserMasterDto);
-        verify(tOtpUserMasterRepository).save(Mockito.<TOtpUserMasterEntity>any());
-        verify(mono).log();
-        verify(tOtpUserMasterDto).getAccessType();
-        verify(tOtpUserMasterDto).getCreationId();
-        verify(tOtpUserMasterDto).getModificationId();
-        verify(tOtpUserMasterDto).getStatus();
-        verify(tOtpUserMasterDto).getSystemId();
-        verify(tOtpUserMasterDto).getUserId();
-        verify(tOtpUserMasterDto).getUserSecret();
-        verify(tOtpUserMasterDto).getCreationDateTime();
-        verify(tOtpUserMasterDto).getInvalidAttemptDateTime();
-        verify(tOtpUserMasterDto).getLastLoginDateTime();
-        verify(tOtpUserMasterDto).getLockedDateTime();
-        verify(tOtpUserMasterDto).getModificationDateTime();
-        verify(tOtpUserMasterDto).getNoOfAttempts();
-    }
 }
 

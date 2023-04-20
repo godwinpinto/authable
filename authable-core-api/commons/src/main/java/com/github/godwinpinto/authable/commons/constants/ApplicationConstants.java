@@ -2,6 +2,9 @@ package com.github.godwinpinto.authable.commons.constants;
 
 public final class ApplicationConstants {
 
+    private ApplicationConstants() {
+    }
+
     public enum RecordStatus {
         ACTIVE("A"),
         DISABLED("D"),

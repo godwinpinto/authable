@@ -78,12 +78,13 @@ public class TOtpCreateSecretHelper {
     private Mono<TOtpCreateNewDto> createRecordInDb(String userSystemId, TOtpUserMasterDto user1) {
         return tOtpUserMasterSPI.createEntity(user1)
                 .flatMap(status -> {
-                    if (status != null && status) {
+                    if (status) {
                         return formatSuccessResponse(userSystemId, user1);
                     } else {
                         return Mono.error(new NonFatalException("300", "Unknown error. Contact Administrator."));
                     }
-                });
+                })
+                .switchIfEmpty(Mono.error(new NonFatalException("300", "Unknown error. Contact Administrator.")));
     }
 
     private Mono<TOtpCreateNewDto> formatSuccessResponse(String userSystemId, TOtpUserMasterDto user1) {

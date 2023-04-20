@@ -1,148 +1,117 @@
 package com.github.godwinpinto.authable.infrastructure.crypto.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.HashingAlgorithm;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
 import dev.samstevens.totp.exceptions.QrGenerationException;
-import org.junit.jupiter.api.Disabled;
+import dev.samstevens.totp.time.SystemTimeProvider;
+import dev.samstevens.totp.time.TimeProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {TOtpService.class})
 @ExtendWith(SpringExtension.class)
+@TestPropertySource(properties = {"infrastructure-crypto.totp.time-period=30",
+        "infrastructure-crypto.totp.allowed-discrepancy=2"})
 class TOtpServiceTest {
     @Autowired
     private TOtpService tOtpService;
 
-    /**
-     * Method under test: {@link TOtpService#generateSecretKey(String)}
-     */
-    @Test
-    void testGenerateSecretKey() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpService.allowedTimePeriod
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
+    @MockBean
+    TOtpSecretEncryption tOtpSecretEncryption;
 
-        assertNull((new TOtpService(new TOtpSecretEncryption())).generateSecretKey("42"));
-        assertNull((new TOtpService(new TOtpSecretEncryption())).generateSecretKey("PBKDF2WithHmacSHA256"));
+
+    @Test
+    void generateSecretKeyTest() throws NonFatalException {
+        when(tOtpSecretEncryption.encrypt(anyString(), anyString()))
+                .thenReturn("OK");
+        String key = tOtpService.generateSecretKey("TESTUSER");
+        assertEquals(key, "OK");
     }
 
-    /**
-     * Method under test: {@link TOtpService#generateSecretKey(String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGenerateSecretKey2() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpService.allowedTimePeriod
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpSecretEncryption.encrypt(String, String)" because "this.tOtpSecretEncryption" is null
-        //       at com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpService.generateSecretKey(TOtpService.java:40)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        (new TOtpService(null)).generateSecretKey("42");
+    void generateSecretKeyEmptyStringTest() throws NonFatalException {
+        when(tOtpSecretEncryption.encrypt("", ""))
+                .thenReturn("");
+        assertThrows(NonFatalException.class, () -> tOtpService.generateSecretKey(""));
+        assertThrows(NonFatalException.class, () -> tOtpService.generateSecretKey(null));
     }
 
-    /**
-     * Method under test: {@link TOtpService#generateSecretKey(String)}
-     */
     @Test
-    void testGenerateSecretKey3() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpService.allowedTimePeriod
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        TOtpSecretEncryption tOtpSecretEncryption = mock(TOtpSecretEncryption.class);
-        when(tOtpSecretEncryption.encrypt(Mockito.<String>any(), Mockito.<String>any())).thenReturn("Encrypt");
-        assertEquals("Encrypt", (new TOtpService(tOtpSecretEncryption)).generateSecretKey("42"));
-        verify(tOtpSecretEncryption).encrypt(Mockito.<String>any(), Mockito.<String>any());
+    void verifyOtpEmptyFieldsTest() throws NonFatalException {
+        assertEquals(false, tOtpService.verify(null, null, null));
+        assertEquals(false, tOtpService.verify(null, "TESTUSER", "BLAHBLAH"));
+        assertEquals(false, tOtpService.verify("123456", null, "BLAHBLAH"));
+        assertEquals(false, tOtpService.verify("123456", "TESTUSER", null));
     }
 
-    /**
-     * Method under test: {@link TOtpService#verify(String, String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testVerify() {
-        // TODO: Complete this test.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpService.allowedTimePeriod
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        // Arrange
-        // TODO: Populate arranged inputs
-        String plainTextOtp = "";
-        String userId = "";
-        String encryptedSecret = "";
-
-        // Act
-        Boolean actualVerifyResult = this.tOtpService.verify(plainTextOtp, userId, encryptedSecret);
-
-        // Assert
-        // TODO: Add assertions on result
+    void verifyOtpSuccessTest() throws NonFatalException, CodeGenerationException {
+        TimeProvider timeProvider = new SystemTimeProvider();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        String code =
+                generateCode(HashingAlgorithm.SHA1, "SNMW5MPTK6IBHA4SMBWW5DBLMICMKOP2", timeProvider.getTime());
+        when(tOtpSecretEncryption.decrypt(anyString(), anyString()))
+                .thenReturn("SNMW5MPTK6IBHA4SMBWW5DBLMICMKOP2");
+        assertEquals(true, tOtpService.verify(code, "TESTUSER", "BLAHBLAH"));
     }
 
-    /**
-     * Method under test: {@link TOtpService#generateQRCode(String, String, String, String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testGenerateQRCode() throws QrGenerationException {
-        // TODO: Complete this test.
-        //   Reason: R033 Missing Spring properties.
-        //   Failed to create Spring context due to unresolvable @Value
-        //   properties: Spring @Value annotation can't be resolved: private int com.github.godwinpinto.authable.infrastructure.crypto.service.TOtpService.allowedTimePeriod
-        //   Please check that at least one of the property files is provided
-        //   and contains required variables:
-        //   - application-test.properties (file missing)
-        //   See https://diff.blue/R033 to resolve this issue.
-
-        // Arrange
-        // TODO: Populate arranged inputs
-        String userId = "";
-        String encryptedSecret = "";
-        String email = "";
-        String appName = "";
-
-        // Act
-        String actualGenerateQRCodeResult = this.tOtpService.generateQRCode(userId, encryptedSecret, email, appName);
-
-        // Assert
-        // TODO: Add assertions on result
+    private String generateCode(HashingAlgorithm algorithm, String secret, long time) throws CodeGenerationException {
+        long currentBucket = Math.floorDiv(time, 30);
+        DefaultCodeGenerator g = new DefaultCodeGenerator(algorithm);
+        return g.generate(secret, currentBucket);
     }
+
+    @Test
+    void verifyOtpFailedTest() throws NonFatalException, CodeGenerationException {
+        String code = "122345";
+        when(tOtpSecretEncryption.decrypt(anyString(), anyString()))
+                .thenReturn("SNMW5MPTK6IBHA4SMBWW5DBLMICMKOP2");
+        assertEquals(false, tOtpService.verify(code, "TESTUSER", "BLAHBLAH"));
+    }
+
+    @Test
+    void generateQRSuccessTest() throws NonFatalException, CodeGenerationException, QrGenerationException {
+        String SECRET = "SNMW5MPTK6IBHA4SMBWW5DBLMICMKOP2";
+
+        when(tOtpSecretEncryption.decrypt(anyString(), anyString()))
+                .thenReturn("SNMW5MPTK6IBHA4SMBWW5DBLMICMKOP2");
+        assertDoesNotThrow(() ->
+                tOtpService.generateQRCode("TESETUSER", "BLAHBLAH", "test@test.com", "TestApp"));
+    }
+
+    @Test
+    void generateQRFailedTest() throws NonFatalException, CodeGenerationException, QrGenerationException {
+        String SECRET = "SNMW5MPTK6IBHA4SMBWW5DBLMICMKOP2";
+
+        when(tOtpSecretEncryption.decrypt(anyString(), anyString()))
+                .thenReturn("SNMW5MPTK6IBHA4SMBWW5DBLMICMKOP2");
+        assertThrows(NonFatalException.class, () ->
+                tOtpService.generateQRCode("", "BLAHBLAH", "test@test.com", "TestApp"));
+        assertThrows(NonFatalException.class, () ->
+                tOtpService.generateQRCode("TESETUSER", "", "test@test.com", "TestApp"));
+        assertThrows(NonFatalException.class, () ->
+                tOtpService.generateQRCode("TESETUSER", "BLAHBLAH", "", "TestApp"));
+        assertThrows(NonFatalException.class, () ->
+                tOtpService.generateQRCode("TESETUSER", "BLAHBLAH", "test@test.com", ""));
+
+        when(tOtpSecretEncryption.decrypt(anyString(), anyString()))
+                .thenReturn("");
+
+        assertThrows(NonFatalException.class, () ->
+                tOtpService.generateQRCode("TESETUSER", "BLAHBLAH", "test@test.com", "TestApp"));
+    }
+
 }
 

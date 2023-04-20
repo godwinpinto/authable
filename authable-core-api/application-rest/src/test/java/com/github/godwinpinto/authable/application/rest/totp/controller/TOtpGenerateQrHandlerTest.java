@@ -1,96 +1,201 @@
 package com.github.godwinpinto.authable.application.rest.totp.controller;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.github.godwinpinto.authable.application.rest.totp.json.GenericRequest;
 import com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent;
+import com.github.godwinpinto.authable.domain.auth.dto.Role;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
+import com.github.godwinpinto.authable.domain.totp.dto.TOtpGenerateQrDto;
 import com.github.godwinpinto.authable.domain.totp.ports.api.TOtpUserServiceAPI;
-
-import java.util.function.Function;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.validation.Validator;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.support.ServerRequestWrapper;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+@Import({
+        TOtpRoutesConfig.class,
+        WebFluxSecurityConfig.class
+})
+@WebFluxTest
 @ContextConfiguration(classes = {TOtpGenerateQrHandler.class})
 @ExtendWith(SpringExtension.class)
+@AutoConfigureWebTestClient(timeout = "36000")
 class TOtpGenerateQrHandlerTest {
+    @Autowired
+    private WebTestClient webClient;
+
     @MockBean
-    private FetchPrincipalComponent fetchPrincipalComponent;
+    private TOtpStatusHandler tOtpStatusHandler;
+
+    @MockBean
+    TOtpUserServiceAPI tOtpUserServiceAPI;
+
+    @MockBean
+    FetchPrincipalComponent fetchPrincipalComponent;
+
+    @MockBean
+    TOtpVerifyHandler tOtpVerifyHandler;
+
+    @MockBean
+    TOtpUnSubscribeHandler tOtpUnSubscribeHandler;
+
+    @MockBean
+    TOtpUnBlockHandler tOtpUnBlockHandler;
+
+    @MockBean
+    TOtpSubscribeHandler tOtpSubscribeHandler;
 
     @Autowired
-    private TOtpGenerateQrHandler tOtpGenerateQrHandler;
+    TOtpGenerateQrHandler tOtpGenerateQrHandler;
 
-    @MockBean
-    private TOtpUserServiceAPI tOtpUserServiceAPI;
 
-    @MockBean
-    private Validator validator;
+    @Autowired
+    Validator validator;
 
-    /**
-     * Method under test: {@link TOtpGenerateQrHandler#processBody(GenericRequest, ServerRequest)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testProcessBody() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: Delegate must not be null
-        //   See https://diff.blue/R013 to resolve this issue.
+    public void processBody_NoSubscription_Test() {
 
-        GenericRequest genericRequest = new GenericRequest("42");
-        tOtpGenerateQrHandler.processBody(genericRequest,
-                new ServerRequestWrapper(new ServerRequestWrapper(new ServerRequestWrapper(new ServerRequestWrapper(null)))));
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.generateQr(anyString(), anyString())).thenReturn(Mono.empty());
+
+        GenericRequest genericRequest = GenericRequest.builder()
+                .userId("TEST_USER")
+                .build();
+
+        webClient
+                .post()
+                .uri("/totp/generate-qr")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(genericRequest)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("No active subscription")
+                .jsonPath("$.statusCode")
+                .isEqualTo("300");
     }
 
-    /**
-     * Method under test: {@link TOtpGenerateQrHandler#processBody(GenericRequest, ServerRequest)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testProcessBody2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent.getAuthDetails()" is null
-        //       at com.github.godwinpinto.authable.application.rest.totp.controller.TOtpGenerateQrHandler.processBody(TOtpGenerateQrHandler.java:37)
-        //   See https://diff.blue/R013 to resolve this issue.
+    public void processBody_Success_Test() {
 
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(null);
-        GenericRequest genericRequest = mock(GenericRequest.class);
-        tOtpGenerateQrHandler.processBody(genericRequest, new ServerRequestWrapper(new ServerRequestWrapper(
-                new ServerRequestWrapper(new ServerRequestWrapper(mock(ServerRequestWrapper.class))))));
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+
+        TOtpGenerateQrDto tOtpUserStatusDto = TOtpGenerateQrDto.builder()
+                .statusCode("200")
+                .statusDescription("QR Generated successfully")
+                .qrImage("SOME_IMAGE")
+                .build();
+
+
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.generateQr(anyString(), anyString())).thenReturn(Mono.just(tOtpUserStatusDto));
+
+        GenericRequest genericRequest = GenericRequest.builder()
+                .userId("TEST_USER")
+                .build();
+
+        webClient
+                .post()
+                .uri("/totp/generate-qr")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(genericRequest)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("QR Generated successfully")
+                .jsonPath("$.statusCode")
+                .isEqualTo("200")
+                .jsonPath("$.qrImage")
+                .isEqualTo("SOME_IMAGE");
     }
 
-    /**
-     * Method under test: {@link TOtpGenerateQrHandler#processBody(GenericRequest, ServerRequest)}
-     */
     @Test
-    void testProcessBody3() {
-        Mono<UserDto> mono = mock(Mono.class);
-        when(mono.flatMap(Mockito.<Function<UserDto, Mono<Object>>>any())).thenReturn(null);
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(mono);
-        GenericRequest genericRequest = mock(GenericRequest.class);
-        assertNull(tOtpGenerateQrHandler.processBody(genericRequest, new ServerRequestWrapper(new ServerRequestWrapper(
-                new ServerRequestWrapper(new ServerRequestWrapper(mock(ServerRequestWrapper.class)))))));
-        verify(fetchPrincipalComponent).getAuthDetails();
-        verify(mono).flatMap(Mockito.<Function<UserDto, Mono<Object>>>any());
+    public void processBody_EmptyInputField_Test() {
+
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.generateQr(anyString(), anyString())).thenReturn(Mono.empty());
+        GenericRequest genericRequest = GenericRequest.builder()
+                .build();
+
+        webClient
+                .post()
+                .uri("/totp/generate-qr")
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(genericRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("User Id cannot be empty")
+                .jsonPath("$.statusCode")
+                .isEqualTo("300");
     }
+
+    @Test
+    public void processBody_NoInput_Test() {
+
+        UserDto userDto = UserDto.builder()
+                .username("TEST_USER")
+                .systemId("TEST_SYSTEM")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+        when(tOtpUserServiceAPI.generateQr(anyString(), anyString())).thenReturn(Mono.empty());
+
+        webClient
+                .post()
+                .uri("/totp/generate-qr")
+                .accept(MediaType.APPLICATION_JSON)
+                //.bodyValue(genericRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("statusDescription")
+                .isEqualTo("Invalid Parameters in request")
+                .jsonPath("$.statusCode")
+                .isEqualTo("300");
+    }
+
 }
 

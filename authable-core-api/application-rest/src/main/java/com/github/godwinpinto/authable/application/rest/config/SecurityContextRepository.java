@@ -30,8 +30,9 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
                         .getHeaders()
                         .getFirst(HttpHeaders.AUTHORIZATION))
                 .filter(authHeader -> authHeader.startsWith("Bearer "))
-                .flatMap(authHeader -> {
-                    String authToken = authHeader.substring(7);
+
+                .flatMap(authHeader2 -> {
+                    String authToken = authHeader2.substring(7);
                     Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
 
                     return this.authenticationManager.authenticate(auth)

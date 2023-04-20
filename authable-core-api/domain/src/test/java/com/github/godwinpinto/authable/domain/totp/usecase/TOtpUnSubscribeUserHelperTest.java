@@ -1,17 +1,8 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI;
-
-import java.time.LocalDateTime;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -20,6 +11,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {TOtpUnSubscribeUserHelper.class})
 @ExtendWith(SpringExtension.class)
@@ -64,45 +61,6 @@ class TOtpUnSubscribeUserHelperTest {
     }
 
     /**
-     * Method under test: {@link TOtpUnSubscribeUserHelper#isUserDisabledOrNonActive(TOtpUserMasterDto)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testIsUserDisabledOrNonActive4() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.RuntimeException
-        //       at com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto.getStatus(TOtpUserMasterDto.java:28)
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUnSubscribeUserHelper.isUserDisabledOrNonActive(TOtpUnSubscribeUserHelper.java:23)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-        when(user.getStatus()).thenThrow(new RuntimeException());
-        tOtpUnSubscribeUserHelper.isUserDisabledOrNonActive(user);
-    }
-
-    /**
-     * Method under test: {@link TOtpUnSubscribeUserHelper#updateDbToUnsubscribe(String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testUpdateDbToUnsubscribe() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.removeDisabledStatus(String, java.time.LocalDateTime, String)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUnSubscribeUserHelper.updateDbToUnsubscribe(TOtpUnSubscribeUserHelper.java:37)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        when(tOtpUserMasterSPI.removeDisabledStatus(Mockito.<String>any(), Mockito.<LocalDateTime>any(),
-                Mockito.<String>any())).thenReturn(null);
-        tOtpUnSubscribeUserHelper.updateDbToUnsubscribe("42");
-    }
-
-    /**
      * Method under test: {@link TOtpUnSubscribeUserHelper#updateDbToUnsubscribe(String)}
      */
     @Test
@@ -114,56 +72,65 @@ class TOtpUnSubscribeUserHelperTest {
                 Mockito.<String>any());
     }
 
-    /**
-     * Method under test: {@link TOtpUnSubscribeUserHelper#updateDbToUnsubscribe(String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testUpdateDbToUnsubscribe3() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.switchIfEmpty(reactor.core.publisher.Mono)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUnSubscribeUserHelper.updateDbToUnsubscribe(TOtpUnSubscribeUserHelper.java:41)
-        //   See https://diff.blue/R013 to resolve this issue.
 
-        when(tOtpUserMasterSPI.removeDisabledStatus(Mockito.<String>any(), Mockito.<LocalDateTime>any(),
-                Mockito.<String>any())).thenReturn(mock(Mono.class));
-        tOtpUnSubscribeUserHelper.updateDbToUnsubscribe("42");
+    @Test
+    void fallbackMethod_Test() {
+
+        NonFatalException nfe = new NonFatalException("300", "Sample Exception");
+
+        Exception e = new Exception("Sample Other Exception");
+
+        StepVerifier.create(tOtpUnSubscribeUserHelper.fallbackMethod(nfe))
+                .assertNext(tOtpUnBlockUserDto -> {
+                    assertEquals(tOtpUnBlockUserDto.getStatusDescription(), nfe.getMessage());
+                    assertEquals(tOtpUnBlockUserDto.getStatusCode(), nfe.getErrCode());
+                })
+                .verifyComplete();
+
+        StepVerifier.create(tOtpUnSubscribeUserHelper.fallbackMethod(e))
+                .assertNext(tOtpUnBlockUserDto -> {
+                    assertEquals(tOtpUnBlockUserDto.getStatusDescription(), "Unknown error occurred");
+                })
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUnSubscribeUserHelper#formatNoRecordFoundMessage()}
-     */
-    @Test
-    void testFormatNoRecordFoundMessage() {
-        // TODO: Complete this test.
-        //   Diffblue AI was unable to find a test
 
-        tOtpUnSubscribeUserHelper.formatNoRecordFoundMessage();
+    @Test
+    void updateDbToUnsubscribe_Flow_Test() {
+        doReturn(Mono.just(1L)).when(tOtpUserMasterSPI)
+                .removeDisabledStatus(any(), any(), any());
+        StepVerifier.create(tOtpUnSubscribeUserHelper.updateDbToUnsubscribe("TEST_SYSTEM_TEST_USER"))
+                .assertNext(tOtpUnBlockUserDto -> {
+                    assertEquals(tOtpUnBlockUserDto.getStatusDescription(), "TOTP subscription cancelled for user");
+                })
+                .verifyComplete();
+
+        doReturn(Mono.just(0L)).when(tOtpUserMasterSPI)
+                .removeDisabledStatus(any(), any(), any());
+
+        StepVerifier.create(tOtpUnSubscribeUserHelper.updateDbToUnsubscribe("TEST_SYSTEM_TEST_USER"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Failure in updating")
+                )
+                .verify();
+
+        doReturn(Mono.empty()).when(tOtpUserMasterSPI)
+                .removeDisabledStatus(any(), any(), any());
+
+        StepVerifier.create(tOtpUnSubscribeUserHelper.updateDbToUnsubscribe("TEST_SYSTEM_TEST_USER"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Failure in updating")
+                )
+                .verify();
+
     }
 
-    /**
-     * Method under test: {@link TOtpUnSubscribeUserHelper#fallbackMethod(Throwable)}
-     */
     @Test
-    void testFallbackMethod() {
-        // TODO: Complete this test.
-        //   Diffblue AI was unable to find a test
-
-        tOtpUnSubscribeUserHelper.fallbackMethod(new Throwable());
+    void formatNoRecordFoundMessage_Test() {
+        assertDoesNotThrow(() -> tOtpUnSubscribeUserHelper.formatNoRecordFoundMessage());
     }
 
-    /**
-     * Method under test: {@link TOtpUnSubscribeUserHelper#fallbackMethod(Throwable)}
-     */
-    @Test
-    void testFallbackMethod2() {
-        // TODO: Complete this test.
-        //   Diffblue AI was unable to find a test
-
-        tOtpUnSubscribeUserHelper.fallbackMethod(new Throwable("Not all who wander are lost"));
-    }
 }
 

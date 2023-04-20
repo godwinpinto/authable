@@ -16,10 +16,17 @@ import java.nio.charset.StandardCharsets;
 
 @NoArgsConstructor
 public class AuthFailureHandler {
+
+    private ObjectMapper mapperMock;
+
+    protected String writeObjectToString(ApiResponse apiResponse) throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(apiResponse);
+    }
+
     public Mono<Void> formatResponse(ServerHttpResponse response) {
         response.getHeaders()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        ObjectMapper mapper = new ObjectMapper();
+        //ObjectMapper mapper = getObjectMapper();
         HttpStatusCode httpStatusCode = response.getStatusCode();
         int code = 0;
         if (httpStatusCode != null) {
@@ -31,7 +38,7 @@ public class AuthFailureHandler {
                 new ApiResponse(code, "Access Denied", null);
         StringBuilder json = new StringBuilder();
         try {
-            json.append(mapper.writeValueAsString(apiResponse));
+            json.append(writeObjectToString(apiResponse));
         } catch (JsonProcessingException jsonProcessingException) {
             json.append("{\"error\":\"Unable to format response\"}");
         }

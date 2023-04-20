@@ -1,40 +1,141 @@
 package com.github.godwinpinto.authable.commons.auth.config;
 
+import com.github.godwinpinto.authable.domain.auth.dto.Role;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-@ContextConfiguration(classes = {FetchPrincipalComponent.class})
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @ExtendWith(SpringExtension.class)
-class FetchPrincipalComponentTest {
+@Configuration
+@Import({FetchPrincipalComponent.class})
+public class FetchPrincipalComponentTest {
+
+
     @Autowired
-    private FetchPrincipalComponent fetchPrincipalComponent;
+    FetchPrincipalComponent fetchPrincipalComponent;
 
-    /**
-     * Method under test: {@link FetchPrincipalComponent#getAuthDetails()}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGetAuthDetails() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NoSuchMethodError: 'reactor.core.publisher.Mono reactor.core.publisher.Mono.subscriberContext()'
-        //       at com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent.getAuthDetails(FetchPrincipalComponent.java:13)
-        //   See https://diff.blue/R013 to resolve this issue.
+    @WithMockCustomUser(username = "GODWIN")
+    public void fetchUserDetailsTest() {
+        UserDto userDto = UserDto.builder()
+                .username("GODWIN")
+                .password("123")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .build();
 
-        // Arrange and Act
-        // TODO: Populate arranged inputs
-        Mono<UserDto> actualAuthDetails = this.fetchPrincipalComponent.getAuthDetails();
-
-        // Assert
-        // TODO: Add assertions on result
+        StepVerifier.create(fetchPrincipalComponent.getAuthDetails())
+                .assertNext(user -> {
+                    assertThat(user.toString()).isEqualTo(userDto.toString());
+                })
+                .expectComplete()
+                .verify();
     }
-}
 
+    @Test
+    public void NoUserSetTest() {
+        UserDto userDto = UserDto.builder()
+                .username("GODWIN")
+                .password("123")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .build();
+
+        StepVerifier.create(fetchPrincipalComponent.getAuthDetails())
+                .expectError(AuthorizationServiceException.class)
+                .verify();
+    }
+
+    /*@BeforeAll
+    public static void setUp() throws Exception {
+        UserDto userDto = UserDto.builder()
+                .username("GODWIN")
+                .build();
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDto);
+        TestSecurityContextHolder.setAuthentication(authentication);
+        SecurityContextHolder.getContext()
+                .setAuthentication(authentication);
+
+    }*/
+
+
+    /*@MockBean
+    SecurityContext securityContext;*/
+
+   /* @MockBean
+    AuthenticationManager authenticationManager;
+
+
+    Mono<String> findMessageByUsername(String username) {
+        return Mono.just("Hi " + username);
+    }
+
+    @Test
+    @WithMockUser(username = "GODWIN")
+    public void validUser() {
+
+
+        String userName = "GODWIN";
+
+
+        UserDto userDto = UserDto.builder()
+                .username("GODWIN")
+                .build();
+
+        Authentication authentication = new TestingAuthenticationToken(userDto, "password", "ROLE_USER");
+
+        when(authenticationManager.authenticate(authentication)
+                .then(Mono.just(authentication)));
+
+        Mono<UserDto> messageByUsername = ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .map(Authentication::getPrincipal)
+                .flatMap(o -> {
+                    return fetchPrincipalComponent.getAuthDetails();
+                })
+                // In a WebFlux application the `subscriberContext` is automatically setup using `ReactorContextWebFilter`
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
+
+
+        StepVerifier.create(messageByUsername)
+                .assertNext(user -> user.getUsername()
+                        .equals("GODWIN"))
+                .verifyComplete();
+
+        *//*authentication = new UsernamePasswordAuthenticationToken("GODWIN",
+                "", null);*//*
+
+     *//*  authentication = new UsernamePasswordAuthenticationToken(userDto,
+                "", null);
+
+        // when(authentication.getPrincipal()).thenReturn(userDto);
+
+
+        TestSecurityContextHolder.setAuthentication(authentication);
+        SecurityContextHolder.getContext()
+                .setAuthentication(authentication);
+        ReactiveSecurityContextHolder.withAuthentication(authentication);
+        *//**//*mockStatic(SecurityContextHolder.getContext()
+                .getAuthentication()
+                ).thenReturn(userDto);*//**//*
+
+
+        StepVerifier.create(fetchPrincipalComponent.getAuthDetails())
+                .assertNext(user -> user.getUsername()
+                        .equals("GODWIN"))
+                .expectComplete()
+                .verify();*//*
+
+
+    }*/
+
+}

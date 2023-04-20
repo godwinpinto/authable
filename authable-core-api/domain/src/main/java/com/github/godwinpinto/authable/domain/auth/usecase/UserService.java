@@ -2,6 +2,7 @@ package com.github.godwinpinto.authable.domain.auth.usecase;
 
 
 import com.github.godwinpinto.authable.commons.constants.ApplicationConstants;
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
 import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
 import com.github.godwinpinto.authable.domain.auth.dto.Role;
 import com.github.godwinpinto.authable.domain.auth.dto.SystemMasterDto;
@@ -31,7 +32,10 @@ public class UserService implements AuthServiceAPI {
     JWTUtilSPI jwtUtilspi;
 
 
-    public UserService(SystemMasterSPI systemMasterSPI, SystemUserMasterSPI systemUserMasterSPI, CryptoAlgorithmsSPI cryptoAlgorithmsSPI, JWTUtilSPI jwtUtilspi) {
+    public UserService(SystemMasterSPI systemMasterSPI,
+            SystemUserMasterSPI systemUserMasterSPI,
+            CryptoAlgorithmsSPI cryptoAlgorithmsSPI,
+            JWTUtilSPI jwtUtilspi) {
         this.systemMasterSPI = systemMasterSPI;
         this.cryptoAlgorithmsSPI = cryptoAlgorithmsSPI;
         this.jwtUtilspi = jwtUtilspi;
@@ -49,7 +53,7 @@ public class UserService implements AuthServiceAPI {
                 .flatMap(systemUserMaster -> {
                     if (!systemUserMaster.getStatus()
                             .equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())) {
-                        return Mono.error(new Exception("User access is inactive or disabled"));
+                        return Mono.error(new NonFatalException("User access is inactive or disabled"));
                     }
 
                     UserDto userDto = UserDto.builder()
@@ -64,7 +68,7 @@ public class UserService implements AuthServiceAPI {
     private Mono<SystemMasterDto> isSystemInActiveOrDisabled(SystemMasterDto system) {
         if (!system.getStatus()
                 .equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())) {
-            return Mono.error(new Exception("System access is disabled"));
+            return Mono.error(new NonFatalException("System access is disabled"));
         } else {
             return Mono.just(system);
         }
@@ -73,7 +77,7 @@ public class UserService implements AuthServiceAPI {
     private Mono<SystemUserMasterDto> isUserInActiveOrDisabled(SystemUserMasterDto user) {
         if (!user.getStatus()
                 .equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())) {
-            return Mono.error(new Exception("Your access is inactive or disabled"));
+            return Mono.error(new NonFatalException("Your access is inactive or disabled"));
         } else {
             return Mono.just(user);
         }
@@ -110,6 +114,8 @@ public class UserService implements AuthServiceAPI {
                 .updateInvalidAttempt(user.getAccessId(), user.getNoOfAttempts(),
                         DateTimeUtils.getCurrentLocalDateTime())
                 .flatMap(x -> {
+                    System.out.println("user.getNoOfAttempts()" + user.getNoOfAttempts());
+                    System.out.println("maxFailedAttempts" + maxFailedAttempts);
                     if (user.getNoOfAttempts() >= maxFailedAttempts) {
                         return systemUserMasterSPI.updateDisable(
                                         user.getAccessId(),
@@ -117,21 +123,21 @@ public class UserService implements AuthServiceAPI {
                                         ApplicationConstants.RecordStatus.DISABLED
                                                 .getValue())
                                 .flatMap(x1 -> {
-                                    return Mono.error(new Exception("Account has been locked"));
+                                    return Mono.error(new NonFatalException("Account has been locked"));
                                 });
 
                     } else {
-                        return Mono.error(new Exception("Invalid Credentials"));
+                        return Mono.error(new NonFatalException("Invalid Credentials"));
                     }
                 });
     }
 
     public Mono<UserDto> authenticate(String systemId, String userId, String password) {
         return systemMasterSPI.findById(systemId)
-                .switchIfEmpty(Mono.error(new Exception("The system is not in active status")))
+                .switchIfEmpty(Mono.error(new NonFatalException("The system is not in active status")))
                 .flatMap(this::isSystemInActiveOrDisabled)
                 .flatMap(system -> systemUserMasterSPI.findBySystemUser(systemId, userId))
-                .switchIfEmpty(Mono.error(new Exception("No User found for system")))
+                .switchIfEmpty(Mono.error(new NonFatalException("No User found for system")))
                 .flatMap(this::isUserInActiveOrDisabled)
                 .flatMap(user -> {
                     if (!user.getUserSecret()

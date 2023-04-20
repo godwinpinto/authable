@@ -31,10 +31,10 @@ public class TOtpVerifyHelper {
 
     Mono<TOtpUserMasterDto> isUserNotActive(TOtpUserMasterDto user) {
         if (user.getStatus()
-                .equals(ApplicationConstants.RecordStatus.INACTIVE.getValue())) {
-            return Mono.error(new NonFatalException("300", "Access is inactive or disabled for the user"));
-        } else {
+                .equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())) {
             return Mono.just(user);
+        } else {
+            return Mono.error(new NonFatalException("300", "Access is inactive or disabled for the user"));
         }
     }
 

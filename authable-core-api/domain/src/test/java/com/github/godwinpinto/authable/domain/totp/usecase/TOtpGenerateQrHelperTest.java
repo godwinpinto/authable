@@ -1,10 +1,6 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpCryptoSPI;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI;
@@ -15,6 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.test.StepVerifier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {TOtpGenerateQrHelper.class})
 @ExtendWith(SpringExtension.class)
@@ -98,15 +98,26 @@ class TOtpGenerateQrHelperTest {
         tOtpGenerateQrHelper.formatNoSubscriptionMessage();
     }
 
-    /**
-     * Method under test: {@link TOtpGenerateQrHelper#fallbackMethod(Throwable)}
-     */
-    @Test
-    void testFallbackMethod() {
-        // TODO: Complete this test.
-        //   Diffblue AI was unable to find a test
 
-        tOtpGenerateQrHelper.fallbackMethod(new Throwable());
+    @Test
+    void fallbackMethod_Test() {
+
+        NonFatalException nfe = new NonFatalException("300", "Sample Exception");
+
+        Exception e = new Exception("Sample Other Exception");
+
+        StepVerifier.create(tOtpGenerateQrHelper.fallbackMethod(nfe))
+                .assertNext(tOtpCreateNewDto -> {
+                    assertEquals(tOtpCreateNewDto.getStatusDescription(), nfe.getMessage());
+                    assertEquals(tOtpCreateNewDto.getStatusCode(), nfe.getErrCode());
+                })
+                .verifyComplete();
+
+        StepVerifier.create(tOtpGenerateQrHelper.fallbackMethod(e))
+                .assertNext(tOtpCreateNewDto -> {
+                    assertEquals(tOtpCreateNewDto.getStatusDescription(), "Unknown error occurred");
+                })
+                .verifyComplete();
     }
 }
 

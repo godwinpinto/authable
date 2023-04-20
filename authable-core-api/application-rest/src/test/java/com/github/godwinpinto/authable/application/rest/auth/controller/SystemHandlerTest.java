@@ -1,101 +1,193 @@
 package com.github.godwinpinto.authable.application.rest.auth.controller;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import com.github.godwinpinto.authable.application.rest.auth.json.ApiResponse;
 import com.github.godwinpinto.authable.application.rest.auth.json.LoginRequest;
+import com.github.godwinpinto.authable.application.rest.totp.controller.WebFluxSecurityConfig;
+import com.github.godwinpinto.authable.domain.auth.dto.Role;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
 import com.github.godwinpinto.authable.domain.auth.ports.api.AuthServiceAPI;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.validation.Validator;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.support.ServerRequestWrapper;
 import reactor.core.publisher.Mono;
 
+import javax.naming.AuthenticationException;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+@Import({
+        SystemRoutesConfig.class,
+        WebFluxSecurityConfig.class
+})
+@WebFluxTest
 @ContextConfiguration(classes = {SystemHandler.class})
 @ExtendWith(SpringExtension.class)
-class SystemHandlerTest {
+@AutoConfigureWebTestClient(timeout = "36000")
+public class SystemHandlerTest {
+
+    @Autowired
+    private WebTestClient webClient;
+
     @MockBean
     private AuthServiceAPI authServiceAPI;
 
     @Autowired
-    private SystemHandler systemHandler;
+    Validator validator;
 
-    @MockBean
-    private Validator validator;
-
-    /**
-     * Method under test: {@link SystemHandler#processBody(LoginRequest, ServerRequest)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testProcessBody() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.IllegalArgumentException: Delegate must not be null
-        //   See https://diff.blue/R013 to resolve this issue.
+    public void systemLoginSuccessful_Test() {
 
-        LoginRequest loginRequest = new LoginRequest("42", "42", "User Secret");
+        LoginRequest loginRequest = LoginRequest.builder()
+                .systemId("NETBK")
+                .userId("TESTUSER")
+                .userSecret("Test@1234")
+                .build();
 
-        systemHandler.processBody(loginRequest,
-                new ServerRequestWrapper(new ServerRequestWrapper(new ServerRequestWrapper(new ServerRequestWrapper(null)))));
+        UserDto userDto = UserDto.builder()
+                .username("ACCESS_ID")
+                .password("JWTTOKEN")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+
+        when(authServiceAPI.authenticate(loginRequest.getSystemId(), loginRequest.getUserId(),
+                loginRequest.getUserSecret())).thenReturn(Mono.just(userDto));
+
+        webClient
+                .post()
+                .uri("/auth/login")
+                .bodyValue(loginRequest)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.accessToken")
+                .isEqualTo("JWTTOKEN")
+
+        ;
     }
 
-    /**
-     * Method under test: {@link SystemHandler#processBody(LoginRequest, ServerRequest)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testProcessBody2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.auth.ports.api.AuthServiceAPI.authenticate(String, String, String)" is null
-        //       at com.github.godwinpinto.authable.application.rest.auth.controller.SystemHandler.processBody(SystemHandler.java:35)
-        //   See https://diff.blue/R013 to resolve this issue.
 
-        when(authServiceAPI.authenticate(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any()))
-                .thenReturn(null);
-        LoginRequest loginRequest = mock(LoginRequest.class);
-        when(loginRequest.getSystemId()).thenReturn("42");
-        when(loginRequest.getUserId()).thenReturn("42");
-        when(loginRequest.getUserSecret()).thenReturn("User Secret");
-        systemHandler.processBody(loginRequest, new ServerRequestWrapper(new ServerRequestWrapper(
-                new ServerRequestWrapper(new ServerRequestWrapper(mock(ServerRequestWrapper.class))))));
+    @Test
+    public void systemLoginError_Test() {
+
+        LoginRequest loginRequest = LoginRequest.builder()
+                .systemId("NETBK")
+                .userId("TESTUSER")
+                .userSecret("Test@1234")
+                .build();
+
+        UserDto userDto = UserDto.builder()
+                .username("ACCESS_ID")
+                .password("JWTTOKEN")
+                .roles(List.of(Role.ROLE_ADMIN))
+                .expiryTime(0)
+                .build();
+
+        when(authServiceAPI.authenticate(anyString(), anyString(),
+                anyString())).thenReturn(Mono.error(new AuthenticationException("Invalid Credentials")));
+
+        webClient
+                .post()
+                .uri("/auth/login")
+                .bodyValue(loginRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody(ApiResponse.class)
+
+        ;
     }
 
-    /**
-     * Method under test: {@link SystemHandler#processBody(LoginRequest, ServerRequest)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testProcessBody3() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.onErrorResume(java.util.function.Function)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.application.rest.auth.controller.SystemHandler.processBody(SystemHandler.java:36)
-        //   See https://diff.blue/R013 to resolve this issue.
+    public void systemLogin_withNoParameters_Test() {
 
-        when(authServiceAPI.authenticate(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any()))
-                .thenReturn(mock(Mono.class));
-        LoginRequest loginRequest = mock(LoginRequest.class);
-        when(loginRequest.getSystemId()).thenReturn("42");
-        when(loginRequest.getUserId()).thenReturn("42");
-        when(loginRequest.getUserSecret()).thenReturn("User Secret");
-        systemHandler.processBody(loginRequest, new ServerRequestWrapper(new ServerRequestWrapper(
-                new ServerRequestWrapper(new ServerRequestWrapper(mock(ServerRequestWrapper.class))))));
+        //IssueTokenRequest issueTokenRequest = IssueTokenRequest.builder().systemId("CARDS").systemSecret("1234").build();
+        when(authServiceAPI.authenticate("", "", "")).thenReturn(Mono.empty());
+
+        webClient
+                .post()
+                .uri("/auth/login")
+                //.bodyValue(issueTokenRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody(ApiResponse.class)
+        ;
+    }
+
+    @Test
+    public void systemLogin_withNoSecret_Test() {
+
+        LoginRequest loginRequest = LoginRequest.builder()
+                .systemId("CARDS")
+                .userId("TESTUSER")
+                .userSecret("")
+                .build();
+        when(authServiceAPI.authenticate("", "", "")).thenReturn(Mono.empty());
+
+        webClient
+                .post()
+                .uri("/auth/login")
+                //.bodyValue(issueTokenRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody(ApiResponse.class)
+        ;
+    }
+
+    @Test
+    public void systemLogin_withNoSystemId_Test() {
+
+        LoginRequest loginRequest = LoginRequest.builder()
+                .systemId("")
+                .userId("123")
+                .userSecret("1234")
+                .build();
+
+        when(authServiceAPI.authenticate(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+        webClient
+                .post()
+                .uri("/auth/login")
+                //.bodyValue(issueTokenRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody(ApiResponse.class)
+        ;
+
+    }
+
+    @Test
+    public void systemLogin_withNoUserId_Test() {
+
+        LoginRequest loginRequest = LoginRequest.builder()
+                .systemId("NETBK")
+                .userId("")
+                .userSecret("Test@1234")
+                .build();
+
+        when(authServiceAPI.authenticate(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+        webClient
+                .post()
+                .uri("/auth/login")
+                //.bodyValue(issueTokenRequest)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody(ApiResponse.class)
+        ;
+
     }
 }
-

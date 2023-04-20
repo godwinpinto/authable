@@ -1,19 +1,21 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
+import com.github.godwinpinto.authable.domain.totp.dto.*;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+
 
 @ContextConfiguration(classes = {TOtpUserUseCase.class})
 @ExtendWith(SpringExtension.class)
@@ -42,221 +44,485 @@ class TOtpUserUseCaseTest {
     @MockBean
     private TOtpVerifyHelper tOtpVerifyHelper;
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#getUserStatus(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGetUserStatus() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.findById(String)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.getUserStatus(TOtpUserUseCase.java:51)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void getUserStatus_NoUser_Test() {
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(null);
-        tOtpUserUseCase.getUserStatus("42", "42");
+        TOtpUserStatusDto expected = TOtpUserStatusDto.builder()
+                .statusCode("N")
+                .statusDescription("No Active Subscription")
+                .build();
+        doReturn(Mono.empty()).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpGetUserStatusHelper)
+                .recordNotFound();
+        StepVerifier.create(tOtpUserUseCase.getUserStatus("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#getUserStatus(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGetUserStatus2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.switchIfEmpty(reactor.core.publisher.Mono)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.getUserStatus(TOtpUserUseCase.java:52)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void getUserStatus_CheckStatus_Test() {
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(mock(Mono.class));
-        tOtpUserUseCase.getUserStatus("42", "42");
+        TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder()
+                .status("A")
+                .build();
+
+        TOtpUserStatusDto expected = TOtpUserStatusDto.builder()
+                .statusCode("200")
+                .statusDescription("User is Subscribed for TOTP.")
+                .build();
+
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpGetUserStatusHelper)
+                .userStatusFromDatabase(any());
+
+        StepVerifier.create(tOtpUserUseCase.getUserStatus("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#unBlockUser(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testUnBlockUser() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.findById(String)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.unBlockUser(TOtpUserUseCase.java:59)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void unBlockUser_NoUser_Test() {
+        TOtpUnBlockUserDto expected = TOtpUnBlockUserDto.builder()
+                .statusCode("200")
+                .statusDescription("No active subscription found for user")
+                .build();
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(null);
-        tOtpUserUseCase.unBlockUser("42", "42");
+        doReturn(Mono.empty()).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpUnBlockUserHelper)
+                .formatNoSubscriptionMessage();
+        StepVerifier.create(tOtpUserUseCase.unBlockUser("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#unBlockUser(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testUnBlockUser2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.switchIfEmpty(reactor.core.publisher.Mono)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.unBlockUser(TOtpUserUseCase.java:64)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void unBlockUser_UserExists_Test() {
+        TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder()
+                .status("A")
+                .build();
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(mock(Mono.class));
-        when(tOtpUnBlockUserHelper.formatNoSubscriptionMessage()).thenReturn(null);
-        tOtpUserUseCase.unBlockUser("42", "42");
+        TOtpUnBlockUserDto expected = TOtpUnBlockUserDto.builder()
+                .statusCode("200")
+                .statusDescription("TOTP subscription cancelled for user")
+                .build();
+
+        TOtpUnBlockUserDto expectedFail = TOtpUnBlockUserDto.builder()
+                .statusCode("200")
+                .statusDescription("No active subscription found for user")
+                .build();
+
+
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(true).when(this.tOtpUnBlockUserHelper)
+                .isUserDisabledOrActive(any(TOtpUserMasterDto.class));
+
+        doReturn(Mono.just(expectedFail)).when(this.tOtpUnBlockUserHelper)
+                .formatNoSubscriptionMessage();
+
+        doReturn(Mono.just(expected)).when(this.tOtpUnBlockUserHelper)
+                .changeFlagInDatabase(any(), any(TOtpUserMasterDto.class));
+        StepVerifier.create(tOtpUserUseCase.unBlockUser("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
+        doReturn(true).when(this.tOtpUnBlockUserHelper)
+                .isUserDisabledOrActive(any(TOtpUserMasterDto.class));
+
+        doReturn(false).when(this.tOtpUnBlockUserHelper)
+                .isUserDisabledOrActive(any(TOtpUserMasterDto.class));
+
+        StepVerifier.create(tOtpUserUseCase.unBlockUser("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expectedFail.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
+        doReturn(true).when(this.tOtpUnBlockUserHelper)
+                .isUserDisabledOrActive(any(TOtpUserMasterDto.class));
+
+        doReturn(Mono.error(new NonFatalException("300", "Failure in updating"))).when(this.tOtpUnBlockUserHelper)
+                .changeFlagInDatabase(any(), any(TOtpUserMasterDto.class));
+
+        TOtpUnBlockUserDto expectedException = TOtpUnBlockUserDto.builder()
+                .statusCode("300")
+                .statusDescription("Failure in updating")
+                .build();
+
+        doReturn(Mono.just(expectedException)).when(this.tOtpUnBlockUserHelper)
+                .fallbackMethod(any());
+
+
+        StepVerifier.create(tOtpUserUseCase.unBlockUser("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expectedException.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#createTOtpSecret(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testCreateTOtpSecret() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.findById(String)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.createTOtpSecret(TOtpUserUseCase.java:72)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void unSubscribe_NoUser_Test() {
+        TOtpUnSubscribeUserDto expected = TOtpUnSubscribeUserDto.builder()
+                .statusCode("200")
+                .statusDescription("No active subscription found for user")
+                .build();
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(null);
-        tOtpUserUseCase.createTOtpSecret("42", "42");
+        doReturn(Mono.empty()).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpUnSubscribeUserHelper)
+                .formatNoRecordFoundMessage();
+        StepVerifier.create(tOtpUserUseCase.unSubscribe("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#createTOtpSecret(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testCreateTOtpSecret2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.createTOtpSecret(TOtpUserUseCase.java:73)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void unSubscribe_Flow_Test() {
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(mock(Mono.class));
-        tOtpUserUseCase.createTOtpSecret("42", "42");
+        TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder()
+                .status("N")
+                .build();
+
+
+        TOtpUnSubscribeUserDto expected = TOtpUnSubscribeUserDto.builder()
+                .statusCode("200")
+                .statusDescription("You have already Unsubscribed from TOTP")
+                .build();
+
+        TOtpUnSubscribeUserDto exception1 = TOtpUnSubscribeUserDto.builder()
+                .statusCode("200")
+                .statusDescription("You have already Unsubscribed from TOTP")
+                .build();
+
+        TOtpUnSubscribeUserDto exception2 = TOtpUnSubscribeUserDto.builder()
+                .statusCode("300")
+                .statusDescription("Your TOTP is blocked. Please contact administrator to unblock.")
+                .build();
+
+
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpUnSubscribeUserHelper)
+                .formatNoRecordFoundMessage();
+        doReturn(Mono.error(new NonFatalException("200", "You have already Unsubscribed from TOTP"))).when(this.tOtpUnSubscribeUserHelper)
+                .isUserDisabledOrNonActive(any(TOtpUserMasterDto.class));
+        doReturn(Mono.just(exception1)).when(this.tOtpUnSubscribeUserHelper)
+                .fallbackMethod(any());
+
+        StepVerifier.create(tOtpUserUseCase.unSubscribe("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
+        tOtpUserMasterDto.setStatus("D");
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(exception2)).when(this.tOtpUnSubscribeUserHelper)
+                .fallbackMethod(any());
+        doReturn(Mono.error(new NonFatalException("300", "Your TOTP is blocked. Please contact administrator to unblock."))).when(this.tOtpUnSubscribeUserHelper)
+                .isUserDisabledOrNonActive(any(TOtpUserMasterDto.class));
+
+        StepVerifier.create(tOtpUserUseCase.unSubscribe("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(exception2.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
+
+        TOtpUnSubscribeUserDto success = TOtpUnSubscribeUserDto.builder()
+                .statusCode("200")
+                .statusDescription("TOTP subscription cancelled for user")
+                .build();
+        tOtpUserMasterDto.setStatus("A");
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUnSubscribeUserHelper)
+                .isUserDisabledOrNonActive(any(TOtpUserMasterDto.class));
+        doReturn(Mono.just(success)).when(this.tOtpUnSubscribeUserHelper)
+                .updateDbToUnsubscribe(any());
+        StepVerifier.create(tOtpUserUseCase.unSubscribe("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(success.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#generateQr(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGenerateQr() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.findById(String)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.generateQr(TOtpUserUseCase.java:83)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void verify_NoUser_Test() {
+        TOtpVerifyDto expected = TOtpVerifyDto.builder()
+                .statusCode("200")
+                .statusDescription("No active subscription found for user")
+                .build();
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(null);
-        tOtpUserUseCase.generateQr("42", "42");
+        doReturn(Mono.empty()).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpVerifyHelper)
+                .formatNoSubscriptionMessage();
+        StepVerifier.create(tOtpUserUseCase.verify("TEST_SYSTEM", "TEST_USER", "123456"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#generateQr(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testGenerateQr2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.generateQr(TOtpUserUseCase.java:84)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void verify_Flow_Test() {
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(mock(Mono.class));
-        tOtpUserUseCase.generateQr("42", "42");
+        TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder()
+                .status("N")
+                .build();
+
+
+        TOtpVerifyDto expected = TOtpVerifyDto.builder()
+                .statusCode("200")
+                .statusDescription("You have already Unsubscribed from TOTP")
+                .build();
+
+        TOtpVerifyDto exception1 = TOtpVerifyDto.builder()
+                .statusCode("300")
+                .statusDescription("Access is inactive or disabled for the user")
+                .build();
+
+        TOtpVerifyDto exception2 = TOtpVerifyDto.builder()
+                .statusCode("300")
+                .statusDescription("Your TOTP is blocked. Please contact administrator to unblock.")
+                .build();
+
+
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpVerifyHelper)
+                .formatNoSubscriptionMessage();
+        doReturn(Mono.error(new NonFatalException("300", "Access is inactive or disabled for the user"))).when(this.tOtpVerifyHelper)
+                .isUserNotActive(any(TOtpUserMasterDto.class));
+        doReturn(Mono.just(exception1)).when(this.tOtpVerifyHelper)
+                .fallbackMethod(any());
+
+        StepVerifier.create(tOtpUserUseCase.verify("TEST_SYSTEM", "TEST_USER", "123456"))
+                .assertNext(actual -> {
+                            assertEquals(exception1.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
+        tOtpUserMasterDto.setStatus("D");
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(exception1)).when(this.tOtpVerifyHelper)
+                .fallbackMethod(any());
+        doReturn(Mono.error(new NonFatalException("300", "Access is inactive or disabled for the user"))).when(this.tOtpVerifyHelper)
+                .isUserNotActive(any(TOtpUserMasterDto.class));
+
+        StepVerifier.create(tOtpUserUseCase.verify("TEST_SYSTEM", "TEST_USER", "123456"))
+                .assertNext(actual -> {
+                            assertEquals(exception1.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
+
+        TOtpVerifyDto success = TOtpVerifyDto.builder()
+                .statusCode("200")
+                .statusDescription("Verification successful")
+                .build();
+        tOtpUserMasterDto.setStatus("A");
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpVerifyHelper)
+                .isUserNotActive(any(TOtpUserMasterDto.class));
+        doReturn(Mono.just(success)).when(this.tOtpVerifyHelper)
+                .verifyAndUpdateOtp(any(), any(), any());
+        StepVerifier.create(tOtpUserUseCase.verify("TEST_SYSTEM", "TEST_USER", "123456"))
+                .assertNext(actual -> {
+                            assertEquals(success.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#unSubscribe(String, String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testUnSubscribe() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.findById(String)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.unSubscribe(TOtpUserUseCase.java:93)
-        //   See https://diff.blue/R013 to resolve this issue.
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(null);
-        tOtpUserUseCase.unSubscribe("42", "42");
+    @Test
+    void createTOtpSecret_NoUser_Test() {
+        TOtpCreateNewDto expected = TOtpCreateNewDto.builder()
+                .statusCode("200")
+                .statusDescription("TOTP generated successfully.")
+                .build();
+
+        doReturn(Mono.empty()).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpCreateSecretHelper)
+                .createNewRecord(any(), any());
+
+        StepVerifier.create(tOtpUserUseCase.createTOtpSecret("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#unSubscribe(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testUnSubscribe2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.unSubscribe(TOtpUserUseCase.java:94)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void createTOtpSecret_Flow_Test() {
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(mock(Mono.class));
-        tOtpUserUseCase.unSubscribe("42", "42");
+        TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder()
+                .status("D")
+                .build();
+
+
+        TOtpCreateNewDto expected = TOtpCreateNewDto.builder()
+                .statusCode("200")
+                .statusDescription("Your TOTP is disabled. Contact administrator")
+                .build();
+
+        TOtpCreateNewDto exception1 = TOtpCreateNewDto.builder()
+                .statusCode("300")
+                .statusDescription("Your TOTP is disabled. Contact administrator")
+                .build();
+
+        TOtpCreateNewDto exception2 = TOtpCreateNewDto.builder()
+                .statusCode("300")
+                .statusDescription("Your TOTP is blocked. Please contact administrator to unblock.")
+                .build();
+
+
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.error(new NonFatalException("300", "Your TOTP is disabled. Contact administrator"))).when(this.tOtpCreateSecretHelper)
+                .isAllowedToReset(any(TOtpUserMasterDto.class));
+        doReturn(Mono.just(exception1)).when(this.tOtpCreateSecretHelper)
+                .fallbackMethod(any());
+
+        StepVerifier.create(tOtpUserUseCase.createTOtpSecret("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(exception1.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
+        TOtpCreateNewDto success = TOtpCreateNewDto.builder()
+                .statusCode("200")
+                .statusDescription("TOTP generated successfully.")
+                .build();
+        tOtpUserMasterDto.setStatus("A");
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpCreateSecretHelper)
+                .isAllowedToReset(any(TOtpUserMasterDto.class));
+        doReturn(Mono.just(success)).when(this.tOtpCreateSecretHelper)
+                .updateDbToReset(any(), any());
+        StepVerifier.create(tOtpUserUseCase.createTOtpSecret("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(success.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#verify(String, String, String)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testVerify() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.findById(String)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.verify(TOtpUserUseCase.java:104)
-        //   See https://diff.blue/R013 to resolve this issue.
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(null);
-        tOtpUserUseCase.verify("42", "42", "Otp");
+    @Test
+    void generateQr_NoUser_Test() {
+        TOtpGenerateQrDto expected = TOtpGenerateQrDto.builder()
+                .statusCode("200")
+                .statusDescription("No active subscription found for user")
+                .build();
+
+        doReturn(Mono.empty()).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpGenerateQrHelper)
+                .formatNoSubscriptionMessage();
+        StepVerifier.create(tOtpUserUseCase.generateQr("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(expected.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpUserUseCase#verify(String, String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testVerify2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpUserUseCase.verify(TOtpUserUseCase.java:105)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void generateQr_Flow_Test() {
 
-        when(tOtpUserMasterSPI.findById(Mockito.<String>any())).thenReturn(mock(Mono.class));
-        tOtpUserUseCase.verify("42", "42", "Otp");
+        TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder()
+                .status("N")
+                .build();
+
+
+        TOtpGenerateQrDto expected = TOtpGenerateQrDto.builder()
+                .statusCode("200")
+                .statusDescription("No active subscription found for user")
+                .build();
+
+        TOtpGenerateQrDto exception1 = TOtpGenerateQrDto.builder()
+                .statusCode("300")
+                .statusDescription("Your TOTP is disabled. Contact administrator")
+                .build();
+
+        TOtpGenerateQrDto exception2 = TOtpGenerateQrDto.builder()
+                .statusCode("300")
+                .statusDescription("Your TOTP is blocked. Please contact administrator to unblock.")
+                .build();
+
+
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(expected)).when(this.tOtpGenerateQrHelper)
+                .formatNoSubscriptionMessage();
+        doReturn(Mono.error(new NonFatalException("300", "Your TOTP is disabled. Contact administrator"))).when(this.tOtpGenerateQrHelper)
+                .canGenerateQr(any(TOtpUserMasterDto.class));
+        doReturn(Mono.just(exception1)).when(this.tOtpGenerateQrHelper)
+                .fallbackMethod(any());
+
+        StepVerifier.create(tOtpUserUseCase.generateQr("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(exception1.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
+
+
+        TOtpGenerateQrDto success = TOtpGenerateQrDto.builder()
+                .statusCode("200")
+                .statusDescription("QR Generated Successfully")
+                .build();
+        tOtpUserMasterDto.setStatus("A");
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpUserMasterSPI)
+                .findById(any());
+        doReturn(Mono.just(tOtpUserMasterDto)).when(this.tOtpGenerateQrHelper)
+                .canGenerateQr(any(TOtpUserMasterDto.class));
+        doReturn(Mono.just(success)).when(this.tOtpGenerateQrHelper)
+                .generateQr(any(), any());
+        StepVerifier.create(tOtpUserUseCase.generateQr("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(actual -> {
+                            assertEquals(success.toString(), actual.toString());
+                        }
+                )
+                .verifyComplete();
     }
+
+
 }
-

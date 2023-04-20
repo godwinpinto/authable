@@ -9,14 +9,14 @@ import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUnSubscribeUserDto;
 import com.github.godwinpinto.authable.domain.totp.ports.api.TOtpUserServiceAPI;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-@Controller
+@Component
 public class TOtpUnSubscribeHandler extends AbstractValidationHandler<GenericRequest, Validator> {
 
     private final TOtpUserServiceAPI tOtpUserServiceAPI;

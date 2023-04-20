@@ -1,23 +1,12 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.anyShort;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent;
+import com.github.godwinpinto.authable.commons.exception.NonFatalException;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
+import com.github.godwinpinto.authable.domain.totp.dto.TOtpCreateNewDto;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpCryptoSPI;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI;
-
-import java.time.LocalDateTime;
-import java.util.function.Function;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -26,6 +15,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.time.LocalDateTime;
+import java.util.function.Function;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {TOtpCreateSecretHelper.class})
 @ExtendWith(SpringExtension.class)
@@ -42,96 +39,48 @@ class TOtpCreateSecretHelperTest {
     @MockBean
     private TOtpUserMasterSPI tOtpUserMasterSPI;
 
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#isAllowedToReset(TOtpUserMasterDto)}
-     */
+
     @Test
-    void testIsAllowedToReset() {
-        TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-        when(user.getStatus()).thenReturn("Status");
-        tOtpCreateSecretHelper.isAllowedToReset(user);
-        verify(user, atLeast(1)).getStatus();
+    void isAllowedToReset_Disabled_Test() {
+        TOtpUserMasterDto user = TOtpUserMasterDto.builder()
+                .status("D")
+                .userId("1234")
+                .build();
+        StepVerifier.create(tOtpCreateSecretHelper.isAllowedToReset(user))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Your TOTP is disabled. Contact administrator")
+                )
+                .verify();
+
+        user.setStatus("A");
+        StepVerifier.create(tOtpCreateSecretHelper.isAllowedToReset(user))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("You already have an active TOTP. " +
+                                        "Unsubscribe first to generate new one or contact administrator")
+                )
+                .verify();
+
+        user.setStatus("X");
+        StepVerifier.create(tOtpCreateSecretHelper.isAllowedToReset(user))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Unknown error. Contact Administrator.")
+                )
+                .verify();
+
+        user.setStatus("N");
+        StepVerifier.create(tOtpCreateSecretHelper.isAllowedToReset(user))
+                .assertNext(tOtpUserMasterDto -> {
+                    assertEquals(tOtpUserMasterDto.getUserId(), user.getUserId());
+                })
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#isAllowedToReset(TOtpUserMasterDto)}
-     */
-    @Test
-    void testIsAllowedToReset2() {
-        TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-        when(user.getStatus()).thenReturn("D");
-        tOtpCreateSecretHelper.isAllowedToReset(user);
-        verify(user).getStatus();
-    }
 
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#isAllowedToReset(TOtpUserMasterDto)}
-     */
     @Test
-    void testIsAllowedToReset3() {
-        TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-        when(user.getStatus()).thenReturn("A");
-        tOtpCreateSecretHelper.isAllowedToReset(user);
-        verify(user, atLeast(1)).getStatus();
-    }
-
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#isAllowedToReset(TOtpUserMasterDto)}
-     */
-    @Test
-    void testIsAllowedToReset4() {
-        TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-        when(user.getStatus()).thenReturn("N");
-        tOtpCreateSecretHelper.isAllowedToReset(user);
-        verify(user, atLeast(1)).getStatus();
-    }
-
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#updateDbToReset(String, TOtpUserMasterDto)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testUpdateDbToReset() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI.updateEntity(com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpCreateSecretHelper.updateDbToReset(TOtpCreateSecretHelper.java:61)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        when(tOtpUserMasterSPI.updateEntity(Mockito.<TOtpUserMasterDto>any())).thenReturn(null);
-        when(tOtpCryptoSPI.generateSecretKey(Mockito.<String>any()))
-                .thenReturn("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
-        TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-        doNothing().when(user)
-                .setCreationDateTime(Mockito.<LocalDateTime>any());
-        doNothing().when(user)
-                .setCreationId(Mockito.<String>any());
-        doNothing().when(user)
-                .setInvalidAttemptDateTime(Mockito.<LocalDateTime>any());
-        doNothing().when(user)
-                .setLastLoginDateTime(Mockito.<LocalDateTime>any());
-        doNothing().when(user)
-                .setLockedDateTime(Mockito.<LocalDateTime>any());
-        doNothing().when(user)
-                .setModificationDateTime(Mockito.<LocalDateTime>any());
-        doNothing().when(user)
-                .setModificationId(Mockito.<String>any());
-        doNothing().when(user)
-                .setNoOfAttempts(anyShort());
-        doNothing().when(user)
-                .setStatus(Mockito.<String>any());
-        doNothing().when(user)
-                .setUserSecret(Mockito.<String>any());
-        tOtpCreateSecretHelper.updateDbToReset("42", user);
-    }
-
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#updateDbToReset(String, TOtpUserMasterDto)}
-     */
-    @Test
-    void testUpdateDbToReset2() {
+    void updateDbToReset_Test() {
         Mono<Long> mono = mock(Mono.class);
         when(mono.flatMap(Mockito.<Function<Long, Mono<Object>>>any())).thenReturn(null);
         when(tOtpUserMasterSPI.updateEntity(Mockito.<TOtpUserMasterDto>any())).thenReturn(mono);
@@ -172,64 +121,141 @@ class TOtpCreateSecretHelperTest {
         verify(user).setNoOfAttempts(anyShort());
         verify(user).setStatus(Mockito.<String>any());
         verify(user).setUserSecret(Mockito.<String>any());
+
+
     }
 
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#createNewRecord(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testCreateNewRecord() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent.getAuthDetails()" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpCreateSecretHelper.createNewRecord(TOtpCreateSecretHelper.java:73)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void updateDbToReset_Update_Test() {
+        TOtpUserMasterDto userDto = TOtpUserMasterDto.builder()
+                .status("N")
+                .userId("1234")
+                .build();
 
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(null);
-        tOtpCreateSecretHelper.createNewRecord("42", "42");
+        doReturn(Mono.just(1L)).when(this.tOtpUserMasterSPI)
+                .updateEntity(any(TOtpUserMasterDto.class));
+
+        when(tOtpCryptoSPI.generateSecretKey(Mockito.<String>any()))
+                .thenReturn("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+
+        when(tOtpCryptoSPI.getPlainTextSecret(Mockito.<String>any(), Mockito.<String>any()))
+                .thenReturn("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+
+        TOtpCreateNewDto response = TOtpCreateNewDto.builder()
+                .statusCode("200")
+                .statusDescription("TOTP generated successfully.")
+                .secretKey("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY")
+                .build();
+
+        StepVerifier.create(tOtpCreateSecretHelper.updateDbToReset("SYSTEM_USER", userDto))
+                .assertNext(res -> {
+                    assertEquals(response.getSecretKey(), res.getSecretKey());
+                })
+                .verifyComplete();
+
+        doReturn(Mono.just(0L)).when(this.tOtpUserMasterSPI)
+                .updateEntity(any(TOtpUserMasterDto.class));
+
+        StepVerifier.create(tOtpCreateSecretHelper.updateDbToReset("SYSTEM_USER", userDto))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Unknown error. Contact Administrator.")
+                )
+                .verify();
+
     }
 
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#createNewRecord(String, String)}
-     */
     @Test
-    @Disabled("TODO: Complete this test")
-    void testCreateNewRecord2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException: Cannot invoke "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" because the return value of "reactor.core.publisher.Mono.flatMap(java.util.function.Function)" is null
-        //       at com.github.godwinpinto.authable.domain.totp.usecase.TOtpCreateSecretHelper.createNewRecord(TOtpCreateSecretHelper.java:74)
-        //   See https://diff.blue/R013 to resolve this issue.
+    void fallbackMethod_Test() {
 
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(mock(Mono.class));
-        tOtpCreateSecretHelper.createNewRecord("42", "42");
+        NonFatalException nfe = new NonFatalException("300", "Sample Exception");
+
+        Exception e = new Exception("Sample Other Exception");
+
+        StepVerifier.create(tOtpCreateSecretHelper.fallbackMethod(nfe))
+                .assertNext(tOtpCreateNewDto -> {
+                    assertEquals(tOtpCreateNewDto.getStatusDescription(), nfe.getMessage());
+                    assertEquals(tOtpCreateNewDto.getStatusCode(), nfe.getErrCode());
+                })
+                .verifyComplete();
+
+        StepVerifier.create(tOtpCreateSecretHelper.fallbackMethod(e))
+                .assertNext(tOtpCreateNewDto -> {
+                    assertEquals(tOtpCreateNewDto.getStatusDescription(), "Unknown error occurred");
+                })
+                .verifyComplete();
     }
 
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#fallbackMethod(Throwable)}
-     */
     @Test
-    void testFallbackMethod() {
-        // TODO: Complete this test.
-        //   Diffblue AI was unable to find a test
+    void createNewRecord_Test() {
 
-        tOtpCreateSecretHelper.fallbackMethod(new Throwable());
+        doReturn(Mono.empty()).when(this.fetchPrincipalComponent)
+                .getAuthDetails();
+        StepVerifier.create(tOtpCreateSecretHelper.createNewRecord("TEST_SYSTEM", "TEST_USER"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Unable to fetch login details")
+                )
+                .verify();
+
+        UserDto userDto = new UserDto();
+        userDto.setUsername("TEST_USER");
+        userDto.setSystemId("TEST_SYSTEM");
+        doReturn(Mono.just(userDto)).when(this.fetchPrincipalComponent)
+                .getAuthDetails();
+
+        doReturn("SAMPLE_SECRET").when(tOtpCryptoSPI)
+                .generateSecretKey(any());
+
+        doReturn(Mono.just(true)).when(tOtpUserMasterSPI)
+                .createEntity(any());
+
+
+        StepVerifier.create(tOtpCreateSecretHelper.createNewRecord("TEST_SYSTEM", "TEST_USER"))
+                .assertNext(tOtpCreateNewDto -> {
+                    assertEquals(tOtpCreateNewDto.getStatusDescription(), "TOTP generated successfully.");
+                })
+                .verifyComplete();
+
+        doReturn(Mono.just(false)).when(tOtpUserMasterSPI)
+                .createEntity(any());
+
+        StepVerifier.create(tOtpCreateSecretHelper.createNewRecord("TEST_SYSTEM", "TEST_USER"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Unknown error. Contact Administrator.")
+                )
+                .verify();
     }
 
-    /**
-     * Method under test: {@link TOtpCreateSecretHelper#fallbackMethod(Throwable)}
-     */
     @Test
-    void testFallbackMethod2() {
-        // TODO: Complete this test.
-        //   Diffblue AI was unable to find a test
+    void createNewRecord_NullInsertFailed_Test() {
 
-        tOtpCreateSecretHelper.fallbackMethod(new Throwable("Not all who wander are lost"));
+        UserDto userDto = new UserDto();
+        userDto.setUsername("TEST_USER");
+        userDto.setSystemId("TEST_SYSTEM");
+        doReturn(Mono.just(userDto)).when(this.fetchPrincipalComponent)
+                .getAuthDetails();
+
+        doReturn("SAMPLE_SECRET").when(tOtpCryptoSPI)
+                .generateSecretKey(any());
+
+
+        doReturn(Mono.empty()).when(tOtpUserMasterSPI)
+                .createEntity(any());
+
+        doReturn(Mono.just(userDto)).when(this.fetchPrincipalComponent)
+                .getAuthDetails();
+
+        StepVerifier.create(tOtpCreateSecretHelper.createNewRecord("TEST_SYSTEM", "TEST_USER"))
+                .expectErrorMatches(e -> e instanceof NonFatalException &&
+                        e.getMessage()
+                                .equals("Unknown error. Contact Administrator.")
+                )
+                .verify();
+
     }
+
+
 }
 
