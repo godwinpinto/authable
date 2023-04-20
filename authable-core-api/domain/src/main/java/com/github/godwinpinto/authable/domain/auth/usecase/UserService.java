@@ -114,8 +114,6 @@ public class UserService implements AuthServiceAPI {
                 .updateInvalidAttempt(user.getAccessId(), user.getNoOfAttempts(),
                         DateTimeUtils.getCurrentLocalDateTime())
                 .flatMap(x -> {
-                    System.out.println("user.getNoOfAttempts()" + user.getNoOfAttempts());
-                    System.out.println("maxFailedAttempts" + maxFailedAttempts);
                     if (user.getNoOfAttempts() >= maxFailedAttempts) {
                         return systemUserMasterSPI.updateDisable(
                                         user.getAccessId(),
