@@ -17,45 +17,50 @@ import reactor.core.publisher.Mono;
 @Component
 public class TOtpGenerateQrHandler extends AbstractValidationHandler<GenericRequest, Validator> {
 
-    private final TOtpUserServiceAPI tOtpUserServiceAPI;
+  private final TOtpUserServiceAPI tOtpUserServiceAPI;
 
-    private final FetchPrincipalComponent fetchPrincipalComponent;
+  private final FetchPrincipalComponent fetchPrincipalComponent;
 
+  TOtpGenerateQrHandler(
+      Validator validator,
+      TOtpUserServiceAPI tOtpUserServiceAPI,
+      FetchPrincipalComponent fetchPrincipalComponent) {
+    super(GenericRequest.class, validator);
+    this.tOtpUserServiceAPI = tOtpUserServiceAPI;
+    this.fetchPrincipalComponent = fetchPrincipalComponent;
+  }
 
-    TOtpGenerateQrHandler(Validator validator, TOtpUserServiceAPI tOtpUserServiceAPI, FetchPrincipalComponent fetchPrincipalComponent) {
-        super(GenericRequest.class, validator);
-        this.tOtpUserServiceAPI = tOtpUserServiceAPI;
-        this.fetchPrincipalComponent = fetchPrincipalComponent;
+  @Override
+  public Mono<ServerResponse> processBody(
+      GenericRequest genericRequest, ServerRequest serverRequest) {
 
-    }
+    return fetchPrincipalComponent
+        .getAuthDetails()
+        .flatMap(
+            user ->
+                tOtpUserServiceAPI
+                    .generateQr(user.getSystemId().trim(), genericRequest.getUserId().trim())
+                    .flatMap(this::callQRService)
+                    .switchIfEmpty(processEmpty()));
+  }
 
-    @Override
-    public Mono<ServerResponse> processBody(GenericRequest genericRequest, ServerRequest serverRequest) {
+  private Mono<ServerResponse> callQRService(TOtpGenerateQrDto tOtpGenerateQrDto) {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                TOtpRequestResponseDtoMapper.INSTANCE.generateQrResponseFromDto(
+                    tOtpGenerateQrDto)));
+  }
 
-        return fetchPrincipalComponent.getAuthDetails()
-                .flatMap(user -> tOtpUserServiceAPI
-                        .generateQr(user.getSystemId()
-                                .trim(), genericRequest.getUserId()
-                                .trim())
-                        .flatMap(this::callQRService)
-                        .switchIfEmpty(processEmpty())
-                );
-    }
-
-    private Mono<ServerResponse> callQRService(TOtpGenerateQrDto tOtpGenerateQrDto) {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(
-                        TOtpRequestResponseDtoMapper.INSTANCE.generateQrResponseFromDto(tOtpGenerateQrDto)));
-    }
-
-    private Mono<ServerResponse> processEmpty() {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(TOtpGenerateQrDto.builder()
-                        .statusCode("300")
-                        .statusDescription("No active subscription")
-                        .build()));
-    }
-
+  private Mono<ServerResponse> processEmpty() {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                TOtpGenerateQrDto.builder()
+                    .statusCode("300")
+                    .statusDescription("No active subscription")
+                    .build()));
+  }
 }

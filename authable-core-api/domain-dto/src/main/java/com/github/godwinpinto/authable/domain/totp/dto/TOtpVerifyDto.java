@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TOtpVerifyDto {
 
-    private String statusCode;
-    private String statusDescription;
+  private String statusCode;
+  private String statusDescription;
 }

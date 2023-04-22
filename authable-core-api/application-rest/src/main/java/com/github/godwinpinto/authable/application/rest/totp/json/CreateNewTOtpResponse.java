@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateNewTOtpResponse {
-    private String statusCode;
-    private String statusDescription;
-    private String secretKey;
-
+  private String statusCode;
+  private String statusDescription;
+  private String secretKey;
 }

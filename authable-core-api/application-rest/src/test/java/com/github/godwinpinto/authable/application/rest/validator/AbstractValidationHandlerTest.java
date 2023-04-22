@@ -1,9 +1,14 @@
 package com.github.godwinpinto.authable.application.rest.validator;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+
 import com.github.godwinpinto.authable.application.rest.totp.controller.WebFluxSecurityConfig;
 import com.github.godwinpinto.authable.application.rest.totp.json.GenericRequest;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
 import com.github.godwinpinto.authable.domain.auth.ports.api.AuthServiceAPI;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,226 +34,193 @@ import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
 import reactor.test.StepVerifier;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-
 @ContextConfiguration(classes = {DummyHandlerWithoutRequestBody.class})
 @ExtendWith(SpringExtension.class)
-@WebFluxTest //to autowire validator
+@WebFluxTest // to autowire validator
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureWebTestClient(timeout = "360000")
-@Import({
-        WebFluxSecurityConfig.class
-})
+@Import({WebFluxSecurityConfig.class})
 public class AbstractValidationHandlerTest {
 
-    @Autowired
-    Validator validator;
+  @Autowired Validator validator;
 
-    @MockBean
-    AuthServiceAPI authServiceAPI;
+  @MockBean AuthServiceAPI authServiceAPI;
 
-    DisposableServer disposableServer;
+  DisposableServer disposableServer;
 
-    @Autowired
-    WebTestClient webTestClient;
+  @Autowired WebTestClient webTestClient;
 
+  @BeforeAll
+  void setupStart() {
+    DummyHandlerWithoutRequestBody dummyHandlerWithoutRequestBody =
+        new DummyHandlerWithoutRequestBody(null, authServiceAPI);
+    DummyHandlerWithRequestBody dummyHandlerWithRequestBody =
+        new DummyHandlerWithRequestBody(validator, authServiceAPI);
+    ReactorHttpHandlerAdapter adapter =
+        new ReactorHttpHandlerAdapter(
+            RouterFunctions.toHttpHandler(
+                dummyHandlerWithoutRequestBody
+                    .doSomething()
+                    .and(dummyHandlerWithRequestBody.doSomething())));
+    HttpServer server = HttpServer.create().host("localhost").port(8080).handle(adapter);
 
-    @BeforeAll
-    void setupStart() {
-        DummyHandlerWithoutRequestBody dummyHandlerWithoutRequestBody =
-                new DummyHandlerWithoutRequestBody(null, authServiceAPI);
-/*        HttpHandler httpHandler = RouterFunctions.toHttpHandler(dummyHandlerWithoutRequestBody.doSomething());
-        ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(httpHandler);*/
+    this.disposableServer = server.bindNow();
 
-        DummyHandlerWithRequestBody dummyHandlerWithRequestBody =
-                new DummyHandlerWithRequestBody(validator, authServiceAPI);
-/*        HttpHandler httpHandler2 = RouterFunctions.toHttpHandler(dummyHandlerWithRequestBody.doSomething());
-        ReactorHttpHandlerAdapter adapter2 = new ReactorHttpHandlerAdapter(httpHandler2);*/
+    webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:8080").build();
+  }
 
-        ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(
-                RouterFunctions.toHttpHandler(
-                        dummyHandlerWithoutRequestBody.doSomething()
-                                .and(dummyHandlerWithRequestBody.doSomething())
-                )
-        );
-        HttpServer server = HttpServer.create()
-                .host("localhost")
-                .port(8080)
-                .handle(adapter);
+  @AfterAll
+  void setupShutDown() {
+    disposableServer.disposeNow();
+  }
 
-        this.disposableServer = server.bindNow();
+  @Test
+  void emptyRequestClass_Test() {
 
-        webTestClient = WebTestClient.bindToServer()
-                .baseUrl("http://localhost:8080")
-                .build();
+    UserDto userDto = UserDto.builder().build();
+    doReturn(Mono.just(userDto))
+        .when(authServiceAPI)
+        .authenticate(anyString(), anyString(), anyString());
 
-    }
+    webTestClient
+        .post()
+        .uri("/test-no-request-body")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("200")
+        .jsonPath("$.statusDescription")
+        .isEqualTo("Success");
+  }
 
-    @AfterAll
-    void setupShutDown() {
-        disposableServer.disposeNow();
-    }
+  @Test
+  void existsClass_EmptyFields_Test() {
 
-    @Test
-    void emptyRequestClass_Test() {
+    UserDto userDto = UserDto.builder().build();
+    doReturn(Mono.just(userDto))
+        .when(authServiceAPI)
+        .authenticate(anyString(), anyString(), anyString());
 
+    GenericRequest genericRequest = new GenericRequest();
 
-        UserDto userDto = UserDto.builder()
-                .build();
-        doReturn(Mono.just(userDto)).when(authServiceAPI)
-                .authenticate(anyString(), anyString(), anyString());
+    webTestClient
+        .post()
+        .uri("/test-with-request-body")
+        .bodyValue(genericRequest)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("300")
+        .jsonPath("$.statusDescription")
+        .isEqualTo("User Id cannot be empty");
+  }
 
-        webTestClient.post()
-                .uri("/test-no-request-body")
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("$.statusCode")
-                .isEqualTo("200")
-                .jsonPath("$.statusDescription")
-                .isEqualTo("Success");
+  @Test
+  void existsClass_NoBody_Test() {
 
+    UserDto userDto = UserDto.builder().build();
+    doReturn(Mono.just(userDto))
+        .when(authServiceAPI)
+        .authenticate(anyString(), anyString(), anyString());
 
-    }
+    webTestClient
+        .post()
+        .uri("/test-with-request-body")
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("300")
+        .jsonPath("$.statusDescription")
+        .isEqualTo("Invalid Parameters in request");
+  }
 
-    @Test
-    void existsClass_EmptyFields_Test() {
+  @Test
+  void existsClass_PresentFieldValues_Test() {
 
-        UserDto userDto = UserDto.builder()
-                .build();
-        doReturn(Mono.just(userDto)).when(authServiceAPI)
-                .authenticate(anyString(), anyString(), anyString());
+    UserDto userDto = UserDto.builder().build();
+    doReturn(Mono.just(userDto))
+        .when(authServiceAPI)
+        .authenticate(anyString(), anyString(), anyString());
 
-        GenericRequest genericRequest = new GenericRequest();
+    GenericRequest genericRequest = new GenericRequest();
+    genericRequest.setUserId("TEST_USER");
 
-        webTestClient.post()
-                .uri("/test-with-request-body")
-                .bodyValue(genericRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("$.statusCode")
-                .isEqualTo("300")
-                .jsonPath("$.statusDescription")
-                .isEqualTo("User Id cannot be empty");
+    webTestClient
+        .post()
+        .uri("/test-with-request-body")
+        .bodyValue(genericRequest)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("200")
+        .jsonPath("$.statusDescription")
+        .isEqualTo("Success");
+  }
 
+  @Test
+  void existsClass_PresentFieldValues_OtherException_Test() {
 
-    }
+    UserDto userDto = UserDto.builder().build();
+    doReturn(Mono.error(new RuntimeException("Some Runtime Exception")))
+        .when(authServiceAPI)
+        .authenticate(anyString(), anyString(), anyString());
 
-    @Test
-    void existsClass_NoBody_Test() {
+    GenericRequest genericRequest = new GenericRequest();
+    genericRequest.setUserId("TEST_USER");
 
-        UserDto userDto = UserDto.builder()
-                .build();
-        doReturn(Mono.just(userDto)).when(authServiceAPI)
-                .authenticate(anyString(), anyString(), anyString());
+    webTestClient
+        .post()
+        .uri("/test-with-request-body")
+        .bodyValue(genericRequest)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("$.code")
+        .isEqualTo("400")
+        .jsonPath("$.message")
+        .isEqualTo("Some Runtime Exception");
+  }
 
+  @Test
+  void onValidationErrors_Else_Test() {
+    DummyHandlerWithoutRequestBody dummyHandlerWithoutRequestBody =
+        new DummyHandlerWithoutRequestBody(null, authServiceAPI);
 
-        webTestClient.post()
-                .uri("/test-with-request-body")
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("$.statusCode")
-                .isEqualTo("300")
-                .jsonPath("$.statusDescription")
-                .isEqualTo("Invalid Parameters in request");
+    List<ObjectError> lst = new ArrayList<>(0);
 
+    GenericRequest genericRequest = new GenericRequest();
+    genericRequest.setUserId("TEST_USER");
+    Errors errors = new BeanPropertyBindingResult(genericRequest, GenericRequest.class.getName());
 
-    }
+    StepVerifier.create(dummyHandlerWithoutRequestBody.onValidationErrors(errors))
+        .expectErrorMatches(exception -> exception instanceof ResponseStatusException)
+        .verify();
+  }
 
-    @Test
-    void existsClass_PresentFieldValues_Test() {
+  @Test
+  void onValidationErrors_If_Test() {
+    DummyHandlerWithoutRequestBody dummyHandlerWithoutRequestBody =
+        new DummyHandlerWithoutRequestBody(null, authServiceAPI);
 
-
-        UserDto userDto = UserDto.builder()
-                .build();
-        doReturn(Mono.just(userDto)).when(authServiceAPI)
-                .authenticate(anyString(), anyString(), anyString());
-
-        GenericRequest genericRequest = new GenericRequest();
-        genericRequest.setUserId("TEST_USER");
-
-        webTestClient.post()
-                .uri("/test-with-request-body")
-                .bodyValue(genericRequest)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("$.statusCode")
-                .isEqualTo("200")
-                .jsonPath("$.statusDescription")
-                .isEqualTo("Success");
-
-    }
-
-    @Test
-    void existsClass_PresentFieldValues_OtherException_Test() {
-
-        UserDto userDto = UserDto.builder()
-                .build();
-        doReturn(Mono.error(new RuntimeException("Some Runtime Exception"))).when(authServiceAPI)
-                .authenticate(anyString(), anyString(), anyString());
-
-        GenericRequest genericRequest = new GenericRequest();
-        genericRequest.setUserId("TEST_USER");
-
-        webTestClient.post()
-                .uri("/test-with-request-body")
-                .bodyValue(genericRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("$.code")
-                .isEqualTo("400")
-                .jsonPath("$.message")
-                .isEqualTo("Some Runtime Exception");
-
-    }
-
-    @Test
-    void onValidationErrors_Else_Test() {
-        DummyHandlerWithoutRequestBody dummyHandlerWithoutRequestBody =
-                new DummyHandlerWithoutRequestBody(null, authServiceAPI);
-
-        List<ObjectError> lst = new ArrayList<>(0);
-
-        GenericRequest genericRequest = new GenericRequest();
-        genericRequest.setUserId("TEST_USER");
-        Errors errors = new BeanPropertyBindingResult(genericRequest, GenericRequest.class.getName());
-
-        StepVerifier.create(dummyHandlerWithoutRequestBody.onValidationErrors(errors))
-                .expectErrorMatches(exception -> exception instanceof ResponseStatusException)
-                .verify();
-    }
-
-
-    @Test
-    void onValidationErrors_If_Test() {
-        DummyHandlerWithoutRequestBody dummyHandlerWithoutRequestBody =
-                new DummyHandlerWithoutRequestBody(null, authServiceAPI);
-
-        GenericRequest genericRequest = new GenericRequest();
-        //genericRequest.setUserId("TEST_USER");
-        Errors errors = new BeanPropertyBindingResult(genericRequest, GenericRequest.class.getName());
-        this.validator.validate(genericRequest, errors);
-        StepVerifier.create(dummyHandlerWithoutRequestBody.onValidationErrors(errors))
-                .expectErrorMatches(exception -> exception instanceof ResponseStatusException)
-                .verify();
-    }
-
+    GenericRequest genericRequest = new GenericRequest();
+    Errors errors = new BeanPropertyBindingResult(genericRequest, GenericRequest.class.getName());
+    this.validator.validate(genericRequest, errors);
+    StepVerifier.create(dummyHandlerWithoutRequestBody.onValidationErrors(errors))
+        .expectErrorMatches(exception -> exception instanceof ResponseStatusException)
+        .verify();
+  }
 }

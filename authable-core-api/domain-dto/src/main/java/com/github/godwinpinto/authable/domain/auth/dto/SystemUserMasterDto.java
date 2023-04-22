@@ -1,40 +1,38 @@
 package com.github.godwinpinto.authable.domain.auth.dto;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
+import lombok.Data;
 
 @Data
 public class SystemUserMasterDto {
 
-    private String accessId;
+  private String accessId;
 
-    private String systemId;
+  private String systemId;
 
-    private String userName;
+  private String userName;
 
-    private String userSecret;
+  private String userSecret;
 
-    private String userFullName;
+  private String userFullName;
 
-    private String userIpRange;
+  private String userIpRange;
 
-    private short noOfAttempts;
+  private short noOfAttempts;
 
-    private String status;
+  private String status;
 
-    private LocalDateTime lastLoginDateTime;
+  private LocalDateTime lastLoginDateTime;
 
-    private LocalDateTime invalidAttemptDateTime;
+  private LocalDateTime invalidAttemptDateTime;
 
-    private LocalDateTime lockedDateTime;
+  private LocalDateTime lockedDateTime;
 
-    private String modificationId;
+  private String modificationId;
 
-    private LocalDateTime modificationDateTime;
+  private LocalDateTime modificationDateTime;
 
-    private String creationId;
+  private String creationId;
 
-    private LocalDateTime creationDateTime;
-
+  private LocalDateTime creationDateTime;
 }

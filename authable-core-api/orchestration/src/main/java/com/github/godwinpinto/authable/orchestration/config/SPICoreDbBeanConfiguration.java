@@ -15,38 +15,33 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SPICoreDbBeanConfiguration {
 
-    private SystemMasterRepository systemMasterRepository;
+  private SystemMasterRepository systemMasterRepository;
 
-    private SystemUserMasterRepository systemUserMasterRepository;
+  private SystemUserMasterRepository systemUserMasterRepository;
 
-    private TOtpUserMasterRepository tOtpUserMasterRepository;
+  private TOtpUserMasterRepository tOtpUserMasterRepository;
 
+  public SPICoreDbBeanConfiguration(
+      SystemUserMasterRepository systemUserMasterRepository,
+      SystemMasterRepository systemMasterRepository,
+      TOtpUserMasterRepository tOtpUserMasterRepository) {
+    this.systemMasterRepository = systemMasterRepository;
+    this.systemUserMasterRepository = systemUserMasterRepository;
+    this.tOtpUserMasterRepository = tOtpUserMasterRepository;
+  }
 
-    public SPICoreDbBeanConfiguration(
-            SystemUserMasterRepository systemUserMasterRepository,
-            SystemMasterRepository systemMasterRepository,
-            TOtpUserMasterRepository tOtpUserMasterRepository
-    ) {
-        this.systemMasterRepository = systemMasterRepository;
-        this.systemUserMasterRepository = systemUserMasterRepository;
-        this.tOtpUserMasterRepository = tOtpUserMasterRepository;
-    }
+  @Bean
+  public SystemMasterSPI systemMasterSPI() {
+    return new SystemMasterAdapter(systemMasterRepository);
+  }
 
+  @Bean
+  public SystemUserMasterSPI systemUserMasterSPI() {
+    return new SystemUserMasterAdapter(systemUserMasterRepository);
+  }
 
-    @Bean
-    public SystemMasterSPI systemMasterSPI() {
-        return new SystemMasterAdapter(systemMasterRepository);
-    }
-
-    @Bean
-    public SystemUserMasterSPI systemUserMasterSPI() {
-        return new SystemUserMasterAdapter(systemUserMasterRepository);
-    }
-
-    @Bean
-    public TOtpUserMasterSPI tOtpUserMasterSPI() {
-        return new TOtpUserMasterAdapter(tOtpUserMasterRepository);
-    }
-
-
+  @Bean
+  public TOtpUserMasterSPI tOtpUserMasterSPI() {
+    return new TOtpUserMasterAdapter(tOtpUserMasterRepository);
+  }
 }

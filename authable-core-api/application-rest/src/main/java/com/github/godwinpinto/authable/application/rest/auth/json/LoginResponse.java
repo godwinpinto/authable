@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class LoginResponse {
-    private String accessToken;
-    private long expiry;
+  private String accessToken;
+  private long expiry;
 }

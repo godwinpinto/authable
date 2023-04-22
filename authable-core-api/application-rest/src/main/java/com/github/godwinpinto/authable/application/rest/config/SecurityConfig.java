@@ -19,67 +19,62 @@ import reactor.core.publisher.Mono;
 @EnableReactiveMethodSecurity
 public class SecurityConfig {
 
-    private AuthServiceAPI authServiceAPI;
+  private static final String[] AUTH_WHITELIST = {
+    "/swagger-resources/**",
+    "/configuration/ui",
+    "/configuration/security",
+    "/swagger-ui.html",
+    "/webjars/**",
+    "/v3/api-docs/**"
+  };
+  private static final String[] SECURED_LIST = {"/totp/**"};
+  private static final String[] OPEN_LIST = {"/auth/login"};
+  private final AuthServiceAPI authServiceAPI;
 
-    SecurityConfig(AuthServiceAPI authServiceAPI) {
-        this.authServiceAPI = authServiceAPI;
-    }
+  SecurityConfig(AuthServiceAPI authServiceAPI) {
+    this.authServiceAPI = authServiceAPI;
+  }
 
-    private static final String[] AUTH_WHITELIST = {
-            // -- swagger ui
-            "/swagger-resources/**",
-            "/configuration/ui",
-            "/configuration/security",
-            "/swagger-ui.html",
-            "/webjars/**",
-            "/v3/api-docs/**"};
+  @Bean
+  SecurityWebFilterChain securityWebFilterChain(
+      ServerHttpSecurity http, AuthenticationManager authManager) {
 
-    private static final String[] SECURED_LIST = {
-            "/totp/**"
-    };
+    return http.authorizeExchange()
+        .pathMatchers(HttpMethod.OPTIONS)
+        .permitAll()
+        .pathMatchers(AUTH_WHITELIST)
+        .permitAll()
+        .pathMatchers(HttpMethod.OPTIONS)
+        .permitAll()
+        .pathMatchers(OPEN_LIST)
+        .permitAll()
+        .anyExchange()
+        .authenticated()
+        .and()
+        .csrf()
+        .disable()
+        .formLogin()
+        .disable()
+        .httpBasic()
+        .disable()
+        // NoOpServerSecurityContextRepository makes the session stateless
+        .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+        .exceptionHandling()
+        .authenticationEntryPoint(
+            (swe, e) -> Mono.fromRunnable(CustomAuthenticationEntryPoint::new))
+        .accessDeniedHandler((swe, e) -> Mono.fromRunnable(CustomAccessDeniedHandler::new))
+        .and()
+        .addFilterAt(
+            bearerAuthenticationFilter(authManager), SecurityWebFiltersOrder.AUTHENTICATION)
+        .build();
+  }
 
-    private static final String[] OPEN_LIST = {
-            "/auth/login"};
-
-
-    @Bean
-    SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
-            AuthenticationManager authManager) {
-
-
-        return http
-                .authorizeExchange()
-                .pathMatchers(HttpMethod.OPTIONS)
-                .permitAll()
-                .pathMatchers(AUTH_WHITELIST)
-                .permitAll()
-                .pathMatchers(HttpMethod.OPTIONS)
-                .permitAll()
-                .pathMatchers(OPEN_LIST)
-                .permitAll()
-                .anyExchange()
-                .authenticated()
-                .and()
-                .csrf()
-                .disable()
-                .formLogin()
-                .disable()
-                .httpBasic()
-                .disable()
-                // NoOpServerSecurityContextRepository makes the session stateless
-                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-                .exceptionHandling()
-                .authenticationEntryPoint((swe, e) -> Mono.fromRunnable(CustomAuthenticationEntryPoint::new))
-                .accessDeniedHandler((swe, e) -> Mono.fromRunnable(CustomAccessDeniedHandler::new))
-                .and()
-                .addFilterAt(bearerAuthenticationFilter(authManager), SecurityWebFiltersOrder.AUTHENTICATION)
-                .build();
-    }
-
-    AuthenticationWebFilter bearerAuthenticationFilter(AuthenticationManager authManager) {
-        AuthenticationWebFilter bearerAuthenticationFilter = new AuthenticationWebFilter(authManager);
-        bearerAuthenticationFilter.setServerAuthenticationConverter(new ServerHttpBearerAuthenticationConverter(authServiceAPI));
-        bearerAuthenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers(SECURED_LIST));
-        return bearerAuthenticationFilter;
-    }
+  AuthenticationWebFilter bearerAuthenticationFilter(AuthenticationManager authManager) {
+    AuthenticationWebFilter bearerAuthenticationFilter = new AuthenticationWebFilter(authManager);
+    bearerAuthenticationFilter.setServerAuthenticationConverter(
+        new ServerHttpBearerAuthenticationConverter(authServiceAPI));
+    bearerAuthenticationFilter.setRequiresAuthenticationMatcher(
+        ServerWebExchangeMatchers.pathMatchers(SECURED_LIST));
+    return bearerAuthenticationFilter;
+  }
 }

@@ -15,34 +15,33 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SPICryptoBeanConfiguration {
 
+  private JWTUtilService jwtUtilService;
 
-    private JWTUtilService jwtUtilService;
+  private TOtpService tOtpService;
 
-    private TOtpService tOtpService;
+  private TOtpSecretEncryption tOtpSecretEncryption;
 
-    private TOtpSecretEncryption tOtpSecretEncryption;
+  public SPICryptoBeanConfiguration(
+      JWTUtilService jwtUtilService,
+      TOtpService tOtpService,
+      TOtpSecretEncryption tOtpSecretEncryption) {
+    this.jwtUtilService = jwtUtilService;
+    this.tOtpService = tOtpService;
+    this.tOtpSecretEncryption = tOtpSecretEncryption;
+  }
 
-    public SPICryptoBeanConfiguration(
-            JWTUtilService jwtUtilService, TOtpService tOtpService,
-            TOtpSecretEncryption tOtpSecretEncryption) {
-        this.jwtUtilService = jwtUtilService;
-        this.tOtpService = tOtpService;
-        this.tOtpSecretEncryption = tOtpSecretEncryption;
-    }
+  @Bean
+  public JWTUtilSPI jwtUtilspi() {
+    return new JWTUtilAdapter(jwtUtilService);
+  }
 
-    @Bean
-    public JWTUtilSPI jwtUtilspi() {
-        return new JWTUtilAdapter(jwtUtilService);
-    }
+  @Bean
+  public CryptoAlgorithmsSPI cryptoAlgorithmsSPI() {
+    return new CryptoAlgorithmsAdapter();
+  }
 
-    @Bean
-    public CryptoAlgorithmsSPI cryptoAlgorithmsSPI() {
-        return new CryptoAlgorithmsAdapter();
-    }
-
-    @Bean
-    public TOtpCryptoSPI tOtpCryptoSPI() {
-        return new TOtpCryptoAdapter(tOtpService, tOtpSecretEncryption);
-    }
-
+  @Bean
+  public TOtpCryptoSPI tOtpCryptoSPI() {
+    return new TOtpCryptoAdapter(tOtpService, tOtpSecretEncryption);
+  }
 }

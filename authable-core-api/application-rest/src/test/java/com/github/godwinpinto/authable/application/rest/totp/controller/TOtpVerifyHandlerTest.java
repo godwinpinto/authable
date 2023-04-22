@@ -1,11 +1,15 @@
 package com.github.godwinpinto.authable.application.rest.totp.controller;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import com.github.godwinpinto.authable.application.rest.totp.json.VerifyTOtpRequest;
 import com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent;
 import com.github.godwinpinto.authable.domain.auth.dto.Role;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpVerifyDto;
 import com.github.godwinpinto.authable.domain.totp.ports.api.TOtpUserServiceAPI;
+import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,243 +25,207 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.validation.Validator;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
-
-@Import({
-        TOtpRoutesConfig.class,
-        WebFluxSecurityConfig.class
-})
+@Import({TOtpRoutesConfig.class, WebFluxSecurityConfig.class})
 @WebFluxTest
 @ContextConfiguration(classes = {TOtpVerifyHandler.class})
 @ExtendWith(SpringExtension.class)
 @AutoConfigureWebTestClient(timeout = "36000")
 class TOtpVerifyHandlerTest {
-    @Autowired
-    private WebTestClient webClient;
+  @MockBean TOtpUserServiceAPI tOtpUserServiceAPI;
+  @MockBean FetchPrincipalComponent fetchPrincipalComponent;
+  @Autowired TOtpVerifyHandler tOtpVerifyHandler;
+  @MockBean TOtpUnSubscribeHandler tOtpUnSubscribeHandler;
+  @MockBean TOtpUnBlockHandler tOtpUnBlockHandler;
+  @MockBean TOtpSubscribeHandler tOtpSubscribeHandler;
+  @MockBean TOtpGenerateQrHandler tOtpGenerateQrHandler;
+  @Autowired Validator validator;
+  @Autowired private WebTestClient webClient;
+  @MockBean private TOtpStatusHandler tOtpStatusHandler;
 
-    @MockBean
-    private TOtpStatusHandler tOtpStatusHandler;
+  @Test
+  public void processBody_NoSubscription_Test() {
 
-    @MockBean
-    TOtpUserServiceAPI tOtpUserServiceAPI;
+    UserDto userDto =
+        UserDto.builder()
+            .username("TEST_USER")
+            .systemId("TEST_SYSTEM")
+            .roles(List.of(Role.ROLE_ADMIN))
+            .expiryTime(0)
+            .build();
+    when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+    when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
 
-    @MockBean
-    FetchPrincipalComponent fetchPrincipalComponent;
+    VerifyTOtpRequest verifyTOtpRequest =
+        VerifyTOtpRequest.builder().userId("TEST_USER").otp("123456").build();
 
-    @Autowired
-    TOtpVerifyHandler tOtpVerifyHandler;
+    webClient
+        .post()
+        .uri("/totp/verify")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(verifyTOtpRequest)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("statusDescription")
+        .isEqualTo("No active subscription")
+        .jsonPath("$.statusCode")
+        .isEqualTo("300");
+  }
 
-    @MockBean
-    TOtpUnSubscribeHandler tOtpUnSubscribeHandler;
+  @Test
+  public void processBody_Subscribed_Test() {
 
-    @MockBean
-    TOtpUnBlockHandler tOtpUnBlockHandler;
+    UserDto userDto =
+        UserDto.builder()
+            .username("TEST_USER")
+            .systemId("TEST_SYSTEM")
+            .roles(List.of(Role.ROLE_ADMIN))
+            .expiryTime(0)
+            .build();
 
-    @MockBean
-    TOtpSubscribeHandler tOtpSubscribeHandler;
+    TOtpVerifyDto tOtpUserStatusDto =
+        TOtpVerifyDto.builder().statusCode("200").statusDescription("Verification success").build();
 
-    @MockBean
-    TOtpGenerateQrHandler tOtpGenerateQrHandler;
+    when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+    when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString()))
+        .thenReturn(Mono.just(tOtpUserStatusDto));
 
+    VerifyTOtpRequest verifyTOtpRequest =
+        VerifyTOtpRequest.builder().userId("TEST_USER").otp("123456").build();
 
-    @Autowired
-    Validator validator;
+    webClient
+        .post()
+        .uri("/totp/verify")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(verifyTOtpRequest)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("statusDescription")
+        .isEqualTo("Verification success")
+        .jsonPath("$.statusCode")
+        .isEqualTo("200");
+  }
 
-    @Test
-    public void processBody_NoSubscription_Test() {
+  @Test
+  public void processBody_EmptyInputField_Test() {
 
-        UserDto userDto = UserDto.builder()
-                .username("TEST_USER")
-                .systemId("TEST_SYSTEM")
-                .roles(List.of(Role.ROLE_ADMIN))
-                .expiryTime(0)
-                .build();
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
-        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+    UserDto userDto =
+        UserDto.builder()
+            .username("TEST_USER")
+            .systemId("TEST_SYSTEM")
+            .roles(List.of(Role.ROLE_ADMIN))
+            .expiryTime(0)
+            .build();
+    when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+    when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+    VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder().build();
 
-        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
-                .userId("TEST_USER")
-                .otp("123456")
-                .build();
+    webClient
+        .post()
+        .uri("/totp/verify")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(verifyTOtpRequest)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("statusDescription")
+        .value(Matchers.in(List.of("User Id cannot be empty", "OTP cannot be empty")))
+        .jsonPath("$.statusCode")
+        .isEqualTo("300");
+  }
 
-        webClient
-                .post()
-                .uri("/totp/verify")
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(verifyTOtpRequest)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("statusDescription")
-                .isEqualTo("No active subscription")
-                .jsonPath("$.statusCode")
-                .isEqualTo("300");
-    }
+  @Test
+  public void processBody_NoUserIdField_Test() {
 
-    @Test
-    public void processBody_Subscribed_Test() {
+    UserDto userDto =
+        UserDto.builder()
+            .username("TEST_USER")
+            .systemId("TEST_SYSTEM")
+            .roles(List.of(Role.ROLE_ADMIN))
+            .expiryTime(0)
+            .build();
+    when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+    when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+    VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder().otp("123456").build();
 
-        UserDto userDto = UserDto.builder()
-                .username("TEST_USER")
-                .systemId("TEST_SYSTEM")
-                .roles(List.of(Role.ROLE_ADMIN))
-                .expiryTime(0)
-                .build();
+    webClient
+        .post()
+        .uri("/totp/verify")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(verifyTOtpRequest)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("statusDescription")
+        .isEqualTo("User Id cannot be empty")
+        .jsonPath("$.statusCode")
+        .isEqualTo("300");
+  }
 
-        TOtpVerifyDto tOtpUserStatusDto = TOtpVerifyDto.builder()
-                .statusCode("200")
-                .statusDescription("Verification success")
-                .build();
+  @Test
+  public void processBody_NoOtpField_Test() {
 
+    UserDto userDto =
+        UserDto.builder()
+            .username("TEST_USER")
+            .systemId("TEST_SYSTEM")
+            .roles(List.of(Role.ROLE_ADMIN))
+            .expiryTime(0)
+            .build();
+    when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+    when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
+    VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder().userId("TEST_USER").build();
 
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
-        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.just(tOtpUserStatusDto));
+    webClient
+        .post()
+        .uri("/totp/verify")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(verifyTOtpRequest)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("statusDescription")
+        .isEqualTo("OTP cannot be empty")
+        .jsonPath("$.statusCode")
+        .isEqualTo("300");
+  }
 
-        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
-                .userId("TEST_USER")
-                .otp("123456")
-                .build();
+  @Test
+  public void processBody_NoInput_Test() {
 
-        webClient
-                .post()
-                .uri("/totp/verify")
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(verifyTOtpRequest)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("statusDescription")
-                .isEqualTo("Verification success")
-                .jsonPath("$.statusCode")
-                .isEqualTo("200");
-    }
+    UserDto userDto =
+        UserDto.builder()
+            .username("TEST_USER")
+            .systemId("TEST_SYSTEM")
+            .roles(List.of(Role.ROLE_ADMIN))
+            .expiryTime(0)
+            .build();
+    when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
+    when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
 
-    @Test
-    public void processBody_EmptyInputField_Test() {
-
-        UserDto userDto = UserDto.builder()
-                .username("TEST_USER")
-                .systemId("TEST_SYSTEM")
-                .roles(List.of(Role.ROLE_ADMIN))
-                .expiryTime(0)
-                .build();
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
-        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
-        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
-                .build();
-
-        webClient
-                .post()
-                .uri("/totp/verify")
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(verifyTOtpRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("statusDescription")
-                .value(Matchers.in(List.of("User Id cannot be empty", "OTP cannot be empty")))
-                .jsonPath("$.statusCode")
-                .isEqualTo("300");
-    }
-
-    @Test
-    public void processBody_NoUserIdField_Test() {
-
-        UserDto userDto = UserDto.builder()
-                .username("TEST_USER")
-                .systemId("TEST_SYSTEM")
-                .roles(List.of(Role.ROLE_ADMIN))
-                .expiryTime(0)
-                .build();
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
-        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
-        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
-                .otp("123456")
-                .build();
-
-        webClient
-                .post()
-                .uri("/totp/verify")
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(verifyTOtpRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("statusDescription")
-                .isEqualTo("User Id cannot be empty")
-                .jsonPath("$.statusCode")
-                .isEqualTo("300");
-    }
-
-    @Test
-    public void processBody_NoOtpField_Test() {
-
-        UserDto userDto = UserDto.builder()
-                .username("TEST_USER")
-                .systemId("TEST_SYSTEM")
-                .roles(List.of(Role.ROLE_ADMIN))
-                .expiryTime(0)
-                .build();
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
-        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
-        VerifyTOtpRequest verifyTOtpRequest = VerifyTOtpRequest.builder()
-                .userId("TEST_USER")
-                .build();
-
-        webClient
-                .post()
-                .uri("/totp/verify")
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(verifyTOtpRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("statusDescription")
-                .isEqualTo("OTP cannot be empty")
-                .jsonPath("$.statusCode")
-                .isEqualTo("300");
-    }
-
-    @Test
-    public void processBody_NoInput_Test() {
-
-        UserDto userDto = UserDto.builder()
-                .username("TEST_USER")
-                .systemId("TEST_SYSTEM")
-                .roles(List.of(Role.ROLE_ADMIN))
-                .expiryTime(0)
-                .build();
-        when(fetchPrincipalComponent.getAuthDetails()).thenReturn(Mono.just(userDto));
-        when(tOtpUserServiceAPI.verify(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
-
-        webClient
-                .post()
-                .uri("/totp/verify")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("statusDescription")
-                .isEqualTo("Invalid Parameters in request")
-                .jsonPath("$.statusCode")
-                .isEqualTo("300");
-    }
-
+    webClient
+        .post()
+        .uri("/totp/verify")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("statusDescription")
+        .isEqualTo("Invalid Parameters in request")
+        .jsonPath("$.statusCode")
+        .isEqualTo("300");
+  }
 }
-

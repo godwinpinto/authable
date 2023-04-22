@@ -1,11 +1,16 @@
 package com.github.godwinpinto.authable.application.rest.auth.controller;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import com.github.godwinpinto.authable.application.rest.auth.json.ApiResponse;
 import com.github.godwinpinto.authable.application.rest.auth.json.LoginRequest;
 import com.github.godwinpinto.authable.application.rest.totp.controller.WebFluxSecurityConfig;
 import com.github.godwinpinto.authable.domain.auth.dto.Role;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
 import com.github.godwinpinto.authable.domain.auth.ports.api.AuthServiceAPI;
+import java.util.List;
+import javax.naming.AuthenticationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,175 +24,136 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.validation.Validator;
 import reactor.core.publisher.Mono;
 
-import javax.naming.AuthenticationException;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
-@Import({
-        SystemRoutesConfig.class,
-        WebFluxSecurityConfig.class
-})
+@Import({SystemRoutesConfig.class, WebFluxSecurityConfig.class})
 @WebFluxTest
 @ContextConfiguration(classes = {SystemHandler.class})
 @ExtendWith(SpringExtension.class)
 @AutoConfigureWebTestClient(timeout = "36000")
 public class SystemHandlerTest {
 
-    @Autowired
-    private WebTestClient webClient;
+  @Autowired Validator validator;
+  @Autowired private WebTestClient webClient;
+  @MockBean private AuthServiceAPI authServiceAPI;
 
-    @MockBean
-    private AuthServiceAPI authServiceAPI;
+  @Test
+  public void systemLoginSuccessful_Test() {
 
-    @Autowired
-    Validator validator;
+    LoginRequest loginRequest =
+        LoginRequest.builder().systemId("NETBK").userId("TESTUSER").userSecret("Test@1234").build();
 
-    @Test
-    public void systemLoginSuccessful_Test() {
+    UserDto userDto =
+        UserDto.builder()
+            .username("ACCESS_ID")
+            .password("JWTTOKEN")
+            .roles(List.of(Role.ROLE_ADMIN))
+            .expiryTime(0)
+            .build();
 
-        LoginRequest loginRequest = LoginRequest.builder()
-                .systemId("NETBK")
-                .userId("TESTUSER")
-                .userSecret("Test@1234")
-                .build();
+    when(authServiceAPI.authenticate(
+            loginRequest.getSystemId(), loginRequest.getUserId(), loginRequest.getUserSecret()))
+        .thenReturn(Mono.just(userDto));
 
-        UserDto userDto = UserDto.builder()
-                .username("ACCESS_ID")
-                .password("JWTTOKEN")
-                .roles(List.of(Role.ROLE_ADMIN))
-                .expiryTime(0)
-                .build();
+    webClient
+        .post()
+        .uri("/auth/login")
+        .bodyValue(loginRequest)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.accessToken")
+        .isEqualTo("JWTTOKEN");
+  }
 
-        when(authServiceAPI.authenticate(loginRequest.getSystemId(), loginRequest.getUserId(),
-                loginRequest.getUserSecret())).thenReturn(Mono.just(userDto));
+  @Test
+  public void systemLoginError_Test() {
 
-        webClient
-                .post()
-                .uri("/auth/login")
-                .bodyValue(loginRequest)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
-                .jsonPath("$.accessToken")
-                .isEqualTo("JWTTOKEN")
+    LoginRequest loginRequest =
+        LoginRequest.builder().systemId("NETBK").userId("TESTUSER").userSecret("Test@1234").build();
 
-        ;
-    }
+    UserDto userDto =
+        UserDto.builder()
+            .username("ACCESS_ID")
+            .password("JWTTOKEN")
+            .roles(List.of(Role.ROLE_ADMIN))
+            .expiryTime(0)
+            .build();
 
+    when(authServiceAPI.authenticate(anyString(), anyString(), anyString()))
+        .thenReturn(Mono.error(new AuthenticationException("Invalid Credentials")));
 
-    @Test
-    public void systemLoginError_Test() {
+    webClient
+        .post()
+        .uri("/auth/login")
+        .bodyValue(loginRequest)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody(ApiResponse.class);
+  }
 
-        LoginRequest loginRequest = LoginRequest.builder()
-                .systemId("NETBK")
-                .userId("TESTUSER")
-                .userSecret("Test@1234")
-                .build();
+  @Test
+  public void systemLogin_withNoParameters_Test() {
 
-        UserDto userDto = UserDto.builder()
-                .username("ACCESS_ID")
-                .password("JWTTOKEN")
-                .roles(List.of(Role.ROLE_ADMIN))
-                .expiryTime(0)
-                .build();
+    when(authServiceAPI.authenticate("", "", "")).thenReturn(Mono.empty());
 
-        when(authServiceAPI.authenticate(anyString(), anyString(),
-                anyString())).thenReturn(Mono.error(new AuthenticationException("Invalid Credentials")));
+    webClient
+        .post()
+        .uri("/auth/login")
+        // .bodyValue(issueTokenRequest)
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody(ApiResponse.class);
+  }
 
-        webClient
-                .post()
-                .uri("/auth/login")
-                .bodyValue(loginRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody(ApiResponse.class)
+  @Test
+  public void systemLogin_withNoSecret_Test() {
 
-        ;
-    }
+    LoginRequest loginRequest =
+        LoginRequest.builder().systemId("CARDS").userId("TESTUSER").userSecret("").build();
+    when(authServiceAPI.authenticate("", "", "")).thenReturn(Mono.empty());
 
-    @Test
-    public void systemLogin_withNoParameters_Test() {
+    webClient
+        .post()
+        .uri("/auth/login")
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody(ApiResponse.class);
+  }
 
-        //IssueTokenRequest issueTokenRequest = IssueTokenRequest.builder().systemId("CARDS").systemSecret("1234").build();
-        when(authServiceAPI.authenticate("", "", "")).thenReturn(Mono.empty());
+  @Test
+  public void systemLogin_withNoSystemId_Test() {
 
-        webClient
-                .post()
-                .uri("/auth/login")
-                //.bodyValue(issueTokenRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody(ApiResponse.class)
-        ;
-    }
+    LoginRequest loginRequest =
+        LoginRequest.builder().systemId("").userId("123").userSecret("1234").build();
 
-    @Test
-    public void systemLogin_withNoSecret_Test() {
+    when(authServiceAPI.authenticate(anyString(), anyString(), anyString()))
+        .thenReturn(Mono.empty());
+    webClient
+        .post()
+        .uri("/auth/login")
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody(ApiResponse.class);
+  }
 
-        LoginRequest loginRequest = LoginRequest.builder()
-                .systemId("CARDS")
-                .userId("TESTUSER")
-                .userSecret("")
-                .build();
-        when(authServiceAPI.authenticate("", "", "")).thenReturn(Mono.empty());
+  @Test
+  public void systemLogin_withNoUserId_Test() {
 
-        webClient
-                .post()
-                .uri("/auth/login")
-                //.bodyValue(issueTokenRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody(ApiResponse.class)
-        ;
-    }
+    LoginRequest loginRequest =
+        LoginRequest.builder().systemId("NETBK").userId("").userSecret("Test@1234").build();
 
-    @Test
-    public void systemLogin_withNoSystemId_Test() {
-
-        LoginRequest loginRequest = LoginRequest.builder()
-                .systemId("")
-                .userId("123")
-                .userSecret("1234")
-                .build();
-
-        when(authServiceAPI.authenticate(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
-        webClient
-                .post()
-                .uri("/auth/login")
-                //.bodyValue(issueTokenRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody(ApiResponse.class)
-        ;
-
-    }
-
-    @Test
-    public void systemLogin_withNoUserId_Test() {
-
-        LoginRequest loginRequest = LoginRequest.builder()
-                .systemId("NETBK")
-                .userId("")
-                .userSecret("Test@1234")
-                .build();
-
-        when(authServiceAPI.authenticate(anyString(), anyString(), anyString())).thenReturn(Mono.empty());
-        webClient
-                .post()
-                .uri("/auth/login")
-                //.bodyValue(issueTokenRequest)
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody(ApiResponse.class)
-        ;
-
-    }
+    when(authServiceAPI.authenticate(anyString(), anyString(), anyString()))
+        .thenReturn(Mono.empty());
+    webClient
+        .post()
+        .uri("/auth/login")
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody(ApiResponse.class);
+  }
 }

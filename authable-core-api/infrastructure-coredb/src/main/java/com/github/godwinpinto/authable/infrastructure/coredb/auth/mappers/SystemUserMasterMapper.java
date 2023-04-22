@@ -7,8 +7,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper
 public interface SystemUserMasterMapper {
-    SystemUserMasterMapper INSTANCE = Mappers.getMapper(SystemUserMasterMapper.class);
+  SystemUserMasterMapper INSTANCE = Mappers.getMapper(SystemUserMasterMapper.class);
 
-    SystemUserMasterDto systemUserMasterToDto(SystemUserMasterEntity systemUserMasterEntity);
-
+  SystemUserMasterDto systemUserMasterToDto(SystemUserMasterEntity systemUserMasterEntity);
 }

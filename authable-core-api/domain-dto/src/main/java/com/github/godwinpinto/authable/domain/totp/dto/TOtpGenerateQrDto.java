@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TOtpGenerateQrDto {
 
-    private String statusCode;
-    private String statusDescription;
-    private String qrImage;
+  private String statusCode;
+  private String statusDescription;
+  private String qrImage;
 }

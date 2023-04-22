@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CryptoAlgorithmsSPIImpl implements CryptoAlgorithmsSPI {
-    @Override
-    public String generateHashFromSecret(String systemId, String userId, String secret) {
-        return null;
-    }
+  @Override
+  public String generateHashFromSecret(String systemId, String userId, String secret) {
+    return null;
+  }
 }

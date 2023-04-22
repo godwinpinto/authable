@@ -10,10 +10,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 public final class DateTimeUtils {
-    private DateTimeUtils() {
-        
-    }
-
     public static final String DAYS = "DAYS";
     public static final String HOURS = "HRS";
     public static final String MINUTES = "MIN";
@@ -23,7 +19,9 @@ public final class DateTimeUtils {
     public static final long HOUR_MILLIS = MINUTE_MILLIS * 60;
     public static final long DAY_MILLIS = HOUR_MILLIS * 24;
     public static final long YEAR_MILLIS = DAY_MILLIS * 365;
+    private DateTimeUtils() {
 
+    }
 
     public static Timestamp getCurrentDate() {
         Date today = new Date();

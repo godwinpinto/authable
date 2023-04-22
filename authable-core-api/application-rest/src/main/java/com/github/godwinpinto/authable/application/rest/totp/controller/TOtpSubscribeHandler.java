@@ -18,45 +18,50 @@ import reactor.core.publisher.Mono;
 @Component
 public class TOtpSubscribeHandler extends AbstractValidationHandler<GenericRequest, Validator> {
 
-    private final TOtpUserServiceAPI tOtpUserServiceAPI;
+  private final TOtpUserServiceAPI tOtpUserServiceAPI;
 
-    private final FetchPrincipalComponent fetchPrincipalComponent;
+  private final FetchPrincipalComponent fetchPrincipalComponent;
 
-    TOtpSubscribeHandler(Validator validator, TOtpUserServiceAPI tOtpUserServiceAPI, FetchPrincipalComponent fetchPrincipalComponent) {
-        super(GenericRequest.class, validator);
-        this.tOtpUserServiceAPI = tOtpUserServiceAPI;
-        this.fetchPrincipalComponent = fetchPrincipalComponent;
+  TOtpSubscribeHandler(
+      Validator validator,
+      TOtpUserServiceAPI tOtpUserServiceAPI,
+      FetchPrincipalComponent fetchPrincipalComponent) {
+    super(GenericRequest.class, validator);
+    this.tOtpUserServiceAPI = tOtpUserServiceAPI;
+    this.fetchPrincipalComponent = fetchPrincipalComponent;
+  }
 
-    }
+  @Override
+  public Mono<ServerResponse> processBody(
+      GenericRequest genericRequest, ServerRequest serverRequest) {
+    return fetchPrincipalComponent
+        .getAuthDetails()
+        .flatMap(user -> callService(user, genericRequest))
+        .flatMap(this::processSuccessResponse)
+        .switchIfEmpty(processEmpty());
+  }
 
-    @Override
-    public Mono<ServerResponse> processBody(GenericRequest genericRequest, ServerRequest serverRequest) {
-        return fetchPrincipalComponent.getAuthDetails()
-                .flatMap(user -> callService(user, genericRequest))
-                .flatMap(this::processSuccessResponse)
-                .switchIfEmpty(processEmpty());
-    }
+  private Mono<TOtpCreateNewDto> callService(UserDto user, GenericRequest genericRequest) {
+    return tOtpUserServiceAPI.createTOtpSecret(
+        user.getSystemId().trim(), genericRequest.getUserId().trim());
+  }
 
-    private Mono<TOtpCreateNewDto> callService(UserDto user, GenericRequest genericRequest) {
-        return tOtpUserServiceAPI
-                .createTOtpSecret(user.getSystemId()
-                        .trim(), genericRequest.getUserId()
-                        .trim());
-    }
+  private Mono<ServerResponse> processSuccessResponse(TOtpCreateNewDto tOtpCreateNewDto) {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                TOtpRequestResponseDtoMapper.INSTANCE.createNewResponseFromDto(tOtpCreateNewDto)));
+  }
 
-    private Mono<ServerResponse> processSuccessResponse(TOtpCreateNewDto tOtpCreateNewDto) {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(
-                        TOtpRequestResponseDtoMapper.INSTANCE.createNewResponseFromDto(tOtpCreateNewDto)));
-    }
-
-    private Mono<ServerResponse> processEmpty() {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(TOtpCreateNewDto.builder()
-                        .statusCode("300")
-                        .statusDescription("No active subscription")
-                        .build()));
-    }
+  private Mono<ServerResponse> processEmpty() {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                TOtpCreateNewDto.builder()
+                    .statusCode("300")
+                    .statusDescription("No active subscription")
+                    .build()));
+  }
 }

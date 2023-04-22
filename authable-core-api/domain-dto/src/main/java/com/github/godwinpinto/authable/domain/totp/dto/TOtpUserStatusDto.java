@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TOtpUserStatusDto {
 
-    private String statusCode;
-    private String statusDescription;
+  private String statusCode;
+  private String statusDescription;
 }

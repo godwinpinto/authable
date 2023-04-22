@@ -13,31 +13,27 @@ import reactor.core.publisher.Mono;
 @Component
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
-    private AuthenticationManager authenticationManager;
+  private final AuthenticationManager authenticationManager;
 
-    public SecurityContextRepository(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
+  public SecurityContextRepository(AuthenticationManager authenticationManager) {
+    this.authenticationManager = authenticationManager;
+  }
 
-    @Override
-    public Mono<Void> save(ServerWebExchange swe, SecurityContext sc) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+  @Override
+  public Mono<Void> save(ServerWebExchange swe, SecurityContext sc) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
-    @Override
-    public Mono<SecurityContext> load(ServerWebExchange swe) {
-        return Mono.justOrEmpty(swe.getRequest()
-                        .getHeaders()
-                        .getFirst(HttpHeaders.AUTHORIZATION))
-                .filter(authHeader -> authHeader.startsWith("Bearer "))
+  @Override
+  public Mono<SecurityContext> load(ServerWebExchange swe) {
+    return Mono.justOrEmpty(swe.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+        .filter(authHeader -> authHeader.startsWith("Bearer "))
+        .flatMap(
+            authHeader2 -> {
+              String authToken = authHeader2.substring(7);
+              Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
 
-                .flatMap(authHeader2 -> {
-                    String authToken = authHeader2.substring(7);
-                    Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
-
-                    return this.authenticationManager.authenticate(auth)
-                            .map(
-                                    SecurityContextImpl::new);
-                });
-    }
+              return this.authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
+            });
+  }
 }

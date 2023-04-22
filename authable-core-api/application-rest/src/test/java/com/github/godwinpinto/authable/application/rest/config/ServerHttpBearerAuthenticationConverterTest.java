@@ -1,8 +1,15 @@
 package com.github.godwinpinto.authable.application.rest.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+
 import com.github.godwinpinto.authable.commons.constants.ApplicationConstants;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
 import com.github.godwinpinto.authable.domain.auth.ports.api.AuthServiceAPI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -18,81 +25,69 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.test.StepVerifier;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-
-@ContextConfiguration(classes = {SecurityContextRepository.class,
-})
+@ContextConfiguration(
+    classes = {
+      SecurityContextRepository.class,
+    })
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServerHttpBearerAuthenticationConverterTest {
-    ServerHttpBearerAuthenticationConverter serverHttpBearerAuthenticationConverter;
+  ServerHttpBearerAuthenticationConverter serverHttpBearerAuthenticationConverter;
+  @MockBean AuthenticationManager authenticationManager;
+  @MockBean private AuthServiceAPI authServiceAPI;
 
-    @MockBean
-    private AuthServiceAPI authServiceAPI;
+  @BeforeAll
+  void setup() {
+    serverHttpBearerAuthenticationConverter =
+        new ServerHttpBearerAuthenticationConverter(authServiceAPI);
+  }
 
-    @MockBean
-    AuthenticationManager authenticationManager;
+  @Test
+  void convert_Test() {
+    MultiValueMap<String, String> headers = new HttpHeaders();
+    headers.set("Authorization", "Bearer TEST_JWT_TOKEN");
 
-    @BeforeAll
-    void setup() {
-        serverHttpBearerAuthenticationConverter = new ServerHttpBearerAuthenticationConverter(authServiceAPI);
-    }
+    MockServerHttpRequest request =
+        MockServerHttpRequest.get("/path")
+            .headers(headers) // .header("Authorization", "Bearer TEST_JWT_TOKEN")
+            .build();
+    String sampleToken = "TEST_TOKEN";
+    Map<String, Object> mapClaims = new HashMap<>();
+    mapClaims.put("sub", "TEST_USER_ID");
+    mapClaims.put(ApplicationConstants.JWT_ROLE_KEY, List.of("ROLE_ADMIN"));
+    mapClaims.put(ApplicationConstants.JWT_SYSTEM_ID_KEY, "TEST_SYSTEM");
 
-    @Test
-    void convert_Test() {
-        MultiValueMap<String, String> headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer TEST_JWT_TOKEN");
+    MockServerHttpResponse response = new MockServerHttpResponse();
+    ServerWebExchange exchange = MockServerWebExchange.from(request);
+    doReturn(true).when(authServiceAPI).validateToken(anyString());
+    doReturn(mapClaims).when(authServiceAPI).getClaims(anyString());
+    StepVerifier.create(serverHttpBearerAuthenticationConverter.convert(exchange))
+        .assertNext(
+            authentication -> {
+              assertEquals("TEST_USER_ID", ((UserDto) authentication.getPrincipal()).getUsername());
+            })
+        .verifyComplete();
+  }
 
-        MockServerHttpRequest request = MockServerHttpRequest.get("/path")
-                .headers(headers)//.header("Authorization", "Bearer TEST_JWT_TOKEN")
-                .build();
-        String sampleToken = "TEST_TOKEN";
-        Map<String, Object> mapClaims = new HashMap<>();
-        mapClaims.put("sub", "TEST_USER_ID");
-        mapClaims.put(ApplicationConstants.JWT_ROLE_KEY, List.of("ROLE_ADMIN"));
-        mapClaims.put(ApplicationConstants.JWT_SYSTEM_ID_KEY, "TEST_SYSTEM");
+  @Test
+  void convert_IncorrectBearerLength_Test() {
+    MultiValueMap<String, String> headers = new HttpHeaders();
+    headers.set("Authorization", "");
 
-        MockServerHttpResponse response = new MockServerHttpResponse();
-        ServerWebExchange exchange = MockServerWebExchange.from(request);
-        doReturn(true).when(authServiceAPI)
-                .validateToken(anyString());
-        doReturn(mapClaims).when(authServiceAPI)
-                .getClaims(anyString());
-        StepVerifier.create(serverHttpBearerAuthenticationConverter.convert(exchange))
-                .assertNext(authentication -> {
-                    assertEquals("TEST_USER_ID", ((UserDto) authentication.getPrincipal()).getUsername());
-                })
-                .verifyComplete();
-    }
+    MockServerHttpRequest request =
+        MockServerHttpRequest.get("/path")
+            .headers(headers) // .header("Authorization", "Bearer TEST_JWT_TOKEN")
+            .build();
+    String sampleToken = "TEST_TOKEN";
+    Map<String, Object> mapClaims = new HashMap<>();
+    mapClaims.put("sub", "TEST_USER_ID");
+    mapClaims.put(ApplicationConstants.JWT_ROLE_KEY, List.of("ROLE_ADMIN"));
+    mapClaims.put(ApplicationConstants.JWT_SYSTEM_ID_KEY, "TEST_SYSTEM");
 
-    @Test
-    void convert_IncorrectBearerLength_Test() {
-        MultiValueMap<String, String> headers = new HttpHeaders();
-        headers.set("Authorization", "");
-
-        MockServerHttpRequest request = MockServerHttpRequest.get("/path")
-                .headers(headers)//.header("Authorization", "Bearer TEST_JWT_TOKEN")
-                .build();
-        String sampleToken = "TEST_TOKEN";
-        Map<String, Object> mapClaims = new HashMap<>();
-        mapClaims.put("sub", "TEST_USER_ID");
-        mapClaims.put(ApplicationConstants.JWT_ROLE_KEY, List.of("ROLE_ADMIN"));
-        mapClaims.put(ApplicationConstants.JWT_SYSTEM_ID_KEY, "TEST_SYSTEM");
-
-        MockServerHttpResponse response = new MockServerHttpResponse();
-        ServerWebExchange exchange = MockServerWebExchange.from(request);
-        doReturn(true).when(authServiceAPI)
-                .validateToken(anyString());
-        doReturn(mapClaims).when(authServiceAPI)
-                .getClaims(anyString());
-        StepVerifier.create(serverHttpBearerAuthenticationConverter.convert(exchange))
-                .verifyComplete();
-    }
+    MockServerHttpResponse response = new MockServerHttpResponse();
+    ServerWebExchange exchange = MockServerWebExchange.from(request);
+    doReturn(true).when(authServiceAPI).validateToken(anyString());
+    doReturn(mapClaims).when(authServiceAPI).getClaims(anyString());
+    StepVerifier.create(serverHttpBearerAuthenticationConverter.convert(exchange)).verifyComplete();
+  }
 }
-

@@ -1,5 +1,6 @@
 package com.github.godwinpinto.authable.infrastructure.coredb.totp.entity;
 
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.annotation.AccessType;
@@ -9,74 +10,69 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDateTime;
-
 @Data
-//@Builder
+// @Builder
 @ToString
 @Table("TOTP_USER_MASTER")
 public class TOtpUserMasterEntity implements Persistable<String> {
 
-    @Id
-    @Column("TOTP_USER_ID")
-    private String userId;
+  @Id
+  @Column("TOTP_USER_ID")
+  private String userId;
 
-    @Column("SYSTEM_ID")
-    private String systemId;
+  @Column("SYSTEM_ID")
+  private String systemId;
 
-    @Column("TOTP_USER_SECRET")
-    private String userSecret;
+  @Column("TOTP_USER_SECRET")
+  private String userSecret;
 
-    @Column("NO_OF_ATTEMPTS")
-    private short noOfAttempts;
+  @Column("NO_OF_ATTEMPTS")
+  private short noOfAttempts;
 
+  @Column("LAST_LOGIN_DATE_TIME")
+  private LocalDateTime lastLoginDateTime;
 
-    @Column("LAST_LOGIN_DATE_TIME")
-    private LocalDateTime lastLoginDateTime;
+  @Column("INVALID_ATTEMPT_DATE_TIME")
+  private LocalDateTime invalidAttemptDateTime;
 
-    @Column("INVALID_ATTEMPT_DATE_TIME")
-    private LocalDateTime invalidAttemptDateTime;
+  @Column("LOCKED_DATE_TIME")
+  private LocalDateTime lockedDateTime;
 
-    @Column("LOCKED_DATE_TIME")
-    private LocalDateTime lockedDateTime;
+  @Column("ACCESS_TYPE")
+  private String accessType;
 
+  @Column("STATUS")
+  private String status;
 
-    @Column("ACCESS_TYPE")
-    private String accessType;
+  @Column("MODIFICATION_ID")
+  private String modificationId;
 
+  @Column("MODIFICATION_DATE_TIME")
+  private LocalDateTime modificationDateTime;
 
-    @Column("STATUS")
-    private String status;
+  @Column("CREATION_ID")
+  private String creationId;
 
-    @Column("MODIFICATION_ID")
-    private String modificationId;
+  @Column("CREATION_DATE_TIME")
+  private LocalDateTime creationDateTime;
 
-    @Column("MODIFICATION_DATE_TIME")
-    private LocalDateTime modificationDateTime;
+  @Transient
+  @AccessType(AccessType.Type.FIELD)
+  private boolean isNew;
 
-    @Column("CREATION_ID")
-    private String creationId;
+  @Override
+  public String getId() {
+    return userId;
+  }
 
-    @Column("CREATION_DATE_TIME")
-    private LocalDateTime creationDateTime;
+  @Override
+  @Transient
+  public boolean isNew() {
+    return this.isNew;
+  }
 
-    @Transient
-    @AccessType(AccessType.Type.FIELD)
-    private boolean isNew;
-
-    @Override
-    public String getId() {
-        return userId;
-    }
-
-    @Override
-    @Transient
-    public boolean isNew() {
-        return this.isNew;
-    }
-
-    public TOtpUserMasterEntity setAsNew(boolean isNew) {
-        this.isNew = isNew;
-        return this;
-    }
+  public TOtpUserMasterEntity setAsNew(boolean isNew) {
+    this.isNew = isNew;
+    return this;
+  }
 }

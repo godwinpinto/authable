@@ -9,18 +9,17 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper
 public interface TOtpRequestResponseDtoMapper {
-    TOtpRequestResponseDtoMapper INSTANCE = Mappers.getMapper(TOtpRequestResponseDtoMapper.class);
+  TOtpRequestResponseDtoMapper INSTANCE = Mappers.getMapper(TOtpRequestResponseDtoMapper.class);
 
-    CreateNewTOtpResponse createNewResponseFromDto(TOtpCreateNewDto tOtpCreateNewDto);
+  CreateNewTOtpResponse createNewResponseFromDto(TOtpCreateNewDto tOtpCreateNewDto);
 
-    GenericResponse unblockResponseFromDto(TOtpUnBlockUserDto tOtpUnBlockUserDto);
+  GenericResponse unblockResponseFromDto(TOtpUnBlockUserDto tOtpUnBlockUserDto);
 
-    GenericResponse unSubscribeResponseFromDto(TOtpUnSubscribeUserDto tOtpUnSubscribeUserDto);
+  GenericResponse unSubscribeResponseFromDto(TOtpUnSubscribeUserDto tOtpUnSubscribeUserDto);
 
-    GenericResponse statusResponseFromDto(TOtpUserStatusDto tOtpUserStatusDto);
+  GenericResponse statusResponseFromDto(TOtpUserStatusDto tOtpUserStatusDto);
 
-    GenericResponse verifyResponseFromDto(TOtpVerifyDto tOtpVerifyDto);
+  GenericResponse verifyResponseFromDto(TOtpVerifyDto tOtpVerifyDto);
 
-    GenerateQrResponse generateQrResponseFromDto(TOtpGenerateQrDto tOtpGenerateQrDto);
-
+  GenerateQrResponse generateQrResponseFromDto(TOtpGenerateQrDto tOtpGenerateQrDto);
 }

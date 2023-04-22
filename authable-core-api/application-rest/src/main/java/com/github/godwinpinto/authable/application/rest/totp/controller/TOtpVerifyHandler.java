@@ -19,46 +19,51 @@ import reactor.core.publisher.Mono;
 @Component
 public class TOtpVerifyHandler extends AbstractValidationHandler<VerifyTOtpRequest, Validator> {
 
-    private final TOtpUserServiceAPI tOtpUserServiceAPI;
-    private final FetchPrincipalComponent fetchPrincipalComponent;
+  private final TOtpUserServiceAPI tOtpUserServiceAPI;
+  private final FetchPrincipalComponent fetchPrincipalComponent;
 
+  TOtpVerifyHandler(
+      Validator validator,
+      TOtpUserServiceAPI tOtpUserServiceAPI,
+      FetchPrincipalComponent fetchPrincipalComponent) {
+    super(VerifyTOtpRequest.class, validator);
+    this.tOtpUserServiceAPI = tOtpUserServiceAPI;
+    this.fetchPrincipalComponent = fetchPrincipalComponent;
+  }
 
-    TOtpVerifyHandler(Validator validator, TOtpUserServiceAPI tOtpUserServiceAPI, FetchPrincipalComponent fetchPrincipalComponent) {
-        super(VerifyTOtpRequest.class, validator);
-        this.tOtpUserServiceAPI = tOtpUserServiceAPI;
-        this.fetchPrincipalComponent = fetchPrincipalComponent;
+  @Override
+  public Mono<ServerResponse> processBody(
+      VerifyTOtpRequest verifyTOtpRequest, ServerRequest serverRequest) {
+    return fetchPrincipalComponent
+        .getAuthDetails()
+        .flatMap(user -> callService(user, verifyTOtpRequest))
+        .flatMap(this::processSuccessResponse)
+        .switchIfEmpty(processEmpty());
+  }
 
-    }
+  private Mono<TOtpVerifyDto> callService(UserDto user, VerifyTOtpRequest verifyTOtpRequest) {
+    return tOtpUserServiceAPI.verify(
+        user.getSystemId().trim(),
+        verifyTOtpRequest.getUserId().trim(),
+        verifyTOtpRequest.getOtp());
+  }
 
-    @Override
-    public Mono<ServerResponse> processBody(VerifyTOtpRequest verifyTOtpRequest, ServerRequest serverRequest) {
-        return fetchPrincipalComponent.getAuthDetails()
-                .flatMap(user -> callService(user, verifyTOtpRequest))
-                .flatMap(this::processSuccessResponse)
-                .switchIfEmpty(processEmpty());
-    }
+  private Mono<ServerResponse> processSuccessResponse(TOtpVerifyDto tOtpVerifyDto) {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                TOtpRequestResponseDtoMapper.INSTANCE.verifyResponseFromDto(tOtpVerifyDto)));
+  }
 
-    private Mono<TOtpVerifyDto> callService(UserDto user, VerifyTOtpRequest verifyTOtpRequest) {
-        return tOtpUserServiceAPI
-                .verify(user.getSystemId()
-                        .trim(), verifyTOtpRequest.getUserId()
-                        .trim(), verifyTOtpRequest.getOtp());
-    }
-
-    private Mono<ServerResponse> processSuccessResponse(TOtpVerifyDto tOtpVerifyDto) {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(
-                        TOtpRequestResponseDtoMapper.INSTANCE.verifyResponseFromDto(tOtpVerifyDto)));
-    }
-
-    private Mono<ServerResponse> processEmpty() {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(GenericResponse.builder()
-                        .statusCode("300")
-                        .statusDescription("No active subscription")
-                        .build()));
-    }
-
+  private Mono<ServerResponse> processEmpty() {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                GenericResponse.builder()
+                    .statusCode("300")
+                    .statusDescription("No active subscription")
+                    .build()));
+  }
 }

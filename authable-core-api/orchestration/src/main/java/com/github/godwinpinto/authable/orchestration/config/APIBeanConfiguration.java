@@ -10,24 +10,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class APIBeanConfiguration {
 
-    private UserService userService;
+  private UserService userService;
 
-    private TOtpUserUseCase tOtpUserUseCase;
+  private TOtpUserUseCase tOtpUserUseCase;
 
-    public APIBeanConfiguration(UserService userService, TOtpUserUseCase tOtpUserUseCase) {
-        this.userService = userService;
-        this.tOtpUserUseCase = tOtpUserUseCase;
-    }
+  public APIBeanConfiguration(UserService userService, TOtpUserUseCase tOtpUserUseCase) {
+    this.userService = userService;
+    this.tOtpUserUseCase = tOtpUserUseCase;
+  }
 
-    @Bean
-    AuthServiceAPI authServiceAPI() {
-        return userService;
-    }
+  @Bean
+  AuthServiceAPI authServiceAPI() {
+    return userService;
+  }
 
-    @Bean
-    TOtpUserServiceAPI tOtpUserServiceAPI() {
-        return tOtpUserUseCase;
-    }
-
-
+  @Bean
+  TOtpUserServiceAPI tOtpUserServiceAPI() {
+    return tOtpUserUseCase;
+  }
 }

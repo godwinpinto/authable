@@ -1,5 +1,10 @@
 package com.github.godwinpinto.authable.infrastructure.coredb.auth.adapters;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+
 import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
 import com.github.godwinpinto.authable.domain.auth.dto.SystemUserMasterDto;
 import com.github.godwinpinto.authable.infrastructure.coredb.auth.entity.SystemUserMasterEntity;
@@ -15,86 +20,82 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {SystemUserMasterAdapter.class})
 @TestPropertySource(properties = {"infrastructure-coredb.system-id-padding=5"})
 class SystemUserMasterAdapterTest {
-    @Autowired
-    SystemUserMasterAdapter systemUserMasterAdapter;
+  @Autowired SystemUserMasterAdapter systemUserMasterAdapter;
 
-    @MockBean
-    SystemUserMasterRepository systemUserMasterRepository;
+  @MockBean SystemUserMasterRepository systemUserMasterRepository;
 
-    @Test
-    void updateInvalidAttempt_Test() {
-        doReturn(Mono.just(1L)).when(systemUserMasterRepository)
-                .updateInvalidAttempt(any(), any(short.class), any());
-        StepVerifier.create(systemUserMasterAdapter.updateInvalidAttempt("ACCESS_ID", (short) 0, DateTimeUtils.getCurrentLocalDateTime()))
-                .assertNext(val -> assertEquals(val, 1L))
-                .verifyComplete();
-    }
+  @Test
+  void updateInvalidAttempt_Test() {
+    doReturn(Mono.just(1L))
+        .when(systemUserMasterRepository)
+        .updateInvalidAttempt(any(), any(short.class), any());
+    StepVerifier.create(
+            systemUserMasterAdapter.updateInvalidAttempt(
+                "ACCESS_ID", (short) 0, DateTimeUtils.getCurrentLocalDateTime()))
+        .assertNext(val -> assertEquals(val, 1L))
+        .verifyComplete();
+  }
 
-    @Test
-    void updateLoginSuccess_Test() {
-        doReturn(Mono.just(1L)).when(systemUserMasterRepository)
-                .updateLoginSuccess(any(), any());
-        StepVerifier.create(systemUserMasterAdapter.updateLoginSuccess("ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime()))
-                .assertNext(val -> assertEquals(val, 1L))
-                .verifyComplete();
-    }
+  @Test
+  void updateLoginSuccess_Test() {
+    doReturn(Mono.just(1L)).when(systemUserMasterRepository).updateLoginSuccess(any(), any());
+    StepVerifier.create(
+            systemUserMasterAdapter.updateLoginSuccess(
+                "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime()))
+        .assertNext(val -> assertEquals(val, 1L))
+        .verifyComplete();
+  }
 
-    @Test
-    void updateDisable_Test() {
-        doReturn(Mono.just(1L)).when(systemUserMasterRepository)
-                .updateDisable(any(), any(), any());
-        StepVerifier.create(systemUserMasterAdapter.updateDisable("ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
-                .assertNext(val -> assertEquals(val, 1L))
-                .verifyComplete();
+  @Test
+  void updateDisable_Test() {
+    doReturn(Mono.just(1L)).when(systemUserMasterRepository).updateDisable(any(), any(), any());
+    StepVerifier.create(
+            systemUserMasterAdapter.updateDisable(
+                "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
+        .assertNext(val -> assertEquals(val, 1L))
+        .verifyComplete();
+  }
 
-    }
+  @Test
+  void findById_Test() {
+    SystemUserMasterDto userMasterDto = new SystemUserMasterDto();
+    userMasterDto.setUserName("TEST_USER");
 
-    @Test
-    void findById_Test() {
-        SystemUserMasterDto userMasterDto = new SystemUserMasterDto();
-        userMasterDto.setUserName("TEST_USER");
+    SystemUserMasterEntity systemUserMasterEntity =new
+        SystemUserMasterEntity();
+   systemUserMasterEntity.setUserName("TEST_USER");
 
-        SystemUserMasterEntity systemUserMasterEntity = SystemUserMasterEntity.builder().
-                userName("TEST_USER")
-                .build();
+    doReturn(Mono.just(systemUserMasterEntity))
+        .when(systemUserMasterRepository)
+        .findById("TEST_USER");
+    StepVerifier.create(systemUserMasterAdapter.findById("TEST_USER"))
+        .assertNext(res -> assertEquals(res.getUserName(), userMasterDto.getUserName()))
+        .verifyComplete();
+  }
 
-        doReturn(Mono.just(systemUserMasterEntity)).when(systemUserMasterRepository)
-                .findById("TEST_USER");
-        StepVerifier.create(systemUserMasterAdapter.findById("TEST_USER"))
-                .assertNext(res -> assertEquals(res.getUserName(), userMasterDto.getUserName()))
-                .verifyComplete();
-    }
+  @Test
+  void findBySystemUser_Test() {
+    SystemUserMasterDto userMasterDto = new SystemUserMasterDto();
+    userMasterDto.setUserName("TEST_USER");
 
-    @Test
-    void findBySystemUser_Test() {
-        SystemUserMasterDto userMasterDto = new SystemUserMasterDto();
-        userMasterDto.setUserName("TEST_USER");
+    SystemUserMasterEntity systemUserMasterEntity =new
+        SystemUserMasterEntity();
+    systemUserMasterEntity.setUserName("TEST_USER");
 
-        SystemUserMasterEntity systemUserMasterEntity = SystemUserMasterEntity.builder().
-                userName("TEST_USER")
-                .build();
+    doReturn(Mono.just(systemUserMasterEntity))
+        .when(systemUserMasterRepository)
+        .findBySystemUser("TEST_SYSTEM", "TEST_USER_NAME");
+    StepVerifier.create(systemUserMasterAdapter.findBySystemUser("TEST_SYSTEM", "TEST_USER_NAME"))
+        .assertNext(res -> assertEquals(res.getUserName(), userMasterDto.getUserName()))
+        .verifyComplete();
+  }
 
-        doReturn(Mono.just(systemUserMasterEntity)).when(systemUserMasterRepository)
-                .findBySystemUser("TEST_SYSTEM", "TEST_USER_NAME");
-        StepVerifier.create(systemUserMasterAdapter.findBySystemUser("TEST_SYSTEM", "TEST_USER_NAME"))
-                .assertNext(res -> assertEquals(res.getUserName(), userMasterDto.getUserName()))
-                .verifyComplete();
-    }
-
-    @Test
-    void entityToDto() {
-        assertNull(SystemUserMasterMapper.INSTANCE.systemUserMasterToDto(null));
-    }
-
-
+  @Test
+  void entityToDto() {
+    assertNull(SystemUserMasterMapper.INSTANCE.systemUserMasterToDto(null));
+  }
 }
-

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GenerateQrResponse {
-    private String statusCode;
-    private String statusDescription;
-    private String qrImage;
+  private String statusCode;
+  private String statusDescription;
+  private String qrImage;
 }

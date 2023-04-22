@@ -7,10 +7,9 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper
 public interface TOtpUserMasterMapper {
-    TOtpUserMasterMapper INSTANCE = Mappers.getMapper(TOtpUserMasterMapper.class);
+  TOtpUserMasterMapper INSTANCE = Mappers.getMapper(TOtpUserMasterMapper.class);
 
-    TOtpUserMasterDto tOtpUserMasterToDto(TOtpUserMasterEntity tOtpUserMasterEntity);
+  TOtpUserMasterDto tOtpUserMasterToDto(TOtpUserMasterEntity tOtpUserMasterEntity);
 
-    TOtpUserMasterEntity dtoToEntity(TOtpUserMasterDto tOtpUserMasterDto);
-
+  TOtpUserMasterEntity dtoToEntity(TOtpUserMasterDto tOtpUserMasterDto);
 }

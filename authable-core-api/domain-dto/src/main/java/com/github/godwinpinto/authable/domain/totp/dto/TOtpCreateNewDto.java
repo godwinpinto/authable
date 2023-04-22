@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TOtpCreateNewDto {
 
-    private String statusCode;
-    private String statusDescription;
-    private String secretKey;
+  private String statusCode;
+  private String statusDescription;
+  private String secretKey;
 }

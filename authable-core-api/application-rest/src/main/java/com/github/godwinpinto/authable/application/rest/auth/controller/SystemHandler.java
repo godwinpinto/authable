@@ -15,48 +15,44 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 @Controller("systemHandler")
-
 public class SystemHandler extends AbstractValidationHandler<LoginRequest, Validator> {
 
-    private final AuthServiceAPI authServiceAPI;
+  private final AuthServiceAPI authServiceAPI;
 
+  SystemHandler(Validator validator, AuthServiceAPI authServiceAPI) {
+    super(LoginRequest.class, validator);
+    this.authServiceAPI = authServiceAPI;
+  }
 
-    SystemHandler(Validator validator, AuthServiceAPI authServiceAPI) {
-        super(LoginRequest.class, validator);
-        this.authServiceAPI = authServiceAPI;
+  @Override
+  public Mono<ServerResponse> processBody(LoginRequest loginRequest, ServerRequest serverRequest) {
 
-    }
+    return authServiceAPI
+        .authenticate(
+            loginRequest.getSystemId(), loginRequest.getUserId(), loginRequest.getUserSecret())
+        .flatMap(this::prepareSuccessResponse)
+        .onErrorResume(this::prepareErrorResponse)
+        .switchIfEmpty(prepareOnEmptyResponse());
+  }
 
-    @Override
-    public Mono<ServerResponse> processBody(LoginRequest loginRequest, ServerRequest serverRequest) {
+  private Mono<ServerResponse> prepareSuccessResponse(UserDto userDto) {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                LoginResponse.builder()
+                    .accessToken(userDto.getPassword())
+                    .expiry(userDto.getExpiryTime())
+                    .build()));
+  }
 
-        return authServiceAPI.authenticate(loginRequest.getSystemId(),
-                        loginRequest.getUserId(), loginRequest.getUserSecret())
-                .flatMap(this::prepareSuccessResponse)
-                .onErrorResume(this::prepareErrorResponse)
-                .switchIfEmpty(prepareOnEmptyResponse());
-    }
+  private Mono<ServerResponse> prepareErrorResponse(Throwable e) {
+    return ServerResponse.badRequest()
+        .body(BodyInserters.fromValue(new ApiResponse(400, e.getMessage(), null)));
+  }
 
-    private Mono<ServerResponse> prepareSuccessResponse(UserDto userDto) {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(LoginResponse.builder()
-                        .accessToken(userDto.getPassword())
-                        .expiry(userDto.getExpiryTime())
-                        .build()));
-    }
-
-    private Mono<ServerResponse> prepareErrorResponse(Throwable e) {
-        return ServerResponse.badRequest()
-                .body(BodyInserters
-                        .fromValue(new ApiResponse(400, e.getMessage(), null)));
-    }
-
-    private Mono<ServerResponse> prepareOnEmptyResponse() {
-        return ServerResponse.badRequest()
-                .body(BodyInserters
-                        .fromValue(new ApiResponse(400, "User does not exist", null)));
-    }
-
-
+  private Mono<ServerResponse> prepareOnEmptyResponse() {
+    return ServerResponse.badRequest()
+        .body(BodyInserters.fromValue(new ApiResponse(400, "User does not exist", null)));
+  }
 }

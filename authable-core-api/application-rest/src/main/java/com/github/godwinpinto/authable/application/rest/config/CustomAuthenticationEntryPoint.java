@@ -9,10 +9,10 @@ import reactor.core.publisher.Mono;
 
 public class CustomAuthenticationEntryPoint implements ServerAuthenticationEntryPoint {
 
-    @Override
-    public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        return new AuthFailureHandler().formatResponse(response);
-    }
+  @Override
+  public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {
+    ServerHttpResponse response = exchange.getResponse();
+    response.setStatusCode(HttpStatus.UNAUTHORIZED);
+    return new AuthFailureHandler().formatResponse(response);
+  }
 }

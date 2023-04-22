@@ -1,5 +1,9 @@
 package com.github.godwinpinto.authable.application.rest.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -26,71 +30,75 @@ import org.springframework.web.server.session.WebSessionManager;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-
-@ContextConfiguration(classes = {SecurityContextRepository.class,
-})
+@ContextConfiguration(
+    classes = {
+      SecurityContextRepository.class,
+    })
 @ExtendWith(SpringExtension.class)
 class SecurityContextRepositoryTest {
-    @MockBean
-    private AuthenticationManager authenticationManager;
+  @MockBean private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private SecurityContextRepository securityContextRepository;
+  @Autowired private SecurityContextRepository securityContextRepository;
 
+  @Test
+  void testSave2() {
+    ServerHttpRequestDecorator request = mock(ServerHttpRequestDecorator.class);
+    when(request.getHeaders()).thenReturn(new HttpHeaders());
+    when(request.getId()).thenReturn("https://example.org/example");
+    Mono<WebSession> mono = mock(Mono.class);
+    when(mono.cache()).thenReturn(null);
+    WebSessionManager sessionManager = mock(WebSessionManager.class);
+    when(sessionManager.getSession(Mockito.<ServerWebExchange>any())).thenReturn(mono);
+    MockServerHttpResponse response = new MockServerHttpResponse();
+    DefaultServerCodecConfigurer codecConfigurer = new DefaultServerCodecConfigurer();
+    SecurityContextServerWebExchange swe =
+        new SecurityContextServerWebExchange(
+            new SecurityContextServerWebExchange(
+                new SecurityContextServerWebExchange(
+                    new SecurityContextServerWebExchange(
+                        new DefaultServerWebExchange(
+                            request,
+                            response,
+                            sessionManager,
+                            codecConfigurer,
+                            new AcceptHeaderLocaleContextResolver()),
+                        null),
+                    null),
+                null),
+            null);
 
-    @Test
-    void testSave2() {
-        ServerHttpRequestDecorator request = mock(ServerHttpRequestDecorator.class);
-        when(request.getHeaders()).thenReturn(new HttpHeaders());
-        when(request.getId()).thenReturn("https://example.org/example");
-        Mono<WebSession> mono = mock(Mono.class);
-        when(mono.cache()).thenReturn(null);
-        WebSessionManager sessionManager = mock(WebSessionManager.class);
-        when(sessionManager.getSession(Mockito.<ServerWebExchange>any())).thenReturn(mono);
-        MockServerHttpResponse response = new MockServerHttpResponse();
-        DefaultServerCodecConfigurer codecConfigurer = new DefaultServerCodecConfigurer();
-        SecurityContextServerWebExchange swe = new SecurityContextServerWebExchange(
-                new SecurityContextServerWebExchange(new SecurityContextServerWebExchange(
-                        new SecurityContextServerWebExchange(new DefaultServerWebExchange(request, response, sessionManager,
-                                codecConfigurer, new AcceptHeaderLocaleContextResolver()), null),
-                        null), null),
-                null);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> securityContextRepository.save(swe, new SecurityContextImpl()));
+    verify(request).getId();
+    verify(request, atLeast(1)).getHeaders();
+    verify(sessionManager).getSession(Mockito.<ServerWebExchange>any());
+    verify(mono).cache();
+  }
 
-        assertThrows(UnsupportedOperationException.class,
-                () -> securityContextRepository.save(swe, new SecurityContextImpl()));
-        verify(request).getId();
-        verify(request, atLeast(1)).getHeaders();
-        verify(sessionManager).getSession(Mockito.<ServerWebExchange>any());
-        verify(mono).cache();
-    }
+  @Test
+  void testSave3() {
 
+    MultiValueMap<String, String> headers = new HttpHeaders();
+    headers.set("Authorization", "Bearer TEST_JWT_TOKEN");
 
-    @Test
-    void testSave3() {
+    MockServerHttpRequest request =
+        MockServerHttpRequest.get("/path")
+            .headers(headers) // .header("Authorization", "Bearer TEST_JWT_TOKEN")
+            .build();
 
-        MultiValueMap<String, String> headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer TEST_JWT_TOKEN");
+    MockServerHttpResponse response = new MockServerHttpResponse();
+    ServerWebExchange exchange = MockServerWebExchange.from(request);
 
-        MockServerHttpRequest request = MockServerHttpRequest.get("/path")
-                .headers(headers)//.header("Authorization", "Bearer TEST_JWT_TOKEN")
-                .build();
+    Authentication auth =
+        new UsernamePasswordAuthenticationToken("TEST_JWT_TOKEN", "TEST_JWT_TOKEN");
 
-        MockServerHttpResponse response = new MockServerHttpResponse();
-        ServerWebExchange exchange = MockServerWebExchange.from(request);
-
-        Authentication auth = new UsernamePasswordAuthenticationToken("TEST_JWT_TOKEN", "TEST_JWT_TOKEN");
-
-        doReturn(Mono.just(auth)).when(authenticationManager)
-                .authenticate(any(Authentication.class));
-        StepVerifier.create(securityContextRepository.load(exchange))
-                .assertNext(securityContext -> {
-                    assertEquals(securityContext.getAuthentication()
-                            .getPrincipal(), "TEST_JWT_TOKEN");
-                })
-                .verifyComplete();
-    }
+    doReturn(Mono.just(auth)).when(authenticationManager).authenticate(any(Authentication.class));
+    StepVerifier.create(securityContextRepository.load(exchange))
+        .assertNext(
+            securityContext -> {
+              assertEquals(securityContext.getAuthentication().getPrincipal(), "TEST_JWT_TOKEN");
+            })
+        .verifyComplete();
+  }
 }
-

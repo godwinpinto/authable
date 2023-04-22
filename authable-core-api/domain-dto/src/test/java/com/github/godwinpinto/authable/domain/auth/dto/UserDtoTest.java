@@ -1,83 +1,74 @@
 package com.github.godwinpinto.authable.domain.auth.dto;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.util.AssertionErrors.assertNotNull;
 
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
 class UserDtoTest {
 
+  UserDto userDto;
+  UserDto userDto1;
 
-    UserDto userDto;
-    UserDto userDto1;
+  UserDto userDto3;
 
-    UserDto userDto3;
+  @Test
+  void testFields() {
+    userDto = new UserDto();
 
-    @Test
-    void testFields() {
-        userDto = new UserDto();
+    String password = "PASSWORD";
+    userDto.setPassword(password);
 
-        String password = "PASSWORD";
-        userDto.setPassword(password);
+    boolean enabled = true;
+    userDto.setEnabled(enabled);
 
-        boolean enabled = true;
-        userDto.setEnabled(enabled);
+    List<Role> roles = List.of(Role.ROLE_USER, Role.ROLE_ADMIN);
+    userDto.setRoles(roles);
 
-        List<Role> roles = List.of(Role.ROLE_USER, Role.ROLE_ADMIN);
-        userDto.setRoles(roles);
+    String systemId = "SYSTEMID";
+    userDto.setSystemId(systemId);
 
-        String systemId = "SYSTEMID";
-        userDto.setSystemId(systemId);
+    String username = "USERNAME";
+    userDto.setUsername(username);
 
-        String username = "USERNAME";
-        userDto.setUsername(username);
+    long expiryTime = 1l;
+    userDto.setExpiryTime(expiryTime);
 
-        long expiryTime = 1l;
-        userDto.setExpiryTime(expiryTime);
+    String jwtCode = "JWT";
+    userDto.setJwtCode(jwtCode);
 
-        String jwtCode = "JWT";
-        userDto.setJwtCode(jwtCode);
+    userDto1 =
+        UserDto.builder()
+            .password(password)
+            .roles(roles)
+            .username(username)
+            .systemId(systemId)
+            .enabled(enabled)
+            .jwtCode(jwtCode)
+            .expiryTime(expiryTime)
+            .build();
 
-        userDto1 = UserDto.builder()
-                .password(password)
-                .roles(roles)
-                .username(username)
-                .systemId(systemId)
-                .enabled(enabled)
-                .jwtCode(jwtCode)
-                .expiryTime(expiryTime)
-                .build();
+    UserDto userDto2 = new UserDto();
 
+    assertEquals(userDto1.toString(), userDto.toString());
 
-        UserDto userDto2 = new UserDto();
+    assertEquals(userDto.isAccountNonExpired(), false);
+    assertEquals(userDto.isAccountNonLocked(), false);
+    assertEquals(userDto.isCredentialsNonExpired(), false);
+    assertEquals(userDto.isEnabled(), true);
 
-        assertEquals(
-                userDto1.toString(),
-                userDto.toString());
+    assertNotNull("Error null authorities", userDto.getAuthorities());
 
-        assertEquals(userDto.isAccountNonExpired(), false);
-        assertEquals(userDto.isAccountNonLocked(), false);
-        assertEquals(userDto.isCredentialsNonExpired(), false);
-        assertEquals(userDto.isEnabled(), true);
+    assertNotNull("Not null", userDto2);
 
-        assertNotNull("Error null authorities", userDto.getAuthorities());
+    userDto3 = new UserDto(username, systemId, jwtCode, password, expiryTime, false, roles);
 
-        assertNotNull("Not null", userDto2);
+    int expectedHashCodeResult = userDto3.hashCode();
+    assertEquals(expectedHashCodeResult, userDto3.hashCode());
 
-        userDto3 = new UserDto(username, systemId, jwtCode, password, expiryTime, false, roles);
-
-        int expectedHashCodeResult = userDto3.hashCode();
-        assertEquals(expectedHashCodeResult, userDto3.hashCode());
-
-        int expectedHashCodeResultNotSame = userDto1.hashCode();
-        assertNotEquals(expectedHashCodeResultNotSame, userDto2.hashCode());
-
-
-    }
-
-
+    int expectedHashCodeResultNotSame = userDto1.hashCode();
+    assertNotEquals(expectedHashCodeResultNotSame, userDto2.hashCode());
+  }
 }
-

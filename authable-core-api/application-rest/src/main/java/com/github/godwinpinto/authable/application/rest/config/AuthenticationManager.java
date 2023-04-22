@@ -10,22 +10,20 @@ import reactor.core.publisher.Mono;
 @Component
 public class AuthenticationManager implements ReactiveAuthenticationManager {
 
-    /**
-     * private AuthServiceAPI authServiceAPI;
-     * <p>
-     * public AuthenticationManager(AuthServiceAPI authServiceAPI) {
-     * this.authServiceAPI = authServiceAPI;
-     * }
-     */
+  /**
+   * private AuthServiceAPI authServiceAPI;
+   *
+   * <p>public AuthenticationManager(AuthServiceAPI authServiceAPI) { this.authServiceAPI =
+   * authServiceAPI; }
+   */
+  @Override
+  @SuppressWarnings("unchecked")
+  public Mono<Authentication> authenticate(Authentication authentication) {
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public Mono<Authentication> authenticate(Authentication authentication) {
+    UserDto principal = (UserDto) authentication.getPrincipal();
 
-        UserDto principal = (UserDto) authentication.getPrincipal();
-
-        return Mono.just(
-                new UsernamePasswordAuthenticationToken(principal,
-                        authentication.getCredentials(), principal.getAuthorities()));
-    }
+    return Mono.just(
+        new UsernamePasswordAuthenticationToken(
+            principal, authentication.getCredentials(), principal.getAuthorities()));
+  }
 }

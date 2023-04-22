@@ -1,5 +1,10 @@
 package com.github.godwinpinto.authable.infrastructure.coredb.totp.adapters;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+
 import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
 import com.github.godwinpinto.authable.infrastructure.coredb.totp.entity.TOtpUserMasterEntity;
@@ -15,142 +20,129 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-
 @ContextConfiguration(classes = {TOtpUserMasterAdapter.class})
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(properties = {"infrastructure-coredb.totp-user-id-padding=50"})
 class TOtpUserMasterAdapterTest {
-    @Autowired
-    private TOtpUserMasterAdapter tOtpUserMasterAdapter;
+  @MockBean TOtpUserMasterRepository tOtpUserMasterRepository;
+  @Autowired private TOtpUserMasterAdapter tOtpUserMasterAdapter;
 
-    @MockBean
-    TOtpUserMasterRepository tOtpUserMasterRepository;
+  @Test
+  void updateInvalidAttempt_Test() {
+    doReturn(Mono.just(1L))
+        .when(tOtpUserMasterRepository)
+        .updateInvalidAttempt(any(), any(short.class), any());
+    StepVerifier.create(
+            tOtpUserMasterAdapter.updateInvalidAttempt(
+                "ACCESS_ID", (short) 0, DateTimeUtils.getCurrentLocalDateTime()))
+        .assertNext(val -> assertEquals(val, 1L))
+        .verifyComplete();
+  }
 
-    @Test
-    void updateInvalidAttempt_Test() {
-        doReturn(Mono.just(1L)).when(tOtpUserMasterRepository)
-                .updateInvalidAttempt(any(), any(short.class), any());
-        StepVerifier.create(tOtpUserMasterAdapter.updateInvalidAttempt("ACCESS_ID", (short) 0, DateTimeUtils.getCurrentLocalDateTime()))
-                .assertNext(val -> assertEquals(val, 1L))
-                .verifyComplete();
-    }
+  @Test
+  void updateLoginSuccess_Test() {
+    doReturn(Mono.just(1L)).when(tOtpUserMasterRepository).updateLoginSuccess(any(), any());
+    StepVerifier.create(
+            tOtpUserMasterAdapter.updateLoginSuccess(
+                "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime()))
+        .assertNext(val -> assertEquals(val, 1L))
+        .verifyComplete();
+  }
 
-    @Test
-    void updateLoginSuccess_Test() {
-        doReturn(Mono.just(1L)).when(tOtpUserMasterRepository)
-                .updateLoginSuccess(any(), any());
-        StepVerifier.create(tOtpUserMasterAdapter.updateLoginSuccess("ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime()))
-                .assertNext(val -> assertEquals(val, 1L))
-                .verifyComplete();
-    }
+  @Test
+  void updateDisable_Test() {
+    doReturn(Mono.just(1L)).when(tOtpUserMasterRepository).updateDisable(any(), any(), any());
+    StepVerifier.create(
+            tOtpUserMasterAdapter.updateDisable(
+                "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
+        .assertNext(val -> assertEquals(val, 1L))
+        .verifyComplete();
+  }
 
-    @Test
-    void updateDisable_Test() {
-        doReturn(Mono.just(1L)).when(tOtpUserMasterRepository)
-                .updateDisable(any(), any(), any());
-        StepVerifier.create(tOtpUserMasterAdapter.updateDisable("ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
-                .assertNext(val -> assertEquals(val, 1L))
-                .verifyComplete();
+  @Test
+  void findById_Test() {
+    TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder().userId("TEST_USER").build();
 
-    }
+    TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
+    tOtpUserMasterEntity.setUserId("TEST_USER");
 
-    @Test
-    void findById_Test() {
-        TOtpUserMasterDto tOtpUserMasterDto = TOtpUserMasterDto.builder()
-                .userId("TEST_USER")
-                .build();
+    doReturn(Mono.just(tOtpUserMasterEntity))
+        .when(tOtpUserMasterRepository)
+        .findById(any(String.class));
+    StepVerifier.create(tOtpUserMasterAdapter.findById("TEST_USER"))
+        .assertNext(res -> assertEquals(res.getUserId(), tOtpUserMasterDto.getUserId()))
+        .verifyComplete();
+  }
 
-        TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
-        tOtpUserMasterEntity.setUserId("TEST_USER");
+  @Test
+  void removeDisabledStatus_Test() {
+    doReturn(Mono.just(1L))
+        .when(tOtpUserMasterRepository)
+        .removeDisabledStatus(any(), any(), any());
+    StepVerifier.create(
+            tOtpUserMasterAdapter.removeDisabledStatus(
+                "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
+        .assertNext(val -> assertEquals(val, 1L))
+        .verifyComplete();
+  }
 
-        doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository)
-                .findById(any(String.class));
-        StepVerifier.create(tOtpUserMasterAdapter.findById("TEST_USER"))
-                .assertNext(res -> assertEquals(res.getUserId(), tOtpUserMasterDto.getUserId()))
-                .verifyComplete();
-    }
+  @Test
+  void updateEntity_Test() {
+    TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
+    tOtpUserMasterEntity.setUserId("TEST_USER");
+    TOtpUserMasterDto userMasterDto = TOtpUserMasterDto.builder().build();
+    doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository).save(any());
+    StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
+        .assertNext(val -> assertEquals(val, 1L))
+        .verifyComplete();
 
-    @Test
-    void removeDisabledStatus_Test() {
-        doReturn(Mono.just(1L)).when(tOtpUserMasterRepository)
-                .removeDisabledStatus(any(), any(), any());
-        StepVerifier.create(tOtpUserMasterAdapter.removeDisabledStatus("ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
-                .assertNext(val -> assertEquals(val, 1L))
-                .verifyComplete();
-    }
+    doReturn(Mono.error(new Exception("Some Exception")))
+        .when(tOtpUserMasterRepository)
+        .save(any());
 
-    @Test
-    void updateEntity_Test() {
-        TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
-        tOtpUserMasterEntity.setUserId("TEST_USER");
-        TOtpUserMasterDto userMasterDto = TOtpUserMasterDto.builder()
-                .build();
-        doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository)
-                .save(any());
-        StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
-                .assertNext(val -> assertEquals(val, 1L))
-                .verifyComplete();
+    StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
+        .assertNext(val -> assertEquals(val, 0L))
+        .verifyComplete();
 
-        doReturn(Mono.error(new Exception("Some Exception"))).when(tOtpUserMasterRepository)
-                .save(any());
+    doReturn(Mono.empty()).when(tOtpUserMasterRepository).save(any());
 
-        StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
-                .assertNext(val -> assertEquals(val, 0L))
-                .verifyComplete();
+    StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
+        .assertNext(val -> assertEquals(val, 0L))
+        .verifyComplete();
+  }
 
-        doReturn(Mono.empty()).when(tOtpUserMasterRepository)
-                .save(any());
+  @Test
+  void createEntity_Test() {
+    TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
+    tOtpUserMasterEntity.setUserId("TEST_USER");
+    TOtpUserMasterDto userMasterDto = TOtpUserMasterDto.builder().build();
+    doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository).save(any());
+    StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
+        .assertNext(val -> assertEquals(true, val))
+        .verifyComplete();
 
-        StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
-                .assertNext(val -> assertEquals(val, 0L))
-                .verifyComplete();
+    doReturn(Mono.error(new Exception("Some Exception")))
+        .when(tOtpUserMasterRepository)
+        .save(any());
 
+    StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
+        .assertNext(val -> assertEquals(false, val))
+        .verifyComplete();
 
-    }
+    doReturn(Mono.empty()).when(tOtpUserMasterRepository).save(any());
 
-    @Test
-    void createEntity_Test() {
-        TOtpUserMasterEntity tOtpUserMasterEntity = new TOtpUserMasterEntity();
-        tOtpUserMasterEntity.setUserId("TEST_USER");
-        TOtpUserMasterDto userMasterDto = TOtpUserMasterDto.builder()
-                .build();
-        doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository)
-                .save(any());
-        StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
-                .assertNext(val -> assertEquals(true, val))
-                .verifyComplete();
+    StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
+        .assertNext(val -> assertEquals(false, val))
+        .verifyComplete();
+  }
 
-        doReturn(Mono.error(new Exception("Some Exception"))).when(tOtpUserMasterRepository)
-                .save(any());
+  @Test
+  void entityToDto_Test() {
+    assertNull(TOtpUserMasterMapper.INSTANCE.tOtpUserMasterToDto(null));
+  }
 
-        StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
-                .assertNext(val -> assertEquals(false, val))
-                .verifyComplete();
-
-        doReturn(Mono.empty()).when(tOtpUserMasterRepository)
-                .save(any());
-
-        StepVerifier.create(tOtpUserMasterAdapter.createEntity(userMasterDto))
-                .assertNext(val -> assertEquals(false, val))
-                .verifyComplete();
-
-
-    }
-
-    @Test
-    void entityToDto_Test() {
-        assertNull(TOtpUserMasterMapper.INSTANCE.tOtpUserMasterToDto(null));
-    }
-
-    @Test
-    void dtoToEntity_Test() {
-        assertNull(TOtpUserMasterMapper.INSTANCE.dtoToEntity(null));
-    }
-
-
+  @Test
+  void dtoToEntity_Test() {
+    assertNull(TOtpUserMasterMapper.INSTANCE.dtoToEntity(null));
+  }
 }
-

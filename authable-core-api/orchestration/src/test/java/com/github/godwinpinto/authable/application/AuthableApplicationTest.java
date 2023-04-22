@@ -8,10 +8,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 public class AuthableApplicationTest {
 
-
-    @Test
-    public static void main(String[] args) {
-        AuthableApplication.main(new String[]{});
-    }
-
+  @Test
+  public static void main(String[] args) {
+    AuthableApplication.main(new String[] {});
+  }
 }

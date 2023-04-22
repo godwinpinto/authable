@@ -9,14 +9,11 @@ import reactor.core.publisher.Mono;
 @Component
 public class FetchPrincipalComponent {
 
-    public Mono<UserDto> getAuthDetails() {
-        return ReactiveSecurityContextHolder.getContext()
-                .switchIfEmpty(Mono.error(new AuthorizationServiceException("Invalid Login")))
-                .flatMap(securityContext -> Mono.just((UserDto)
-                        securityContext.getAuthentication()
-                                .getPrincipal())
-                );
-    }
-
-
+  public Mono<UserDto> getAuthDetails() {
+    return ReactiveSecurityContextHolder.getContext()
+        .switchIfEmpty(Mono.error(new AuthorizationServiceException("Invalid Login")))
+        .flatMap(
+            securityContext ->
+                Mono.just((UserDto) securityContext.getAuthentication().getPrincipal()));
+  }
 }

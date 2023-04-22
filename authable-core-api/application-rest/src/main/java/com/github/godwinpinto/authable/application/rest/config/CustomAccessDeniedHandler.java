@@ -9,10 +9,11 @@ import reactor.core.publisher.Mono;
 
 public class CustomAccessDeniedHandler implements ServerAccessDeniedHandler {
 
-    @Override
-    public Mono<Void> handle(ServerWebExchange exchange, AccessDeniedException accessDeniedException) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.FORBIDDEN);
-        return new AuthFailureHandler().formatResponse(response);
-    }
+  @Override
+  public Mono<Void> handle(
+      ServerWebExchange exchange, AccessDeniedException accessDeniedException) {
+    ServerHttpResponse response = exchange.getResponse();
+    response.setStatusCode(HttpStatus.FORBIDDEN);
+    return new AuthFailureHandler().formatResponse(response);
+  }
 }

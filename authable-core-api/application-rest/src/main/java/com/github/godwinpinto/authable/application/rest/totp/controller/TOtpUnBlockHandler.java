@@ -18,49 +18,51 @@ import reactor.core.publisher.Mono;
 @Component
 public class TOtpUnBlockHandler extends AbstractValidationHandler<GenericRequest, Validator> {
 
-    private final TOtpUserServiceAPI tOtpUserServiceAPI;
+  private final TOtpUserServiceAPI tOtpUserServiceAPI;
 
-    private final FetchPrincipalComponent fetchPrincipalComponent;
+  private final FetchPrincipalComponent fetchPrincipalComponent;
 
+  TOtpUnBlockHandler(
+      Validator validator,
+      TOtpUserServiceAPI tOtpUserServiceAPI,
+      FetchPrincipalComponent fetchPrincipalComponent) {
+    super(GenericRequest.class, validator);
+    this.tOtpUserServiceAPI = tOtpUserServiceAPI;
+    this.fetchPrincipalComponent = fetchPrincipalComponent;
+  }
 
-    TOtpUnBlockHandler(Validator validator, TOtpUserServiceAPI tOtpUserServiceAPI, FetchPrincipalComponent fetchPrincipalComponent) {
-        super(GenericRequest.class, validator);
-        this.tOtpUserServiceAPI = tOtpUserServiceAPI;
-        this.fetchPrincipalComponent = fetchPrincipalComponent;
+  @Override
+  public Mono<ServerResponse> processBody(
+      GenericRequest genericRequest, ServerRequest serverRequest) {
 
-    }
+    return fetchPrincipalComponent
+        .getAuthDetails()
+        .flatMap(user -> callService(user, genericRequest))
+        .flatMap(this::processSuccessResponse)
+        .switchIfEmpty(processEmpty());
+  }
 
-    @Override
-    public Mono<ServerResponse> processBody(GenericRequest genericRequest, ServerRequest serverRequest) {
+  private Mono<TOtpUnBlockUserDto> callService(UserDto user, GenericRequest genericRequest) {
+    return tOtpUserServiceAPI.unBlockUser(
+        user.getSystemId().trim(), genericRequest.getUserId().trim());
+  }
 
-        return fetchPrincipalComponent.getAuthDetails()
-                .flatMap(user -> callService(user, genericRequest))
-                .flatMap(this::processSuccessResponse)
-                .switchIfEmpty(processEmpty());
-    }
+  private Mono<ServerResponse> processSuccessResponse(TOtpUnBlockUserDto tOtpUnBlockUserDto) {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                TOtpRequestResponseDtoMapper.INSTANCE.unblockResponseFromDto(tOtpUnBlockUserDto)));
+  }
 
-    private Mono<TOtpUnBlockUserDto> callService(UserDto user, GenericRequest genericRequest) {
-        return tOtpUserServiceAPI
-                .unBlockUser(user.getSystemId()
-                        .trim(), genericRequest.getUserId()
-                        .trim());
-    }
-
-    private Mono<ServerResponse> processSuccessResponse(TOtpUnBlockUserDto tOtpUnBlockUserDto) {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(
-                        TOtpRequestResponseDtoMapper.INSTANCE.unblockResponseFromDto(tOtpUnBlockUserDto)));
-    }
-
-    private Mono<ServerResponse> processEmpty() {
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(TOtpUnBlockUserDto.builder()
-                        .statusCode("300")
-                        .statusDescription("No active subscription")
-                        .build()));
-    }
-
-
+  private Mono<ServerResponse> processEmpty() {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            BodyInserters.fromValue(
+                TOtpUnBlockUserDto.builder()
+                    .statusCode("300")
+                    .statusDescription("No active subscription")
+                    .build()));
+  }
 }
