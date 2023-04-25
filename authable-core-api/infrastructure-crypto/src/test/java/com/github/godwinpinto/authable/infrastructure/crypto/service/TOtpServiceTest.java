@@ -35,7 +35,7 @@ class TOtpServiceTest {
   void generateSecretKeyTest() throws NonFatalException {
     when(tOtpSecretEncryption.encrypt(anyString(), anyString())).thenReturn("OK");
     String key = tOtpService.generateSecretKey("TESTUSER");
-    assertEquals(key, "OK");
+    assertEquals("OK", key);
   }
 
   @Test

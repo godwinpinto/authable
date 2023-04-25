@@ -11,7 +11,6 @@ import com.github.godwinpinto.authable.domain.totp.dto.TOtpCreateNewDto;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpCryptoSPI;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI;
-import java.time.LocalDateTime;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,34 +75,34 @@ class TOtpCreateSecretHelperTest {
   void updateDbToReset_Test() {
     Mono<Long> mono = mock(Mono.class);
     when(mono.flatMap(Mockito.<Function<Long, Mono<Object>>>any())).thenReturn(null);
-    when(tOtpUserMasterSPI.updateEntity(Mockito.<TOtpUserMasterDto>any())).thenReturn(mono);
-    when(tOtpCryptoSPI.generateSecretKey(Mockito.<String>any()))
+    when(tOtpUserMasterSPI.updateEntity(Mockito.any())).thenReturn(mono);
+    when(tOtpCryptoSPI.generateSecretKey(Mockito.any()))
         .thenReturn("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
     TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-    doNothing().when(user).setCreationDateTime(Mockito.<LocalDateTime>any());
-    doNothing().when(user).setCreationId(Mockito.<String>any());
-    doNothing().when(user).setInvalidAttemptDateTime(Mockito.<LocalDateTime>any());
-    doNothing().when(user).setLastLoginDateTime(Mockito.<LocalDateTime>any());
-    doNothing().when(user).setLockedDateTime(Mockito.<LocalDateTime>any());
-    doNothing().when(user).setModificationDateTime(Mockito.<LocalDateTime>any());
-    doNothing().when(user).setModificationId(Mockito.<String>any());
+    doNothing().when(user).setCreationDateTime(Mockito.any());
+    doNothing().when(user).setCreationId(Mockito.any());
+    doNothing().when(user).setInvalidAttemptDateTime(Mockito.any());
+    doNothing().when(user).setLastLoginDateTime(Mockito.any());
+    doNothing().when(user).setLockedDateTime(Mockito.any());
+    doNothing().when(user).setModificationDateTime(Mockito.any());
+    doNothing().when(user).setModificationId(Mockito.any());
     doNothing().when(user).setNoOfAttempts(anyShort());
-    doNothing().when(user).setStatus(Mockito.<String>any());
-    doNothing().when(user).setUserSecret(Mockito.<String>any());
+    doNothing().when(user).setStatus(Mockito.any());
+    doNothing().when(user).setUserSecret(Mockito.any());
     assertNull(tOtpCreateSecretHelper.updateDbToReset("42", user));
-    verify(tOtpUserMasterSPI).updateEntity(Mockito.<TOtpUserMasterDto>any());
+    verify(tOtpUserMasterSPI).updateEntity(Mockito.any());
     verify(mono).flatMap(Mockito.<Function<Long, Mono<Object>>>any());
-    verify(tOtpCryptoSPI).generateSecretKey(Mockito.<String>any());
-    verify(user).setCreationDateTime(Mockito.<LocalDateTime>any());
-    verify(user).setCreationId(Mockito.<String>any());
-    verify(user).setInvalidAttemptDateTime(Mockito.<LocalDateTime>any());
-    verify(user).setLastLoginDateTime(Mockito.<LocalDateTime>any());
-    verify(user).setLockedDateTime(Mockito.<LocalDateTime>any());
-    verify(user).setModificationDateTime(Mockito.<LocalDateTime>any());
-    verify(user).setModificationId(Mockito.<String>any());
+    verify(tOtpCryptoSPI).generateSecretKey(Mockito.any());
+    verify(user).setCreationDateTime(Mockito.any());
+    verify(user).setCreationId(Mockito.any());
+    verify(user).setInvalidAttemptDateTime(Mockito.any());
+    verify(user).setLastLoginDateTime(Mockito.any());
+    verify(user).setLockedDateTime(Mockito.any());
+    verify(user).setModificationDateTime(Mockito.any());
+    verify(user).setModificationId(Mockito.any());
     verify(user).setNoOfAttempts(anyShort());
-    verify(user).setStatus(Mockito.<String>any());
-    verify(user).setUserSecret(Mockito.<String>any());
+    verify(user).setStatus(Mockito.any());
+    verify(user).setUserSecret(Mockito.any());
   }
 
   @Test
@@ -112,17 +111,17 @@ class TOtpCreateSecretHelperTest {
 
     doReturn(Mono.just(1L)).when(this.tOtpUserMasterSPI).updateEntity(any(TOtpUserMasterDto.class));
 
-    when(tOtpCryptoSPI.generateSecretKey(Mockito.<String>any()))
-        .thenReturn("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+    when(tOtpCryptoSPI.generateSecretKey(Mockito.any()))
+        .thenReturn("DUMMY_SECRET");
 
-    when(tOtpCryptoSPI.getPlainTextSecret(Mockito.<String>any(), Mockito.<String>any()))
-        .thenReturn("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
+    when(tOtpCryptoSPI.getPlainTextSecret(Mockito.any(), Mockito.any()))
+        .thenReturn("DUMMY_SECRET");
 
     TOtpCreateNewDto response =
         TOtpCreateNewDto.builder()
             .statusCode("200")
             .statusDescription("TOTP generated successfully.")
-            .secretKey("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY")
+            .secretKey("DUMMY_SECRET")
             .build();
 
     StepVerifier.create(tOtpCreateSecretHelper.updateDbToReset("SYSTEM_USER", userDto))
@@ -160,7 +159,7 @@ class TOtpCreateSecretHelperTest {
     StepVerifier.create(tOtpCreateSecretHelper.fallbackMethod(e))
         .assertNext(
             tOtpCreateNewDto -> {
-              assertEquals(tOtpCreateNewDto.getStatusDescription(), "Unknown error occurred");
+              assertEquals("Unknown error occurred", tOtpCreateNewDto.getStatusDescription());
             })
         .verifyComplete();
   }
@@ -188,7 +187,7 @@ class TOtpCreateSecretHelperTest {
     StepVerifier.create(tOtpCreateSecretHelper.createNewRecord("TEST_SYSTEM", "TEST_USER"))
         .assertNext(
             tOtpCreateNewDto -> {
-              assertEquals(tOtpCreateNewDto.getStatusDescription(), "TOTP generated successfully.");
+              assertEquals("TOTP generated successfully.", tOtpCreateNewDto.getStatusDescription());
             })
         .verifyComplete();
 

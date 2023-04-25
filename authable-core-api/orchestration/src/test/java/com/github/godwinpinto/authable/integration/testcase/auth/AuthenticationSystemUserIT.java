@@ -1,4 +1,4 @@
-package com.github.godwinpinto.authable.integration.testcase;
+package com.github.godwinpinto.authable.integration.testcase.auth;
 
 import com.github.godwinpinto.authable.application.rest.auth.json.LoginRequest;
 import com.github.godwinpinto.authable.infrastructure.coredb.auth.repository.SystemMasterRepository;
@@ -7,8 +7,10 @@ import com.github.godwinpinto.authable.integration.support.AuthCreateDbObjectsIT
 import com.github.godwinpinto.authable.integration.support.TestContainerSetupIT;
 import com.github.godwinpinto.authable.orchestration.AuthableApplication;
 import jakarta.annotation.PostConstruct;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -29,7 +31,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @ActiveProfiles("test")
 @Import({TestContainerSetupIT.class})
-public class AuthenticationSystemUserIT {
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class AuthenticationSystemUserIT {
+  private static final String URI = "/auth/login";
   private final String USER = "TEST_USER";
   private final String PASSWORD = "TEST_PASSWORD";
   private final String SYSTEM = "TEST_SYSTEM";
@@ -52,7 +56,7 @@ public class AuthenticationSystemUserIT {
 
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .exchange()
         .expectStatus()
         .isBadRequest()
@@ -66,7 +70,7 @@ public class AuthenticationSystemUserIT {
     LoginRequest loginRequest = LoginRequest.builder().build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -81,7 +85,7 @@ public class AuthenticationSystemUserIT {
     LoginRequest loginRequest = LoginRequest.builder().systemId(SYSTEM).userId(USER).build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -96,7 +100,7 @@ public class AuthenticationSystemUserIT {
     LoginRequest loginRequest = LoginRequest.builder().userSecret(PASSWORD).userId(USER).build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -112,7 +116,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userSecret(PASSWORD).systemId(SYSTEM).build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -128,7 +132,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("U1").userSecret("Test@1234").systemId("SYS_X").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -144,7 +148,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("U1").userSecret("Test@1234").systemId("SYS_D").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -160,7 +164,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("U1").userSecret("Test@1234").systemId("SYS_N").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -176,7 +180,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("UX").userSecret("Test@1234").systemId("SYS_A").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -192,7 +196,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("UD").userSecret("Test@1234").systemId("SYS_A").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -208,7 +212,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("UN").userSecret("Test@1234").systemId("SYS_A").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -224,7 +228,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("UA").userSecret("Test@1234").systemId("SYS_A").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -240,7 +244,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("UA").userSecret("Tesat@1234").systemId("SYS_A").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()
@@ -252,13 +256,12 @@ public class AuthenticationSystemUserIT {
   @Test
   @Order(14)
   void authUserDisabledFailAttemptsInSystem_InDb_Test() {
-    // for (int i = 0; i < 5; i++) {
-    if (true) {
+    for (int i = 0; i < 5; i++) {
       LoginRequest loginRequest =
           LoginRequest.builder().userId("UA").userSecret("Tesat@1234").systemId("SYS_A").build();
       webTestClient
           .post()
-          .uri("/auth/login")
+          .uri(URI)
           .bodyValue(loginRequest)
           .exchange()
           .expectStatus()
@@ -270,7 +273,7 @@ public class AuthenticationSystemUserIT {
         LoginRequest.builder().userId("UA").userSecret("Tesat@1234").systemId("SYS_A").build();
     webTestClient
         .post()
-        .uri("/auth/login")
+        .uri(URI)
         .bodyValue(loginRequest)
         .exchange()
         .expectStatus()

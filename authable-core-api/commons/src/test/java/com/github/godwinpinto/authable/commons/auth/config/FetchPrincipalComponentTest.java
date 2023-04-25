@@ -8,22 +8,22 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.test.StepVerifier;
 
 @ExtendWith(SpringExtension.class)
-@Configuration
+@TestConfiguration
 @Import({FetchPrincipalComponent.class})
-public class FetchPrincipalComponentTest {
+class FetchPrincipalComponentTest {
 
   @Autowired FetchPrincipalComponent fetchPrincipalComponent;
 
   @Test
   @WithMockCustomUser(username = "GODWIN")
-  public void fetchUserDetailsTest() {
+  void fetchUserDetailsTest() {
     UserDto userDto =
         UserDto.builder()
             .username("GODWIN")
@@ -34,14 +34,14 @@ public class FetchPrincipalComponentTest {
     StepVerifier.create(fetchPrincipalComponent.getAuthDetails())
         .assertNext(
             user -> {
-              assertThat(user.toString()).isEqualTo(userDto.toString());
+              assertThat(user.toString()).hasToString(userDto.toString());
             })
         .expectComplete()
         .verify();
   }
 
   @Test
-  public void NoUserSetTest() {
+  void NoUserSetTest() {
     UserDto userDto =
         UserDto.builder()
             .username("GODWIN")

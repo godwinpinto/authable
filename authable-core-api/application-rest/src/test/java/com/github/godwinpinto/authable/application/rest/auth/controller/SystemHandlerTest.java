@@ -29,14 +29,14 @@ import reactor.core.publisher.Mono;
 @ContextConfiguration(classes = {SystemHandler.class})
 @ExtendWith(SpringExtension.class)
 @AutoConfigureWebTestClient(timeout = "36000")
-public class SystemHandlerTest {
+class SystemHandlerTest {
 
   @Autowired Validator validator;
   @Autowired private WebTestClient webClient;
   @MockBean private AuthServiceAPI authServiceAPI;
 
   @Test
-  public void systemLoginSuccessful_Test() {
+  void systemLoginSuccessful_Test() {
 
     LoginRequest loginRequest =
         LoginRequest.builder().systemId("NETBK").userId("TESTUSER").userSecret("Test@1234").build();
@@ -66,7 +66,7 @@ public class SystemHandlerTest {
   }
 
   @Test
-  public void systemLoginError_Test() {
+  void systemLoginError_Test() {
 
     LoginRequest loginRequest =
         LoginRequest.builder().systemId("NETBK").userId("TESTUSER").userSecret("Test@1234").build();
@@ -93,7 +93,7 @@ public class SystemHandlerTest {
   }
 
   @Test
-  public void systemLogin_withNoParameters_Test() {
+  void systemLogin_withNoParameters_Test() {
 
     when(authServiceAPI.authenticate("", "", "")).thenReturn(Mono.empty());
 
@@ -108,7 +108,7 @@ public class SystemHandlerTest {
   }
 
   @Test
-  public void systemLogin_withNoSecret_Test() {
+  void systemLogin_withNoSecret_Test() {
 
     LoginRequest loginRequest =
         LoginRequest.builder().systemId("CARDS").userId("TESTUSER").userSecret("").build();
@@ -124,7 +124,7 @@ public class SystemHandlerTest {
   }
 
   @Test
-  public void systemLogin_withNoSystemId_Test() {
+  void systemLogin_withNoSystemId_Test() {
 
     LoginRequest loginRequest =
         LoginRequest.builder().systemId("").userId("123").userSecret("1234").build();
@@ -141,7 +141,7 @@ public class SystemHandlerTest {
   }
 
   @Test
-  public void systemLogin_withNoUserId_Test() {
+  void systemLogin_withNoUserId_Test() {
 
     LoginRequest loginRequest =
         LoginRequest.builder().systemId("NETBK").userId("").userSecret("Test@1234").build();

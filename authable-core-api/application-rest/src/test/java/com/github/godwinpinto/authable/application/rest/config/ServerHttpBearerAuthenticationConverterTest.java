@@ -3,6 +3,7 @@ package com.github.godwinpinto.authable.application.rest.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 
 import com.github.godwinpinto.authable.commons.constants.ApplicationConstants;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
@@ -19,16 +20,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.mock.web.server.MockServerWebExchange;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.test.StepVerifier;
 
-@ContextConfiguration(
+/*@ContextConfiguration(
     classes = {
       SecurityContextRepository.class,
-    })
+    })*/
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServerHttpBearerAuthenticationConverterTest {
@@ -88,6 +89,36 @@ class ServerHttpBearerAuthenticationConverterTest {
     ServerWebExchange exchange = MockServerWebExchange.from(request);
     doReturn(true).when(authServiceAPI).validateToken(anyString());
     doReturn(mapClaims).when(authServiceAPI).getClaims(anyString());
-    StepVerifier.create(serverHttpBearerAuthenticationConverter.convert(exchange)).verifyComplete();
+    StepVerifier.create(serverHttpBearerAuthenticationConverter.convert(exchange))
+        .expectErrorMatches(e ->
+            e instanceof AuthenticationServiceException
+                && e.getMessage().equals("Authentication Failure. Request needs authorization header."))
+        .verify();
+  }
+
+  @Test
+  void convert_throwsJwtException_Test() {
+    MultiValueMap<String, String> headers = new HttpHeaders();
+    headers.set("Authorization", "Bearer TEST_TOKEN");
+
+    MockServerHttpRequest request =
+        MockServerHttpRequest.get("/path")
+            .headers(headers) // .header("Authorization", "Bearer TEST_JWT_TOKEN")
+            .build();
+    String sampleToken = "TEST_TOKEN";
+    Map<String, Object> mapClaims = new HashMap<>();
+    mapClaims.put("sub", "TEST_USER_ID");
+    mapClaims.put(ApplicationConstants.JWT_ROLE_KEY, List.of("ROLE_ADMIN"));
+    mapClaims.put(ApplicationConstants.JWT_SYSTEM_ID_KEY, "TEST_SYSTEM");
+
+    MockServerHttpResponse response = new MockServerHttpResponse();
+    ServerWebExchange exchange = MockServerWebExchange.from(request);
+    doThrow(new RuntimeException("JWT Exception")).when(authServiceAPI).validateToken(anyString());
+//    doReturn(mapClaims).when(authServiceAPI).getClaims(anyString());
+    StepVerifier.create(serverHttpBearerAuthenticationConverter.convert(exchange))
+        .expectErrorMatches(e ->
+            e instanceof AuthenticationServiceException
+                && e.getMessage().equals("Authentication Failure. Request valid authorization header."))
+        .verify();
   }
 }

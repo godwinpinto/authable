@@ -1,6 +1,9 @@
 package com.github.godwinpinto.authable.integration.support;
 
 import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
+import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
+import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpCryptoSPI;
+import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI;
 import com.github.godwinpinto.authable.infrastructure.coredb.auth.entity.SystemMasterEntity;
 import com.github.godwinpinto.authable.infrastructure.coredb.auth.entity.SystemUserMasterEntity;
 import com.github.godwinpinto.authable.infrastructure.coredb.auth.repository.SystemMasterRepository;
@@ -10,36 +13,45 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class AuthCreateDbObjectsIT {
+public class TOtpCreateDbObjectsIT {
+
 
   SystemMasterRepository systemMasterRepository;
   SystemUserMasterRepository systemUserMasterRepository;
 
-  public AuthCreateDbObjectsIT(
+  TOtpCryptoSPI tOtpCryptoSPI;
+  TOtpUserMasterSPI tOtpUserMasterSPI;
+
+  public TOtpCreateDbObjectsIT(
       SystemUserMasterRepository systemUserMasterRepository,
-      SystemMasterRepository systemMasterRepository) {
+      SystemMasterRepository systemMasterRepository,
+      TOtpUserMasterSPI tOtpUserMasterSPI,
+      TOtpCryptoSPI tOtpCryptoSPI) {
     this.systemMasterRepository = systemMasterRepository;
     this.systemUserMasterRepository = systemUserMasterRepository;
+    this.tOtpCryptoSPI = tOtpCryptoSPI;
+    this.tOtpUserMasterSPI = tOtpUserMasterSPI;
   }
 
   public void loadData() {
     List<SystemMasterEntity> systemMasterEntityList =
-        new ArrayList<>(
-            List.of(
-                createSystem("SYS_A", "A"),
-                createSystem("SYS_D", "D"),
-                createSystem("SYS_N", "N")));
+        new ArrayList<>(List.of(createSystem("SYS_A", "A")));
     this.systemMasterRepository.saveAll(systemMasterEntityList).log().subscribe();
 
     List<SystemUserMasterEntity> systemUserMasterEntityList =
+        new ArrayList<>(List.of(createSystemUser("SYS_A", "UA", "Test@1234", "A")));
+    this.systemUserMasterRepository.saveAll(systemUserMasterEntityList).subscribe();
+
+    List<TOtpUserMasterDto> tOtpUserMasterDTOs =
         new ArrayList<>(
             List.of(
-                createSystemUser("SYS_A", "UA", "Test@1234", "A"),
-                createSystemUser("SYS_A", "UN", "Test@1234", "N"),
-                createSystemUser("SYS_A", "UD", "Test@1234", "D"),
-                createSystemUser("SYS_D", "UA", "Test@1234", "A"),
-                createSystemUser("SYS_N", "UA", "Test@1234", "A")));
-    this.systemUserMasterRepository.saveAll(systemUserMasterEntityList).subscribe();
+                createTOtpUser("SYS_A", "A", "UA1"),
+                createTOtpUser("SYS_A", "A", "UA2"),
+                createTOtpUser("SYS_A", "D", "UD"),
+                createTOtpUser("SYS_A", "N", "UN")));
+
+    tOtpUserMasterDTOs.stream()
+        .forEach(o -> tOtpUserMasterSPI.createEntity(o));
   }
 
   SystemMasterEntity createSystem(String systemId, String status) {
@@ -74,5 +86,21 @@ public class AuthCreateDbObjectsIT {
     CryptoAlgorithmsAdapter cryptoAlgorithmsAdapter = new CryptoAlgorithmsAdapter();
     entity.setUserSecret(cryptoAlgorithmsAdapter.generateHashFromSecret(systemId, userId, secret));
     return entity;
+  }
+
+  TOtpUserMasterDto createTOtpUser(String systemId, String status, String userSystemId) {
+    String secret = tOtpCryptoSPI.generateSecretKey(userSystemId);
+    TOtpUserMasterDto user1 =
+        TOtpUserMasterDto.builder()
+            .userSecret(secret)
+            .userId(userSystemId)
+            .accessType("B")
+            .systemId(systemId)
+            .status(status)
+            .creationId("TEST_USER")
+            .modificationId("TEST_USER")
+            .noOfAttempts((short) 0)
+            .build();
+    return user1;
   }
 }

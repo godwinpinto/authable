@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 @Component
 public class TOtpCreateSecretHelper {
 
+  private static final String UNKNOWN_ERROR_MESSAGE = "Unknown error. Contact Administrator.";
   private final FetchPrincipalComponent fetchPrincipalComponent;
   TOtpUserMasterSPI tOtpUserMasterSPI;
   TOtpCryptoSPI tOtpCryptoSPI;
@@ -41,7 +42,7 @@ public class TOtpCreateSecretHelper {
     } else if (user.getStatus().equals(ApplicationConstants.RecordStatus.INACTIVE.getValue())) {
       return Mono.just(user);
     } else {
-      return Mono.error(new NonFatalException("300", "Unknown error. Contact Administrator."));
+      return Mono.error(new NonFatalException("300", UNKNOWN_ERROR_MESSAGE));
     }
   }
 
@@ -63,8 +64,7 @@ public class TOtpCreateSecretHelper {
               if (updateCount == 1) {
                 return formatSuccessResponse(userSystemId, user);
               } else {
-                return Mono.error(
-                    new NonFatalException("300", "Unknown error. Contact Administrator."));
+                return Mono.error(new NonFatalException("300", UNKNOWN_ERROR_MESSAGE));
               }
             });
   }
@@ -82,15 +82,13 @@ public class TOtpCreateSecretHelper {
         .createEntity(user1)
         .flatMap(
             status -> {
-              if (status) {
+              if (Boolean.TRUE.equals(status)) {
                 return formatSuccessResponse(userSystemId, user1);
               } else {
-                return Mono.error(
-                    new NonFatalException("300", "Unknown error. Contact Administrator."));
+                return Mono.error(new NonFatalException("300", UNKNOWN_ERROR_MESSAGE));
               }
             })
-        .switchIfEmpty(
-            Mono.error(new NonFatalException("300", "Unknown error. Contact Administrator.")));
+        .switchIfEmpty(Mono.error(new NonFatalException("300", UNKNOWN_ERROR_MESSAGE)));
   }
 
   private Mono<TOtpCreateNewDto> formatSuccessResponse(

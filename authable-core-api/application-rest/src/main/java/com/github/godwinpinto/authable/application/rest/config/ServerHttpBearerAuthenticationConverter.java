@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
@@ -16,7 +17,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 public class ServerHttpBearerAuthenticationConverter implements ServerAuthenticationConverter {
-  private final String BEARER = "Bearer ";
+  private static final String BEARER = "Bearer ";
   private final Predicate<String> matchBearerLength =
       authValue -> authValue.length() > BEARER.length();
   private final Function<String, Mono<String>> isolateBearerValue =
@@ -33,13 +34,12 @@ public class ServerHttpBearerAuthenticationConverter implements ServerAuthentica
         .flatMap(this::extract)
         .filter(matchBearerLength)
         .flatMap(isolateBearerValue)
-        .switchIfEmpty(Mono.empty())
+        .log()
         .flatMap(
             token ->
-                Mono.just(authServiceAPI.validateToken(token))
+                Mono.fromCallable(() -> authServiceAPI.validateToken(token))
                     .filter(valid -> valid)
-                    .switchIfEmpty(Mono.empty())
-                    .map(
+                    .flatMap(
                         valid -> {
                           Map<String, Object> mapClaims = authServiceAPI.getClaims(token);
                           String userId = mapClaims.get("sub").toString();
@@ -53,9 +53,21 @@ public class ServerHttpBearerAuthenticationConverter implements ServerAuthentica
                                   .systemId(systemId)
                                   .roles(rolesMap.stream().map(Role::valueOf).toList())
                                   .build();
-                          return new UsernamePasswordAuthenticationToken(
-                              user, null, user.getAuthorities());
-                        }));
+                          Authentication authentication =
+                              new UsernamePasswordAuthenticationToken(
+                                  user, null, user.getAuthorities());
+                          return Mono.just(authentication);
+                        })
+                    .switchIfEmpty(Mono.empty())
+                    .onErrorResume(
+                        e ->
+                            Mono.error(
+                                new AuthenticationServiceException(
+                                    "Authentication Failure. Request valid authorization header."))))
+        .switchIfEmpty(
+            Mono.error(
+                new AuthenticationServiceException(
+                    "Authentication Failure. Request needs authorization header.")));
   }
 
   private Mono<String> extract(ServerWebExchange serverWebExchange) {

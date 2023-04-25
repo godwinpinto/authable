@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
-public class TOtpRequestResponseDtoMapperTest {
+class TOtpRequestResponseDtoMapperTest {
 
   @Test
   void createNewResponseFromDto_Null_Test() {

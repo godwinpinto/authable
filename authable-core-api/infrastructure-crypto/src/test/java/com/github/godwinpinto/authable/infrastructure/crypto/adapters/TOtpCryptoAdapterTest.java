@@ -15,18 +15,18 @@ class TOtpCryptoAdapterTest {
   @Test
   void testConstructor() {
     TOtpService tOtpService = mock(TOtpService.class);
-    new TOtpCryptoAdapter(tOtpService, new TOtpSecretEncryption());
+    assertDoesNotThrow(()->new TOtpCryptoAdapter(tOtpService, new TOtpSecretEncryption()));
   }
 
   @Test
   void testGenerateSecretKey() throws NonFatalException {
     TOtpService tOtpService = mock(TOtpService.class);
-    when(tOtpService.generateSecretKey(Mockito.<String>any()))
+    when(tOtpService.generateSecretKey(Mockito.any()))
         .thenReturn("EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY");
     assertEquals(
         "EXAMPLEKEYwjalrXUtnFEMI/K7MDENG/bPxRfiCY",
         (new TOtpCryptoAdapter(tOtpService, new TOtpSecretEncryption())).generateSecretKey("42"));
-    verify(tOtpService).generateSecretKey(Mockito.<String>any());
+    verify(tOtpService).generateSecretKey(Mockito.any());
   }
 
   @Test
@@ -48,33 +48,33 @@ class TOtpCryptoAdapterTest {
   @Test
   void testVerify() {
     TOtpService tOtpService = mock(TOtpService.class);
-    when(tOtpService.verify(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any()))
+    when(tOtpService.verify(Mockito.any(), Mockito.any(), Mockito.any()))
         .thenReturn(true);
     assertTrue(
         (new TOtpCryptoAdapter(tOtpService, new TOtpSecretEncryption()))
             .verify("Plain Text Otp", "42", "Encrypted Secret"));
-    verify(tOtpService).verify(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any());
+    verify(tOtpService).verify(Mockito.any(), Mockito.any(), Mockito.any());
   }
 
   @Test
   void testVerify2() {
     TOtpService tOtpService = mock(TOtpService.class);
-    when(tOtpService.verify(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any()))
+    when(tOtpService.verify(Mockito.any(), Mockito.any(), Mockito.any()))
         .thenReturn(false);
     assertFalse(
         (new TOtpCryptoAdapter(tOtpService, new TOtpSecretEncryption()))
             .verify("Plain Text Otp", "42", "Encrypted Secret"));
-    verify(tOtpService).verify(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any());
+    verify(tOtpService).verify(Mockito.any(), Mockito.any(), Mockito.any());
   }
 
   @Test
   void testGenerateQRCode() throws NonFatalException, QrGenerationException {
     TOtpService tOtpService = mock(TOtpService.class);
     when(tOtpService.generateQRCode(
-            Mockito.<String>any(),
-            Mockito.<String>any(),
-            Mockito.<String>any(),
-            Mockito.<String>any()))
+            Mockito.any(),
+            Mockito.any(),
+            Mockito.any(),
+            Mockito.any()))
         .thenReturn("Generate QRCode");
     assertEquals(
         "Generate QRCode",
@@ -82,10 +82,10 @@ class TOtpCryptoAdapterTest {
             .generateQRCode("42", "Encrypted Secret", "jane.doe@example.org", "App Name"));
     verify(tOtpService)
         .generateQRCode(
-            Mockito.<String>any(),
-            Mockito.<String>any(),
-            Mockito.<String>any(),
-            Mockito.<String>any());
+            Mockito.any(),
+            Mockito.any(),
+            Mockito.any(),
+            Mockito.any());
   }
 
   @Test

@@ -14,7 +14,7 @@ import org.mockito.Mockito;
 class CryptoAlgorithmsAdapterTest {
 
   @Test
-  public void generateHashFromString_Test() {
+  void generateHashFromString_Test() {
 
     CryptoAlgorithmsAdapter cryptoAlgorithmsAdapter = new CryptoAlgorithmsAdapter();
 
@@ -26,7 +26,7 @@ class CryptoAlgorithmsAdapterTest {
   }
 
   @Test
-  public void validateHashFromSecret_Success_Test() {
+  void validateHashFromSecret_Success_Test() {
 
     CryptoAlgorithmsAdapter cryptoAlgorithmsAdapter = new CryptoAlgorithmsAdapter();
 
@@ -38,7 +38,7 @@ class CryptoAlgorithmsAdapterTest {
   }
 
   @Test
-  public void validateHashFromSecret_NoSuchAlgorithm_Test() throws NoSuchAlgorithmException {
+  void validateHashFromSecret_NoSuchAlgorithm_Test() throws NoSuchAlgorithmException {
 
     CryptoAlgorithmsAdapter cryptoAlgorithmsAdapter = new CryptoAlgorithmsAdapter();
     MockedStatic<MessageDigest> md = Mockito.mockStatic(MessageDigest.class);

@@ -91,9 +91,6 @@ public class TOtpUserMasterAdapter implements TOtpUserMasterSPI {
         .save(tOtpUserMasterEntity)
         .flatMap(tOtpUserMasterEntity1 -> Mono.just(true))
         .switchIfEmpty(Mono.just(false))
-        .onErrorResume(
-            e -> {
-              return Mono.just(false);
-            });
+        .onErrorResume(e -> Mono.just(false));
   }
 }

@@ -56,7 +56,7 @@ public class TOtpUserUseCase implements TOtpUserServiceAPI {
         .findById(userSystemId)
         .flatMap(
             user -> {
-              if (tOtpUnBlockUserHelper.isUserDisabledOrActive(user))
+              if (Boolean.TRUE.equals(tOtpUnBlockUserHelper.isUserDisabledOrActive(user)))
                 return tOtpUnBlockUserHelper.changeFlagInDatabase(userSystemId, user);
               else return tOtpUnBlockUserHelper.formatNoSubscriptionMessage();
             })

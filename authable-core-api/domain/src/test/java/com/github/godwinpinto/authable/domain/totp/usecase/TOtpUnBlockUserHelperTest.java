@@ -58,7 +58,7 @@ class TOtpUnBlockUserHelperTest {
     StepVerifier.create(tOtpUnBlockUserHelper.fallbackMethod(e))
         .assertNext(
             tOtpUnBlockUserDto -> {
-              assertEquals(tOtpUnBlockUserDto.getStatusDescription(), "Unknown error occurred");
+              assertEquals("Unknown error occurred", tOtpUnBlockUserDto.getStatusDescription());
             })
         .verifyComplete();
   }
@@ -73,8 +73,8 @@ class TOtpUnBlockUserHelperTest {
         .assertNext(
             tOtpUnBlockUserDto -> {
               assertEquals(
-                  tOtpUnBlockUserDto.getStatusDescription(),
-                  "TOTP subscription cancelled for user");
+                  "TOTP subscription cancelled for user",
+                  tOtpUnBlockUserDto.getStatusDescription());
             })
         .verifyComplete();
 
@@ -92,7 +92,7 @@ class TOtpUnBlockUserHelperTest {
         .assertNext(
             tOtpUnBlockUserDto -> {
               assertEquals(
-                  tOtpUnBlockUserDto.getStatusDescription(), "User unblocked successfully.");
+                  "User unblocked successfully.", tOtpUnBlockUserDto.getStatusDescription());
             })
         .verifyComplete();
   }
@@ -103,8 +103,8 @@ class TOtpUnBlockUserHelperTest {
         .assertNext(
             tOtpUnBlockUserDto -> {
               assertEquals(
-                  tOtpUnBlockUserDto.getStatusDescription(),
-                  "No active subscription found for user");
+                  "No active subscription found for user",
+                  tOtpUnBlockUserDto.getStatusDescription());
             })
         .verifyComplete();
   }

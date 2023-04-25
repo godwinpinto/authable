@@ -12,7 +12,7 @@ import com.github.godwinpinto.authable.domain.auth.ports.spi.JWTUtilSPI;
 import com.github.godwinpinto.authable.domain.auth.ports.spi.SystemMasterSPI;
 import com.github.godwinpinto.authable.domain.auth.ports.spi.SystemUserMasterSPI;
 import com.github.godwinpinto.authable.domain.security.ports.spi.CryptoAlgorithmsSPI;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -57,7 +57,7 @@ public class UserService implements AuthServiceAPI {
               UserDto userDto =
                   UserDto.builder()
                       .username(systemUserMaster.getAccessId().trim())
-                      .roles(Arrays.asList(Role.ROLE_ADMIN))
+                      .roles(List.of(Role.ROLE_ADMIN))
                       .build();
               return Mono.just(userDto);
             });
@@ -92,7 +92,7 @@ public class UserService implements AuthServiceAPI {
                   UserDto.builder()
                       .username(user.getAccessId().trim())
                       .systemId(user.getSystemId().trim())
-                      .roles(Arrays.asList(Role.ROLE_ADMIN))
+                      .roles(List.of(Role.ROLE_ADMIN))
                       .build();
               userDto.setPassword(jwtUtilspi.generateToken(userDto));
               userDto.setExpiryTime(
@@ -117,9 +117,7 @@ public class UserService implements AuthServiceAPI {
                         DateTimeUtils.getCurrentLocalDateTime(),
                         ApplicationConstants.RecordStatus.DISABLED.getValue())
                     .flatMap(
-                        x1 -> {
-                          return Mono.error(new NonFatalException("Account has been locked"));
-                        });
+                        x1 -> Mono.error(new NonFatalException("Account has been locked")));
 
               } else {
                 return Mono.error(new NonFatalException("Invalid Credentials"));

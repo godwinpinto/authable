@@ -1,5 +1,6 @@
 package com.github.godwinpinto.authable.application.rest.config;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
 
@@ -23,7 +24,7 @@ class AuthFailureHandlerTest {
   @Test
   void testFormatResponse() {
     AuthFailureHandler authFailureHandler = new AuthFailureHandler();
-    authFailureHandler.formatResponse(new MockServerHttpResponse());
+    assertDoesNotThrow(() -> authFailureHandler.formatResponse(new MockServerHttpResponse()));
   }
 
   /** Method under test: {@link AuthFailureHandler#formatResponse(ServerHttpResponse)} */
@@ -31,7 +32,7 @@ class AuthFailureHandlerTest {
   void testFormatResponse2() {
 
     AuthFailureHandler authFailureHandler = new AuthFailureHandler();
-    authFailureHandler.formatResponse(new HttpHeadResponseDecorator(new MockServerHttpResponse()));
+    assertDoesNotThrow(() -> authFailureHandler.formatResponse(new HttpHeadResponseDecorator(new MockServerHttpResponse())));
   }
 
   @Test
@@ -44,7 +45,7 @@ class AuthFailureHandlerTest {
     httpResponse.setStatusCode(HttpStatus.BAD_REQUEST);
     HttpHeadResponseDecorator head = new HttpHeadResponseDecorator(httpResponse);
 
-    authFailureHandler.formatResponse(head);
+    assertDoesNotThrow(() -> authFailureHandler.formatResponse(head));
   }
 
   /** Method under test: {@link AuthFailureHandler#formatResponse(ServerHttpResponse)} */

@@ -45,11 +45,10 @@ public class TOtpUnSubscribeUserHelper {
             DateTimeUtils.getCurrentLocalDateTime(),
             ApplicationConstants.RecordStatus.INACTIVE.getValue())
         .flatMap(
-            status -> {
-              return status == 1L
-                  ? formatSuccessMessage()
-                  : Mono.error(new NonFatalException("300", "Failure in updating"));
-            })
+            status ->
+                status == 1L
+                    ? formatSuccessMessage()
+                    : Mono.error(new NonFatalException("300", "Failure in updating")))
         .switchIfEmpty(Mono.error(new NonFatalException("300", "Failure in updating")));
   }
 
@@ -62,10 +61,10 @@ public class TOtpUnSubscribeUserHelper {
   }
 
   public Mono<TOtpUnSubscribeUserDto> fallbackMethod(Throwable error) {
-    if (error instanceof NonFatalException) {
+    if (error instanceof NonFatalException nfe) {
       return Mono.just(
           TOtpUnSubscribeUserDto.builder()
-              .statusCode(((NonFatalException) error).getErrCode())
+              .statusCode(nfe.getErrCode())
               .statusDescription(error.getMessage())
               .build());
     } else {

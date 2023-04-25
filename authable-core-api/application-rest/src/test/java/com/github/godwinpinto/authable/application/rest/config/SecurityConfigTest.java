@@ -1,6 +1,5 @@
 package com.github.godwinpinto.authable.application.rest.config;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -48,11 +47,5 @@ class SecurityConfigTest {
     assertTrue(
         securityConfig.securityWebFilterChain(http, authenticationManager)
             instanceof MatcherSecurityWebFilterChain);
-  }
-
-  /** Method under test: {@link SecurityConfig#bearerAuthenticationFilter(AuthenticationManager)} */
-  @Test
-  void testBearerAuthenticationFilter() {
-    assertDoesNotThrow(() -> securityConfig.bearerAuthenticationFilter(authenticationManager));
   }
 }

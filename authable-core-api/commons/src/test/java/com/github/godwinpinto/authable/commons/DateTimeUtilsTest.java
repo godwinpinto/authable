@@ -1,6 +1,7 @@
 package com.github.godwinpinto.authable.commons;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
 import java.sql.Timestamp;
@@ -9,17 +10,17 @@ import java.time.LocalDateTime;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DateTimeUtilsTest {
+class DateTimeUtilsTest {
 
   @Test
-  public void currentDateTest() {
+  void currentDateTest() {
     Timestamp ts = Timestamp.from(Instant.now());
     Timestamp t = DateTimeUtils.getCurrentDate();
     Assertions.assertThat(t.getTime()).isBetween(ts.getTime(), ts.getTime() + 500L);
   }
 
   @Test
-  public void dateAddTest() {
+  void dateAddTest() {
     Timestamp t = DateTimeUtils.getCurrentDate();
     Timestamp t1 = DateTimeUtils.addDays(t, 1);
     Timestamp t2 = DateTimeUtils.addDays(t1, -1);
@@ -27,7 +28,7 @@ public class DateTimeUtilsTest {
   }
 
   @Test
-  public void hourAddTest() {
+  void hourAddTest() {
     Timestamp t = DateTimeUtils.getCurrentDate();
     Timestamp t1 = DateTimeUtils.addHour(t, 1);
     Timestamp t2 = DateTimeUtils.addHour(t1, -1);
@@ -35,7 +36,7 @@ public class DateTimeUtilsTest {
   }
 
   @Test
-  public void stripTimeAndAddTest() throws Exception {
+  void stripTimeAndAddTest() throws Exception {
     Timestamp t = DateTimeUtils.getCurrentDate();
 
     String strippedTime = DateTimeUtils.stripTimeSec(t);
@@ -45,11 +46,10 @@ public class DateTimeUtilsTest {
   }
 
   @Test
-  public void localDateTest() throws Exception {
-    Timestamp ts = Timestamp.from(Instant.now());
+  void localDateTest() throws Exception {
     LocalDateTime t = DateTimeUtils.getCurrentLocalDateTime();
 
     LocalDateTime time = LocalDateTime.now();
-    Assertions.assertThat(time.isBefore(t) || time.isEqual(t));
+    assertTrue(time.isAfter(t));
   }
 }

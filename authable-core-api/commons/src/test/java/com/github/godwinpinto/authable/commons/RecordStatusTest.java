@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.github.godwinpinto.authable.commons.constants.ApplicationConstants;
 import org.junit.jupiter.api.Test;
 
-public class RecordStatusTest {
+class RecordStatusTest {
 
   @Test
-  public void recordStatusTest() {
+  void recordStatusTest() {
     String inActiveValue = "N";
     String activeValue = "A";
     String disabledValue = "D";

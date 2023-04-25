@@ -1,5 +1,7 @@
 package com.github.godwinpinto.authable.application.rest.totp.controller;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import com.github.godwinpinto.authable.commons.auth.config.FetchPrincipalComponent;
 import com.github.godwinpinto.authable.domain.totp.ports.api.TOtpUserServiceAPI;
 import org.junit.jupiter.api.Test;
@@ -47,43 +49,13 @@ class TOtpRoutesConfigTest {
    */
   @Test
   void testGetStatus() {
-    // TODO: Complete this test.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     SameComposedRouterFunction.first
-    //     SameComposedRouterFunction.second
-    //     TOtpStatusHandler.fetchPrincipalComponent
-    //     TOtpStatusHandler.tOtpUserServiceAPI
-    //     AbstractValidationHandler.validationClass
-    //     AbstractValidationHandler.validator
-    //     TOtpVerifyHandler.fetchPrincipalComponent
-    //     TOtpVerifyHandler.tOtpUserServiceAPI
-    //     AbstractValidationHandler.validationClass
-    //     AbstractValidationHandler.validator
-    //     TOtpUnBlockHandler.fetchPrincipalComponent
-    //     TOtpUnBlockHandler.tOtpUserServiceAPI
-    //     AbstractValidationHandler.validationClass
-    //     AbstractValidationHandler.validator
-    //     TOtpUnSubscribeHandler.fetchPrincipalComponent
-    //     TOtpUnSubscribeHandler.tOtpUserServiceAPI
-    //     AbstractValidationHandler.validationClass
-    //     AbstractValidationHandler.validator
-    //     TOtpGenerateQrHandler.fetchPrincipalComponent
-    //     TOtpGenerateQrHandler.tOtpUserServiceAPI
-    //     AbstractValidationHandler.validationClass
-    //     AbstractValidationHandler.validator
-    //     TOtpSubscribeHandler.fetchPrincipalComponent
-    //     TOtpSubscribeHandler.tOtpUserServiceAPI
-    //     AbstractValidationHandler.validationClass
-    //     AbstractValidationHandler.validator
-
+    assertDoesNotThrow(()->
     tOtpRoutesConfig.getStatus(
         tOtpStatusHandler,
         tOtpVerifyHandler,
         tOtpUnBlockHandler,
         tOtpUnSubscribeHandler,
         tOtpGenerateQrHandler,
-        tOtpSubscribeHandler);
+        tOtpSubscribeHandler));
   }
 }

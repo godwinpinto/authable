@@ -73,7 +73,7 @@ class TOtpVerifyHelperTest {
     StepVerifier.create(tOtpVerifyHelper.fallbackMethod(e))
         .assertNext(
             tOtpVerifyDto -> {
-              assertEquals(tOtpVerifyDto.getStatusDescription(), "Unknown error occurred");
+              assertEquals("Unknown error occurred", tOtpVerifyDto.getStatusDescription());
             })
         .verifyComplete();
   }
@@ -91,7 +91,7 @@ class TOtpVerifyHelperTest {
     StepVerifier.create(tOtpVerifyHelper.verifyAndUpdateOtp("123456", "TEST_SYSTEM", user))
         .assertNext(
             tOtpVerifyDto -> {
-              assertEquals(tOtpVerifyDto.getStatusDescription(), "Verification successful");
+              assertEquals("Verification successful", tOtpVerifyDto.getStatusDescription());
             })
         .verifyComplete();
     doReturn(Mono.justOrEmpty(0L))

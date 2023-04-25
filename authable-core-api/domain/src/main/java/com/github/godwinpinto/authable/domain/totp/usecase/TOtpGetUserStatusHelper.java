@@ -35,7 +35,7 @@ public class TOtpGetUserStatusHelper {
   Mono<TOtpUserStatusDto> recordNotFound() {
     return Mono.just(
         TOtpUserStatusDto.builder()
-            .statusCode("N")
+            .statusCode("300")
             .statusDescription("No Active Subscription")
             .build());
   }

@@ -1,5 +1,6 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
@@ -51,6 +52,6 @@ class TOtpGetUserStatusHelperTest {
   @Test
   void testRecordNotFound() {
 
-    tOtpGetUserStatusHelper.recordNotFound();
+    assertDoesNotThrow(()->tOtpGetUserStatusHelper.recordNotFound());
   }
 }

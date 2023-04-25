@@ -1,151 +1,181 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.0.5</version>
-    <!--        <version>2.7.10</version>-->
-    <relativePath/> <!-- lookup parent from repository -->
-  </parent>
-
-  <groupId>com.github.godwinpinto.authable</groupId>
   <artifactId>authable</artifactId>
-  <packaging>pom</packaging>
-  <modules>
-    <module>application-rest</module>
-    <module>domain</module>
-    <module>infrastructure-crypto</module>
-    <module>infrastructure-coredb</module>
-    <module>domain-dto</module>
-    <module>domain-ports-api</module>
-    <module>domain-ports-spi</module>
-    <module>commons</module>
-    <module>orchestration</module>
-  </modules>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Authable</name>
-  <description>Authable is a standalone REST API to help with the server side managing TOTP based
-    authentication
-  </description>
-  <properties>
-    <io.jsonwebtoken.version>0.11.2</io.jsonwebtoken.version>
-    <java.version>17</java.version>
-    <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
-    <org.projectlombok.version>1.18.20</org.projectlombok.version>
-    <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <artifactId>mapstruct-processor</artifactId>
+              <groupId>org.mapstruct</groupId>
+              <version>${org.mapstruct.version}</version>
+            </path>
+            <path>
+              <artifactId>lombok</artifactId>
+              <groupId>org.projectlombok</groupId>
+              <version>${org.projectlombok.version}</version>
+            </path>
+            <path>
+              <artifactId>lombok-mapstruct-binding</artifactId>
+              <groupId>org.projectlombok</groupId>
+              <version>${lombok-mapstruct-binding.version}</version>
+            </path>
+          </annotationProcessorPaths>
+          <source>17</source>
+          <target>17</target>
+        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>3.8.1</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/*IT.java</exclude>
+          </excludes>
+        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*IT.java</include>
+          </includes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+      </plugin>
+      <plugin>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>com.github.godwinpinto.authable.orchestration.AuthableApplication</mainClass>
+        </configuration>
+        <groupId>org.springframework.boot</groupId>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
-      <scope>runtime</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
+      <optional>true</optional>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <artifactId>lombok</artifactId>
+      <groupId>org.projectlombok</groupId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
       <exclusions>
         <exclusion>
-          <groupId>org.junit.vintage</groupId>
           <artifactId>junit-vintage-engine</artifactId>
+          <groupId>org.junit.vintage</groupId>
         </exclusion>
         <exclusion>
-          <groupId>junit</groupId>
           <artifactId>junit</artifactId>
+          <groupId>junit</groupId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.projectreactor</groupId>
-      <artifactId>reactor-test</artifactId>
+      <groupId>org.springframework.boot</groupId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
+      <artifactId>reactor-test</artifactId>
+      <groupId>io.projectreactor</groupId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <artifactId>commons-lang3</artifactId>
+      <groupId>org.apache.commons</groupId>
       <version>3.12.0</version>
     </dependency>
     <dependency>
-      <groupId>io.projectreactor</groupId>
       <artifactId>reactor-core</artifactId>
+      <groupId>io.projectreactor</groupId>
       <version>3.5.2</version>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
+      <groupId>org.springframework.boot</groupId>
     </dependency>
     <dependency>
-      <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
+      <groupId>org.mapstruct</groupId>
       <version>${org.mapstruct.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
+      <groupId>org.springframework.security</groupId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <groupId>org.springframework.boot</groupId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
+      <groupId>io.projectreactor</groupId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
+      <groupId>org.apache.commons</groupId>
       <version>3.12.0</version>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
+      <groupId>org.mockito</groupId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
+      <groupId>org.springframework.boot</groupId>
     </dependency>
     <dependency>
-      <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.18.0</version>
+      <groupId>org.testcontainers</groupId>
       <scope>test</scope>
+      <version>1.18.0</version>
     </dependency>
     <dependency>
-      <groupId>org.testcontainers</groupId>
       <artifactId>r2dbc</artifactId>
-      <version>1.18.0</version>
+      <groupId>org.testcontainers</groupId>
       <scope>test</scope>
+      <version>1.18.0</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/io.asyncer/r2dbc-mysql -->
     <dependency>
-      <groupId>io.asyncer</groupId>
       <artifactId>r2dbc-mysql</artifactId>
+      <groupId>io.asyncer</groupId>
       <version>1.0.0</version>
     </dependency>
     <dependency>
-      <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.18.0</version>
+      <groupId>org.testcontainers</groupId>
       <scope>test</scope>
+      <version>1.18.0</version>
     </dependency>
     <dependency>
-      <groupId>org.testcontainers</groupId>
       <artifactId>mysql</artifactId>
-      <version>1.18.0</version>
+      <groupId>org.testcontainers</groupId>
       <scope>test</scope>
+      <version>1.18.0</version>
     </dependency>
     <!-- Meant for downgrading spring from 3-> 2 for AI test generator only. upgrade and comment these lines-->
     <!-- <dependency>
@@ -176,67 +206,37 @@
         <scope>test</scope>
     </dependency>-->
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <source>17</source>
-          <target>17</target>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.mapstruct</groupId>
-              <artifactId>mapstruct-processor</artifactId>
-              <version>${org.mapstruct.version}</version>
-            </path>
-            <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-              <version>${org.projectlombok.version}</version>
-            </path>
-            <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok-mapstruct-binding</artifactId>
-              <version>${lombok-mapstruct-binding.version}</version>
-            </path>
-          </annotationProcessorPaths>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/*IT.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <includes>
-            <include>**/*IT.java</include>
-          </includes>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>com.github.godwinpinto.authable.orchestration.AuthableApplication</mainClass>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <description>Authable is a standalone REST API to help with the server side managing TOTP based
+    authentication
+  </description>
+  <groupId>com.github.godwinpinto.authable</groupId>
+  <modelVersion>4.0.0</modelVersion>
+  <modules>
+    <module>application-rest</module>
+    <module>domain</module>
+    <module>infrastructure-crypto</module>
+    <module>infrastructure-coredb</module>
+    <module>domain-dto</module>
+    <module>domain-ports-api</module>
+    <module>domain-ports-spi</module>
+    <module>commons</module>
+    <module>orchestration</module>
+  </modules>
+  <name>Authable</name>
+  <packaging>pom</packaging>
+  <parent>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <groupId>org.springframework.boot</groupId>
+    <relativePath/>
+    <!--        <version>2.7.10</version>-->
+    <version>3.0.6</version> <!-- lookup parent from repository -->
+  </parent>
+  <properties>
+    <io.jsonwebtoken.version>0.11.2</io.jsonwebtoken.version>
+    <java.version>17</java.version>
+    <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+    <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
+    <org.projectlombok.version>1.18.20</org.projectlombok.version>
+  </properties>
+  <version>0.0.1-SNAPSHOT</version>
 </project>

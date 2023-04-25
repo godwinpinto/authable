@@ -64,13 +64,13 @@ class TOtpUnSubscribeUserHelperTest {
   @Test
   void testUpdateDbToUnsubscribe2() {
     when(tOtpUserMasterSPI.removeDisabledStatus(
-            Mockito.<String>any(), Mockito.<LocalDateTime>any(), Mockito.<String>any()))
+            Mockito.any(), Mockito.any(), Mockito.any()))
         .thenThrow(new RuntimeException());
     assertThrows(
         RuntimeException.class, () -> tOtpUnSubscribeUserHelper.updateDbToUnsubscribe("42"));
     verify(tOtpUserMasterSPI)
         .removeDisabledStatus(
-            Mockito.<String>any(), Mockito.<LocalDateTime>any(), Mockito.<String>any());
+            Mockito.any(), Mockito.any(), Mockito.any());
   }
 
   @Test
@@ -91,7 +91,7 @@ class TOtpUnSubscribeUserHelperTest {
     StepVerifier.create(tOtpUnSubscribeUserHelper.fallbackMethod(e))
         .assertNext(
             tOtpUnBlockUserDto -> {
-              assertEquals(tOtpUnBlockUserDto.getStatusDescription(), "Unknown error occurred");
+              assertEquals("Unknown error occurred", tOtpUnBlockUserDto.getStatusDescription());
             })
         .verifyComplete();
   }
@@ -103,8 +103,8 @@ class TOtpUnSubscribeUserHelperTest {
         .assertNext(
             tOtpUnBlockUserDto -> {
               assertEquals(
-                  tOtpUnBlockUserDto.getStatusDescription(),
-                  "TOTP subscription cancelled for user");
+                  "TOTP subscription cancelled for user",
+                  tOtpUnBlockUserDto.getStatusDescription());
             })
         .verifyComplete();
 

@@ -29,7 +29,7 @@ import reactor.core.publisher.Mono;
 @Import({TOtpStatusHandler.class, TOtpRoutesConfig.class, WebFluxSecurityConfig.class})
 @ContextConfiguration(classes = {TOtpStatusHandler.class})
 @AutoConfigureWebTestClient(timeout = "36000")
-public class TOtpStatusHandlerTest {
+class TOtpStatusHandlerTest {
 
   @MockBean TOtpUserServiceAPI tOtpUserServiceAPI;
   @MockBean FetchPrincipalComponent fetchPrincipalComponent;
@@ -43,7 +43,7 @@ public class TOtpStatusHandlerTest {
   @Autowired private TOtpStatusHandler tOtpStatusHandler;
 
   @Test
-  public void processBody_NoSubscription_Test() {
+  void processBody_NoSubscription_Test() {
 
     UserDto userDto =
         UserDto.builder()
@@ -74,7 +74,7 @@ public class TOtpStatusHandlerTest {
   }
 
   @Test
-  public void processBody_Subscribed_Test() {
+  void processBody_Subscribed_Test() {
 
     UserDto userDto =
         UserDto.builder()
@@ -113,7 +113,7 @@ public class TOtpStatusHandlerTest {
   }
 
   @Test
-  public void processBody_EmptyInputField_Test() {
+  void processBody_EmptyInputField_Test() {
 
     UserDto userDto =
         UserDto.builder()
@@ -143,7 +143,7 @@ public class TOtpStatusHandlerTest {
   }
 
   @Test
-  public void processBody_NoInput_Test() {
+  void processBody_NoInput_Test() {
 
     UserDto userDto =
         UserDto.builder()

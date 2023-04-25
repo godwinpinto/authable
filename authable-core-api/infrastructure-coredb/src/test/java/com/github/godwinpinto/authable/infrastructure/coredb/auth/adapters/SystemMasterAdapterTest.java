@@ -32,7 +32,7 @@ class SystemMasterAdapterTest {
   void updateDisable_Test() {
     doReturn(Mono.just(1L)).when(systemMasterRepository).updateDisable(any(), any(), any());
     StepVerifier.create(systemMasterAdapter.updateDisable(any(), any(), any()))
-        .assertNext(res -> assertEquals(res, 1L))
+        .assertNext(res -> assertEquals(1L, res))
         .verifyComplete();
   }
 

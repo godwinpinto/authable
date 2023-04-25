@@ -19,15 +19,15 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @Import(TOtpSecretEncryption.class)
-@TestPropertySource(properties = {"infrastructure-crypto.totp.secret-key=1234567890123456"})
-public class SecretEncryptionTest {
+@TestPropertySource(properties = {"infrastructure-crypto.totp.secret-key=12345678901234561234567890123456"})
+class SecretEncryptionTest {
 
   @Autowired private TOtpSecretEncryption tOtpSecretEncryption;
 
   private MockedStatic<Cipher> mockedStatic;
 
   @Test
-  public void validateEncryptionDecryptionTest() {
+  void validateEncryptionDecryptionTest() {
     String data = "hello";
     String salt = "ask";
 
@@ -37,7 +37,7 @@ public class SecretEncryptionTest {
   }
 
   @Test
-  public void encryptionExceptionTest() throws NoSuchAlgorithmException, NoSuchPaddingException {
+  void encryptionExceptionTest() throws NoSuchAlgorithmException, NoSuchPaddingException {
     String data = "hello";
     String salt = "ask";
 
@@ -50,7 +50,7 @@ public class SecretEncryptionTest {
   }
 
   @Test
-  public void decryptionExceptionTest() throws NoSuchAlgorithmException, NoSuchPaddingException {
+  void decryptionExceptionTest() throws NoSuchAlgorithmException, NoSuchPaddingException {
     String data = "hello";
     String salt = "ask";
     String encryptedData = tOtpSecretEncryption.encrypt(salt, data);

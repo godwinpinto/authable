@@ -35,7 +35,7 @@ class TOtpUserMasterAdapterTest {
     StepVerifier.create(
             tOtpUserMasterAdapter.updateInvalidAttempt(
                 "ACCESS_ID", (short) 0, DateTimeUtils.getCurrentLocalDateTime()))
-        .assertNext(val -> assertEquals(val, 1L))
+        .assertNext(val -> assertEquals(1L, val))
         .verifyComplete();
   }
 
@@ -45,7 +45,7 @@ class TOtpUserMasterAdapterTest {
     StepVerifier.create(
             tOtpUserMasterAdapter.updateLoginSuccess(
                 "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime()))
-        .assertNext(val -> assertEquals(val, 1L))
+        .assertNext(val -> assertEquals(1L, val))
         .verifyComplete();
   }
 
@@ -55,7 +55,7 @@ class TOtpUserMasterAdapterTest {
     StepVerifier.create(
             tOtpUserMasterAdapter.updateDisable(
                 "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
-        .assertNext(val -> assertEquals(val, 1L))
+        .assertNext(val -> assertEquals(1L, val))
         .verifyComplete();
   }
 
@@ -82,7 +82,7 @@ class TOtpUserMasterAdapterTest {
     StepVerifier.create(
             tOtpUserMasterAdapter.removeDisabledStatus(
                 "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
-        .assertNext(val -> assertEquals(val, 1L))
+        .assertNext(val -> assertEquals(1L, val))
         .verifyComplete();
   }
 
@@ -93,7 +93,7 @@ class TOtpUserMasterAdapterTest {
     TOtpUserMasterDto userMasterDto = TOtpUserMasterDto.builder().build();
     doReturn(Mono.just(tOtpUserMasterEntity)).when(tOtpUserMasterRepository).save(any());
     StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
-        .assertNext(val -> assertEquals(val, 1L))
+        .assertNext(val -> assertEquals(1L, val))
         .verifyComplete();
 
     doReturn(Mono.error(new Exception("Some Exception")))
@@ -101,13 +101,13 @@ class TOtpUserMasterAdapterTest {
         .save(any());
 
     StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
-        .assertNext(val -> assertEquals(val, 0L))
+        .assertNext(val -> assertEquals(0L, val))
         .verifyComplete();
 
     doReturn(Mono.empty()).when(tOtpUserMasterRepository).save(any());
 
     StepVerifier.create(tOtpUserMasterAdapter.updateEntity(userMasterDto))
-        .assertNext(val -> assertEquals(val, 0L))
+        .assertNext(val -> assertEquals(0L, val))
         .verifyComplete();
   }
 

@@ -40,7 +40,7 @@ import reactor.test.StepVerifier;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureWebTestClient(timeout = "360000")
 @Import({WebFluxSecurityConfig.class})
-public class AbstractValidationHandlerTest {
+class AbstractValidationHandlerTest {
 
   @Autowired Validator validator;
 

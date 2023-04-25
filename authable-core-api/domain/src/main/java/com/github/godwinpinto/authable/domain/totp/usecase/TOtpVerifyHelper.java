@@ -43,10 +43,10 @@ public class TOtpVerifyHelper {
   }
 
   public Mono<TOtpVerifyDto> fallbackMethod(Throwable error) {
-    if (error instanceof NonFatalException) {
+    if (error instanceof NonFatalException nfe) {
       return Mono.just(
           TOtpVerifyDto.builder()
-              .statusCode(((NonFatalException) error).getErrCode())
+              .statusCode(nfe.getErrCode())
               .statusDescription(error.getMessage())
               .build());
     } else {
@@ -60,7 +60,7 @@ public class TOtpVerifyHelper {
 
   public Mono<TOtpVerifyDto> verifyAndUpdateOtp(
       String otp, String userSystemId, TOtpUserMasterDto user) {
-    if (!tOtpCryptoSPI.verify(otp, userSystemId, user.getUserSecret())) {
+    if (Boolean.FALSE.equals(tOtpCryptoSPI.verify(otp, userSystemId, user.getUserSecret()))) {
       return processInvalidAttempt(userSystemId, user);
     } else {
       return processSuccessAttempt(userSystemId);
@@ -104,9 +104,8 @@ public class TOtpVerifyHelper {
               DateTimeUtils.getCurrentLocalDateTime(),
               ApplicationConstants.RecordStatus.DISABLED.getValue())
           .flatMap(
-              x1 -> {
-                return Mono.error(new NonFatalException("500", "Account has been locked"));
-              });
+              x1 -> Mono.error(new NonFatalException("500", "Account has been locked"))
+              );
     } else {
       return Mono.error(new NonFatalException("300", "Invalid OTP. Please try again."));
     }

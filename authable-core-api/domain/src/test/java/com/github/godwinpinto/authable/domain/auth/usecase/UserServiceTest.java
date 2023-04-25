@@ -58,7 +58,7 @@ class UserServiceTest {
   }
 
   @Test
-  public void findByUsernameNoSystemUserTest() {
+  void findByUsernameNoSystemUserTest() {
     doReturn(Mono.empty()).when(this.systemUserMasterSPI).findById(anyString());
     StepVerifier.create(userService.findByUsername("TEST")).verifyComplete();
   }

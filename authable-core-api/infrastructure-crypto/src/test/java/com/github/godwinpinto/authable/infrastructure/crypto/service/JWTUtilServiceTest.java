@@ -65,19 +65,19 @@ class JWTUtilServiceTest {
   @Test
   void testGetAllClaimsFromToken() {
     Claims claim = jWTUtilService.getAllClaimsFromToken(this.token);
-    assertEquals(claim.getSubject(), "USER");
+    assertEquals("USER", claim.getSubject());
   }
 
   @Test
   void testGetUsernameFromToken() {
     String username = jWTUtilService.getUsernameFromToken(this.token);
-    assertEquals(username, "USER");
+    assertEquals("USER", username);
   }
 
   @Test
   void testIsTokenNotExpired() {
     boolean isValidToken = jWTUtilService.validateToken(this.token);
-    assertEquals(true, isValidToken);
+    assertTrue(isValidToken);
   }
 
   @Test

@@ -36,7 +36,7 @@ class SystemUserMasterAdapterTest {
     StepVerifier.create(
             systemUserMasterAdapter.updateInvalidAttempt(
                 "ACCESS_ID", (short) 0, DateTimeUtils.getCurrentLocalDateTime()))
-        .assertNext(val -> assertEquals(val, 1L))
+        .assertNext(val -> assertEquals(1L, val))
         .verifyComplete();
   }
 
@@ -46,7 +46,7 @@ class SystemUserMasterAdapterTest {
     StepVerifier.create(
             systemUserMasterAdapter.updateLoginSuccess(
                 "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime()))
-        .assertNext(val -> assertEquals(val, 1L))
+        .assertNext(val -> assertEquals(1L, val))
         .verifyComplete();
   }
 
@@ -56,7 +56,7 @@ class SystemUserMasterAdapterTest {
     StepVerifier.create(
             systemUserMasterAdapter.updateDisable(
                 "ACCESS_ID", DateTimeUtils.getCurrentLocalDateTime(), "N"))
-        .assertNext(val -> assertEquals(val, 1L))
+        .assertNext(val -> assertEquals(1L, val))
         .verifyComplete();
   }
 

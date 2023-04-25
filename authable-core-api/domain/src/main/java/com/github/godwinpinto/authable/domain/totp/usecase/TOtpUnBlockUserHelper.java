@@ -19,11 +19,7 @@ public class TOtpUnBlockUserHelper {
   }
 
   public Boolean isUserDisabledOrActive(TOtpUserMasterDto user) {
-    if (user.getStatus().equals(ApplicationConstants.RecordStatus.INACTIVE.getValue())) {
-      return true;
-    } else {
-      return false;
-    }
+    return user.getStatus().equals(ApplicationConstants.RecordStatus.INACTIVE.getValue());
   }
 
   public Mono<TOtpUnBlockUserDto> changeFlagInDatabase(
@@ -34,17 +30,16 @@ public class TOtpUnBlockUserHelper {
             DateTimeUtils.getCurrentLocalDateTime(),
             ApplicationConstants.RecordStatus.INACTIVE.getValue())
         .flatMap(
-            status -> {
-              return Mono.just(
-                  TOtpUnBlockUserDto.builder()
-                      .statusCode("200")
-                      .statusDescription(
-                          user.getStatus()
-                                  .equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())
-                              ? "TOTP subscription cancelled for user"
-                              : "User unblocked successfully.")
-                      .build());
-            })
+            status ->
+                Mono.just(
+                    TOtpUnBlockUserDto.builder()
+                        .statusCode("200")
+                        .statusDescription(
+                            user.getStatus()
+                                    .equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())
+                                ? "TOTP subscription cancelled for user"
+                                : "User unblocked successfully.")
+                        .build()))
         .switchIfEmpty(Mono.error(new NonFatalException("300", "Failure in updating")));
   }
 
@@ -57,10 +52,10 @@ public class TOtpUnBlockUserHelper {
   }
 
   public Mono<TOtpUnBlockUserDto> fallbackMethod(Throwable error) {
-    if (error instanceof NonFatalException) {
+    if (error instanceof NonFatalException nonFatalException) {
       return Mono.just(
           TOtpUnBlockUserDto.builder()
-              .statusCode(((NonFatalException) error).getErrCode())
+              .statusCode(nonFatalException.getErrCode())
               .statusDescription(error.getMessage())
               .build());
     } else {

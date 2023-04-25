@@ -42,7 +42,7 @@ class TOtpGenerateQrHandlerTest {
   @MockBean private TOtpStatusHandler tOtpStatusHandler;
 
   @Test
-  public void processBody_NoSubscription_Test() {
+  void processBody_NoSubscription_Test() {
 
     UserDto userDto =
         UserDto.builder()
@@ -73,7 +73,7 @@ class TOtpGenerateQrHandlerTest {
   }
 
   @Test
-  public void processBody_Success_Test() {
+  void processBody_Success_Test() {
 
     UserDto userDto =
         UserDto.builder()
@@ -115,7 +115,7 @@ class TOtpGenerateQrHandlerTest {
   }
 
   @Test
-  public void processBody_EmptyInputField_Test() {
+  void processBody_EmptyInputField_Test() {
 
     UserDto userDto =
         UserDto.builder()
@@ -145,7 +145,7 @@ class TOtpGenerateQrHandlerTest {
   }
 
   @Test
-  public void processBody_NoInput_Test() {
+  void processBody_NoInput_Test() {
 
     UserDto userDto =
         UserDto.builder()

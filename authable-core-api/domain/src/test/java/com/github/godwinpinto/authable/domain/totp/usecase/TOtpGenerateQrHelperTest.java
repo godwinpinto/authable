@@ -1,5 +1,6 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -9,6 +10,8 @@ import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpCryptoSPI;
 import com.github.godwinpinto.authable.domain.totp.ports.spi.TOtpUserMasterSPI;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -26,10 +29,11 @@ class TOtpGenerateQrHelperTest {
   @MockBean private TOtpUserMasterSPI tOtpUserMasterSPI;
 
   /** Method under test: {@link TOtpGenerateQrHelper#canGenerateQr(TOtpUserMasterDto)} */
-  @Test
-  void testCanGenerateQr() {
+  @ParameterizedTest
+  @ValueSource(strings={"Status","A","N"})
+  void testCanGenerateQr(String s) {
     TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-    when(user.getStatus()).thenReturn("Status");
+    when(user.getStatus()).thenReturn(s);
     tOtpGenerateQrHelper.canGenerateQr(user);
     verify(user, atLeast(1)).getStatus();
   }
@@ -41,24 +45,6 @@ class TOtpGenerateQrHelperTest {
     when(user.getStatus()).thenReturn("D");
     tOtpGenerateQrHelper.canGenerateQr(user);
     verify(user).getStatus();
-  }
-
-  /** Method under test: {@link TOtpGenerateQrHelper#canGenerateQr(TOtpUserMasterDto)} */
-  @Test
-  void testCanGenerateQr3() {
-    TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-    when(user.getStatus()).thenReturn("A");
-    tOtpGenerateQrHelper.canGenerateQr(user);
-    verify(user, atLeast(1)).getStatus();
-  }
-
-  /** Method under test: {@link TOtpGenerateQrHelper#canGenerateQr(TOtpUserMasterDto)} */
-  @Test
-  void testCanGenerateQr4() {
-    TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-    when(user.getStatus()).thenReturn("N");
-    tOtpGenerateQrHelper.canGenerateQr(user);
-    verify(user, atLeast(1)).getStatus();
   }
 
   /** Method under test: {@link TOtpGenerateQrHelper#generateQr(String, TOtpUserMasterDto)} */
@@ -86,7 +72,7 @@ class TOtpGenerateQrHelperTest {
   @Test
   void testFormatNoSubscriptionMessage() {
 
-    tOtpGenerateQrHelper.formatNoSubscriptionMessage();
+    assertDoesNotThrow(()->tOtpGenerateQrHelper.formatNoSubscriptionMessage());
   }
 
   @Test
@@ -107,7 +93,7 @@ class TOtpGenerateQrHelperTest {
     StepVerifier.create(tOtpGenerateQrHelper.fallbackMethod(e))
         .assertNext(
             tOtpCreateNewDto -> {
-              assertEquals(tOtpCreateNewDto.getStatusDescription(), "Unknown error occurred");
+              assertEquals("Unknown error occurred", tOtpCreateNewDto.getStatusDescription());
             })
         .verifyComplete();
   }
