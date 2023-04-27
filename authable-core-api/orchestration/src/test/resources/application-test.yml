@@ -1,0 +1,24 @@
+spring:
+  config:
+    import: application-rest-test.yml,domain-test.yml,infrastructure-coredb-test.yml,infrastructure-crypto-test.yml
+  jpa:
+    show_sql: true
+    format_sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+
+
+logging:
+  level:
+    #root: DEBUG
+    org:
+      # springframework:
+      #  security: TRACE
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql: TRACE

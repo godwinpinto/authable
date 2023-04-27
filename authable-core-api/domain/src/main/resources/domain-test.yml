@@ -1,0 +1,6 @@
+domain:
+  auth:
+    max-failed-login-attempts: 5
+    system-user-space-padding: 10
+  totp:
+    max-failed-login-attempts: 5

@@ -2,7 +2,7 @@
 Authable is an enterprise ready to deploy Backend API product (Microservice / VM) for authentication / authorization ecosystem.
 
 ## Motivation
-Coming across Time based OTP algorithm, made me realize a wow technology (several benefits) implemented by many the small and medium enterprises which are constantly looking for newer mechanism of securing their applications. Further it lead to looking for possible usecases and adding newer mechanism to this product
+Coming across Time based OTP algorithm, made me realize a technology (having several benefits) not being actively implemented by many of the small and medium enterprises. Specially who are constantly looking for newer mechanism of securing their applications. However, the goal is that it can be deployed on a regular VM or as microservices with minor tweaks.
 
 ## Repo Overview
 | Project |  Status  |   Summary |
@@ -36,6 +36,7 @@ Coming across Time based OTP algorithm, made me realize a wow technology (severa
 1. System to System passwords use SHA512.
 2. TOTP Secrets are ecnrypted using AES256. And the keys are stored in a encoded file on app server (Optionally you can use AWS CMK for storing the master key)
 3. Secrets are encypted at REST and in Transit between caller and authable core (configuration).
+4. Passes SonarQube with A and 100% code coverage
 
 
 ## Usecases

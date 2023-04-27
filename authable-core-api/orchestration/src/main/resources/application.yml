@@ -1,0 +1,7 @@
+spring:
+  config:
+    import: application-rest.yml,domain.yml,infrastructure-coredb.yml,infrastructure-crypto.yml
+  jpa:
+    show_sql: true
+    format_sql: true
+
