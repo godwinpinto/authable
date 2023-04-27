@@ -36,6 +36,7 @@ Coming across Time based OTP algorithm, made me realize a technology (having sev
 1. System to System passwords use SHA512.
 2. TOTP Secrets are ecnrypted using AES256. And the keys are stored in a encoded file on app server (Optionally you can use AWS CMK for storing the master key)
 3. Secrets are encypted at REST and in Transit between caller and authable core (configuration).
+4. Passes SonarQube with A and 100% code coverage
 
 
 ## Usecases
