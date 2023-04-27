@@ -1,65 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.github.godwinpinto.authable</groupId>
-    <artifactId>authable</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-
   <artifactId>infrastructure-crypto</artifactId>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <id>prepare-agent</id>
+          </execution>
+          <execution>
+            <configuration>
+              <formats>
+                <format>XML</format>
+              </formats>
+            </configuration>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <id>report</id>
+          </execution>
+        </executions>
+        <groupId>org.jacoco</groupId>
+        <version>0.8.9</version>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
     <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
       <artifactId>domain</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
       <artifactId>commons</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
       <artifactId>domain-ports-spi</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>domain-dto</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>domain-dto</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <artifactId>jjwt-api</artifactId>
+      <groupId>io.jsonwebtoken</groupId>
       <version>${io.jsonwebtoken.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-impl</artifactId>
-      <version>${io.jsonwebtoken.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
       <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-jackson</artifactId>
-      <version>${io.jsonwebtoken.version}</version>
       <scope>runtime</scope>
+      <version>${io.jsonwebtoken.version}</version>
     </dependency>
     <dependency>
-      <groupId>dev.samstevens.totp</groupId>
+      <artifactId>jjwt-jackson</artifactId>
+      <groupId>io.jsonwebtoken</groupId>
+      <scope>runtime</scope>
+      <version>${io.jsonwebtoken.version}</version>
+    </dependency>
+    <dependency>
       <artifactId>totp</artifactId>
+      <groupId>dev.samstevens.totp</groupId>
       <version>1.7.1</version>
     </dependency>
     <dependency>
-      <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
+      <groupId>org.bouncycastle</groupId>
       <version>1.70</version>
     </dependency>
 
   </dependencies>
+
+  <modelVersion>4.0.0</modelVersion>
   <packaging>jar</packaging>
+  <parent>
+    <artifactId>authable</artifactId>
+    <groupId>com.github.godwinpinto.authable</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
 </project>

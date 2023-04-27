@@ -138,7 +138,7 @@ class TOtpVerifyHandlerTest {
         .jsonPath("statusDescription")
         .value(Matchers.in(List.of("User Id cannot be empty", "OTP cannot be empty")))
         .jsonPath("$.statusCode")
-        .isEqualTo("300");
+        .isEqualTo("400");
   }
 
   @Test
@@ -168,7 +168,7 @@ class TOtpVerifyHandlerTest {
         .jsonPath("statusDescription")
         .isEqualTo("User Id cannot be empty")
         .jsonPath("$.statusCode")
-        .isEqualTo("300");
+        .isEqualTo("400");
   }
 
   @Test
@@ -198,7 +198,7 @@ class TOtpVerifyHandlerTest {
         .jsonPath("statusDescription")
         .isEqualTo("OTP cannot be empty")
         .jsonPath("$.statusCode")
-        .isEqualTo("300");
+        .isEqualTo("400");
   }
 
   @Test
@@ -226,6 +226,6 @@ class TOtpVerifyHandlerTest {
         .jsonPath("statusDescription")
         .isEqualTo("Invalid Parameters in request")
         .jsonPath("$.statusCode")
-        .isEqualTo("300");
+        .isEqualTo("400");
   }
 }

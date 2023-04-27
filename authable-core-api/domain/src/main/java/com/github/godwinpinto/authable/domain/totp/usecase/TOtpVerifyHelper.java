@@ -1,6 +1,7 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
 import com.github.godwinpinto.authable.commons.constants.ApplicationConstants;
+import com.github.godwinpinto.authable.commons.constants.ApplicationConstants.RecordStatus;
 import com.github.godwinpinto.authable.commons.exception.NonFatalException;
 import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUserMasterDto;
@@ -28,16 +29,19 @@ public class TOtpVerifyHelper {
   Mono<TOtpUserMasterDto> isUserNotActive(TOtpUserMasterDto user) {
     if (user.getStatus().equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())) {
       return Mono.just(user);
+    }else if (user.getStatus().equals(RecordStatus.DISABLED.getValue())) {
+      return Mono.error(
+          new NonFatalException("405", "Access is disabled for the user"));
     } else {
       return Mono.error(
-          new NonFatalException("300", "Access is inactive or disabled for the user"));
+          new NonFatalException("404", "Access is inactive"));
     }
   }
 
   public Mono<TOtpVerifyDto> formatNoSubscriptionMessage() {
     return Mono.just(
         TOtpVerifyDto.builder()
-            .statusCode("300")
+            .statusCode("404")
             .statusDescription("No active subscription found for user")
             .build());
   }
@@ -81,7 +85,7 @@ public class TOtpVerifyHelper {
               .statusDescription("Verification successful")
               .build());
     } else {
-      return Mono.error(new NonFatalException("300", "Error in updating database"));
+      return Mono.error(new NonFatalException("500", "Error in updating database"));
     }
   }
 
@@ -104,10 +108,10 @@ public class TOtpVerifyHelper {
               DateTimeUtils.getCurrentLocalDateTime(),
               ApplicationConstants.RecordStatus.DISABLED.getValue())
           .flatMap(
-              x1 -> Mono.error(new NonFatalException("500", "Account has been locked"))
+              x1 -> Mono.error(new NonFatalException("405", "Account has been locked"))
               );
     } else {
-      return Mono.error(new NonFatalException("300", "Invalid OTP. Please try again."));
+      return Mono.error(new NonFatalException("401", "Invalid OTP. Please try again."));
     }
   }
 }

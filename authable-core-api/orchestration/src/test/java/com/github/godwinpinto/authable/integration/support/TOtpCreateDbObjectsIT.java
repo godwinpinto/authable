@@ -39,19 +39,69 @@ public class TOtpCreateDbObjectsIT {
     this.systemMasterRepository.saveAll(systemMasterEntityList).log().subscribe();
 
     List<SystemUserMasterEntity> systemUserMasterEntityList =
-        new ArrayList<>(List.of(createSystemUser("SYS_A", "UA", "Test@1234", "A")));
+        new ArrayList<>(List.of(createSystemUser("SYS_A", "TUA", "Test@1234", "A")));
     this.systemUserMasterRepository.saveAll(systemUserMasterEntityList).subscribe();
 
     List<TOtpUserMasterDto> tOtpUserMasterDTOs =
         new ArrayList<>(
             List.of(
-                createTOtpUser("SYS_A", "A", "UA1"),
-                createTOtpUser("SYS_A", "A", "UA2"),
-                createTOtpUser("SYS_A", "D", "UD"),
-                createTOtpUser("SYS_A", "N", "UN")));
-
+                createTOtpUser("SYS_A", "A", "SYS_A_VERIFY_UA1"),
+                createTOtpUser("SYS_A", "A", "SYS_A_VERIFY_UA2"),
+                createTOtpUser("SYS_A", "D", "SYS_A_VERIFY_UD"),
+                createTOtpUser("SYS_A", "N", "SYS_A_VERIFY_UN")));
     tOtpUserMasterDTOs.stream()
-        .forEach(o -> tOtpUserMasterSPI.createEntity(o));
+        .forEach(o -> tOtpUserMasterSPI.createEntity(o).block());
+
+    tOtpUserMasterDTOs =
+        new ArrayList<>(
+            List.of(
+                createTOtpUser("SYS_A", "A", "SYS_A_UNSUB_UA1"),
+                createTOtpUser("SYS_A", "A", "SYS_A_UNSUB_UA2"),
+                createTOtpUser("SYS_A", "D", "SYS_A_UNSUB_UD"),
+                createTOtpUser("SYS_A", "N", "SYS_A_UNSUB_UN")));
+    tOtpUserMasterDTOs.stream()
+        .forEach(o -> tOtpUserMasterSPI.createEntity(o).block());
+
+    tOtpUserMasterDTOs =
+        new ArrayList<>(
+            List.of(
+                createTOtpUser("SYS_A", "A", "SYS_A_UNBLOCK_UA1"),
+                createTOtpUser("SYS_A", "A", "SYS_A_UNBLOCK_UA2"),
+                createTOtpUser("SYS_A", "D", "SYS_A_UNBLOCK_UD"),
+                createTOtpUser("SYS_A", "N", "SYS_A_UNBLOCK_UN")));
+    tOtpUserMasterDTOs.stream()
+        .forEach(o -> tOtpUserMasterSPI.createEntity(o).block());
+
+    tOtpUserMasterDTOs =
+        new ArrayList<>(
+            List.of(
+                createTOtpUser("SYS_A", "A", "SYS_A_SUB_UA1"),
+                createTOtpUser("SYS_A", "A", "SYS_A_SUB_UA2"),
+                createTOtpUser("SYS_A", "D", "SYS_A_SUB_UD"),
+                createTOtpUser("SYS_A", "N", "SYS_A_SUB_UN")));
+    tOtpUserMasterDTOs.stream()
+        .forEach(o -> tOtpUserMasterSPI.createEntity(o).block());
+
+    tOtpUserMasterDTOs =
+        new ArrayList<>(
+            List.of(
+                createTOtpUser("SYS_A", "A", "SYS_A_GEN_UA1"),
+                createTOtpUser("SYS_A", "A", "SYS_A_GEN_UA2"),
+                createTOtpUser("SYS_A", "D", "SYS_A_GEN_UD"),
+                createTOtpUser("SYS_A", "N", "SYS_A_GEN_UN")));
+    tOtpUserMasterDTOs.stream()
+        .forEach(o -> tOtpUserMasterSPI.createEntity(o).block());
+
+    tOtpUserMasterDTOs =
+        new ArrayList<>(
+            List.of(
+                createTOtpUser("SYS_A", "A", "SYS_A_STATUS_UA1"),
+                createTOtpUser("SYS_A", "A", "SYS_A_STATUS_UA2"),
+                createTOtpUser("SYS_A", "D", "SYS_A_STATUS_UD"),
+                createTOtpUser("SYS_A", "N", "SYS_A_STATUS_UN")));
+    tOtpUserMasterDTOs.stream()
+        .forEach(o -> tOtpUserMasterSPI.createEntity(o).block());
+
   }
 
   SystemMasterEntity createSystem(String systemId, String status) {

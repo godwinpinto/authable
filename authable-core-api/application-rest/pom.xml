@@ -3,6 +3,34 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>application-rest</artifactId>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <id>prepare-agent</id>
+          </execution>
+          <execution>
+            <configuration>
+              <formats>
+                <format>XML</format>
+              </formats>
+            </configuration>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <id>report</id>
+          </execution>
+        </executions>
+        <groupId>org.jacoco</groupId>
+        <version>0.8.9</version>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <artifactId>domain-ports-api</artifactId>
@@ -23,7 +51,7 @@
       <artifactId>spring-boot-starter-webflux</artifactId>
       <groupId>org.springframework.boot</groupId>
     </dependency>
-   
+
     <dependency>
       <artifactId>springdoc-openapi-webflux-core</artifactId>
       <groupId>org.springdoc</groupId>

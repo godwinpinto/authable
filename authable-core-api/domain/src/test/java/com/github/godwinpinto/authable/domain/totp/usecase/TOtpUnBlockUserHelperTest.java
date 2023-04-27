@@ -22,13 +22,36 @@ class TOtpUnBlockUserHelperTest {
 
   @MockBean private TOtpUserMasterSPI tOtpUserMasterSPI;
 
+  /*
+   */
   /** Method under test: {@link TOtpUnBlockUserHelper#isUserDisabledOrActive(TOtpUserMasterDto)} */
+  /*
+
+    @Test
+    void testIsUserDisabledOrActive() {
+      TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
+      when(user.getStatus()).thenReturn("Status");
+      assertFalse(tOtpUnBlockUserHelper.isUserDisabledOrActive(user));
+      verify(user).getStatus();
+    }
+  */
+
   @Test
-  void testIsUserDisabledOrActive() {
-    TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
-    when(user.getStatus()).thenReturn("Status");
-    assertFalse(tOtpUnBlockUserHelper.isUserDisabledOrActive(user));
-    verify(user).getStatus();
+  void testIsUserDisabledOrActive_UserActive() {
+    TOtpUserMasterDto user = TOtpUserMasterDto.builder().status("A").userId("1234").build();
+    assertTrue(tOtpUnBlockUserHelper.isUserDisabledOrActive(user).booleanValue());
+  }
+
+  @Test
+  void testIsUserDisabledOrActive_Disabled() {
+    TOtpUserMasterDto user = TOtpUserMasterDto.builder().status("D").userId("1234").build();
+    assertTrue(tOtpUnBlockUserHelper.isUserDisabledOrActive(user).booleanValue());
+  }
+
+  @Test
+  void testIsUserDisabledOrActive_InActive() {
+    TOtpUserMasterDto user = TOtpUserMasterDto.builder().status("N").userId("1234").build();
+    assertFalse(tOtpUnBlockUserHelper.isUserDisabledOrActive(user).booleanValue());
   }
 
   /** Method under test: {@link TOtpUnBlockUserHelper#isUserDisabledOrActive(TOtpUserMasterDto)} */
@@ -36,8 +59,8 @@ class TOtpUnBlockUserHelperTest {
   void testIsUserDisabledOrActive2() {
     TOtpUserMasterDto user = mock(TOtpUserMasterDto.class);
     when(user.getStatus()).thenReturn("N");
-    assertTrue(tOtpUnBlockUserHelper.isUserDisabledOrActive(user));
-    verify(user).getStatus();
+    assertFalse(tOtpUnBlockUserHelper.isUserDisabledOrActive(user));
+    verify(user, times(2)).getStatus();
   }
 
   @Test

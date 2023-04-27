@@ -34,7 +34,7 @@ public class TOtpUnSubscribeUserHelper {
     } else {
       return Mono.error(
           new NonFatalException(
-              "300", "Your TOTP is blocked. Please contact administrator to unblock."));
+              "405", "Your TOTP is blocked. Please contact administrator to unblock."));
     }
   }
 
@@ -48,14 +48,14 @@ public class TOtpUnSubscribeUserHelper {
             status ->
                 status == 1L
                     ? formatSuccessMessage()
-                    : Mono.error(new NonFatalException("300", "Failure in updating")))
-        .switchIfEmpty(Mono.error(new NonFatalException("300", "Failure in updating")));
+                    : Mono.error(new NonFatalException("500", "Failure in updating")))
+        .switchIfEmpty(Mono.error(new NonFatalException("500", "Failure in updating")));
   }
 
   public Mono<TOtpUnSubscribeUserDto> formatNoRecordFoundMessage() {
     return Mono.just(
         TOtpUnSubscribeUserDto.builder()
-            .statusCode("200")
+            .statusCode("404")
             .statusDescription("No active subscription found for user")
             .build());
   }

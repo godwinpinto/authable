@@ -69,7 +69,7 @@ class TOtpUnBlockHandlerTest {
         .jsonPath("statusDescription")
         .isEqualTo("No active subscription")
         .jsonPath("$.statusCode")
-        .isEqualTo("300");
+        .isEqualTo("404");
   }
 
   @Test
@@ -138,7 +138,7 @@ class TOtpUnBlockHandlerTest {
         .jsonPath("statusDescription")
         .isEqualTo("User Id cannot be empty")
         .jsonPath("$.statusCode")
-        .isEqualTo("300");
+        .isEqualTo("400");
   }
 
   @Test
@@ -167,6 +167,6 @@ class TOtpUnBlockHandlerTest {
         .jsonPath("statusDescription")
         .isEqualTo("Invalid Parameters in request")
         .jsonPath("$.statusCode")
-        .isEqualTo("300");
+        .isEqualTo("400");
   }
 }

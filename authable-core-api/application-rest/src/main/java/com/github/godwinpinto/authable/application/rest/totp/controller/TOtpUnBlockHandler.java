@@ -61,7 +61,7 @@ public class TOtpUnBlockHandler extends AbstractValidationHandler<GenericRequest
         .body(
             BodyInserters.fromValue(
                 TOtpUnBlockUserDto.builder()
-                    .statusCode("300")
+                    .statusCode("404")
                     .statusDescription("No active subscription")
                     .build()));
   }

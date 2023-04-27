@@ -1,52 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.github.godwinpinto.authable</groupId>
-    <artifactId>authable</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-
   <artifactId>infrastructure-coredb</artifactId>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <id>prepare-agent</id>
+          </execution>
+          <execution>
+            <configuration>
+              <formats>
+                <format>XML</format>
+              </formats>
+            </configuration>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <id>report</id>
+          </execution>
+        </executions>
+        <groupId>org.jacoco</groupId>
+        <version>0.8.9</version>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
     <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
       <artifactId>domain</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
       <artifactId>commons</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
       <artifactId>domain-ports-spi</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>domain-dto</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+      <artifactId>domain-dto</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.mysql</groupId>
+      <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+      <groupId>org.springframework.boot</groupId>
+    </dependency>
+    <dependency>
       <artifactId>mysql-connector-j</artifactId>
+      <groupId>com.mysql</groupId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.mariadb</groupId>
       <artifactId>r2dbc-mariadb</artifactId>
+      <groupId>org.mariadb</groupId>
       <version>1.1.4</version>
     </dependency>
 
   </dependencies>
+
+  <modelVersion>4.0.0</modelVersion>
   <packaging>jar</packaging>
+  <parent>
+    <artifactId>authable</artifactId>
+    <groupId>com.github.godwinpinto.authable</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
 </project>

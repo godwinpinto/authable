@@ -11,16 +11,13 @@ import com.github.godwinpinto.authable.infrastructure.coredb.auth.repository.Sys
 import com.github.godwinpinto.authable.integration.support.TOtpCreateDbObjectsIT;
 import com.github.godwinpinto.authable.integration.support.TestContainerSetupIT;
 import com.github.godwinpinto.authable.orchestration.AuthableApplication;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +42,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ActiveProfiles("test")
 @Import({TestContainerSetupIT.class})
 @TestMethodOrder(OrderAnnotation.class)
-@Isolated("aaa6")
-@Order(6)
-@TestInstance(Lifecycle.PER_CLASS)
-class GetUserStatusIT {
-  private static final String URI = "/totp/status";
+class TOtpUnSubscribeIT {
+  private static final String URI = "/totp/unsubscribe";
   private static String validToken;
   private final String USER = "TEST_USER";
   private final String PASSWORD = "TEST_PASSWORD";
@@ -66,11 +60,11 @@ class GetUserStatusIT {
   @Autowired private WebTestClient webTestClient;
   @LocalServerPort private int port;
 
-  @BeforeAll
+  @PostConstruct
   public void initialise() {
     webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
     UserDto userDto =
-        UserDto.builder().username("UA").systemId("SYS_A").roles(List.of(Role.ROLE_ADMIN)).build();
+        UserDto.builder().username("TUA").systemId("SYS_A").roles(List.of(Role.ROLE_ADMIN)).build();
     validToken = jwtUtilSPI.generateToken(userDto);
 
     TOtpCreateDbObjectsIT tOtpCreateDbObjectsIT =
@@ -163,9 +157,9 @@ class GetUserStatusIT {
   }
 
   @ParameterizedTest
-  @CsvSource({"_STATUS_UA5,404", "_STATUS_UD,405", "_STATUS_UN,404", "_STATUS_UA1,200"})
-  @Order(4)
-  void userNotInDBAndDisabledAndInActiveAndActive_Test(String userId, String statusCode) {
+  @CsvSource({"_UNSUB_UD,405", "_UNSUB_UN,200", "_UNSUB_UA1,200", "_UNSUB_UXX,404"})
+  @Order(5)
+  void userDisabledAndInActiveAndActiveAndNotFound_Test(String userId, String statusCode) {
     GenericRequest genericRequest = new GenericRequest();
     genericRequest.setUserId(userId);
 

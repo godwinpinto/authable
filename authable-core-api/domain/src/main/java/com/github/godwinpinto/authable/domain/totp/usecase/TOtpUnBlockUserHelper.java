@@ -1,6 +1,7 @@
 package com.github.godwinpinto.authable.domain.totp.usecase;
 
 import com.github.godwinpinto.authable.commons.constants.ApplicationConstants;
+import com.github.godwinpinto.authable.commons.constants.ApplicationConstants.RecordStatus;
 import com.github.godwinpinto.authable.commons.exception.NonFatalException;
 import com.github.godwinpinto.authable.commons.utils.DateTimeUtils;
 import com.github.godwinpinto.authable.domain.totp.dto.TOtpUnBlockUserDto;
@@ -19,7 +20,8 @@ public class TOtpUnBlockUserHelper {
   }
 
   public Boolean isUserDisabledOrActive(TOtpUserMasterDto user) {
-    return user.getStatus().equals(ApplicationConstants.RecordStatus.INACTIVE.getValue());
+    return (user.getStatus().equals(ApplicationConstants.RecordStatus.ACTIVE.getValue()) || user.getStatus().equals(
+        RecordStatus.DISABLED.getValue()));
   }
 
   public Mono<TOtpUnBlockUserDto> changeFlagInDatabase(
@@ -40,13 +42,13 @@ public class TOtpUnBlockUserHelper {
                                 ? "TOTP subscription cancelled for user"
                                 : "User unblocked successfully.")
                         .build()))
-        .switchIfEmpty(Mono.error(new NonFatalException("300", "Failure in updating")));
+        .switchIfEmpty(Mono.error(new NonFatalException("500", "Failure in updating")));
   }
 
   public Mono<TOtpUnBlockUserDto> formatNoSubscriptionMessage() {
     return Mono.just(
         TOtpUnBlockUserDto.builder()
-            .statusCode("200")
+            .statusCode("404")
             .statusDescription("No active subscription found for user")
             .build());
   }

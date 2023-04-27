@@ -20,13 +20,13 @@ public class TOtpGetUserStatusHelper {
     } else if (user.getStatus().equals(ApplicationConstants.RecordStatus.INACTIVE.getValue())) {
       return Mono.just(
           TOtpUserStatusDto.builder()
-              .statusCode("300")
+              .statusCode("404")
               .statusDescription("No Active Subscription for the user")
               .build());
     } else {
       return Mono.just(
           TOtpUserStatusDto.builder()
-              .statusCode("404")
+              .statusCode("405")
               .statusDescription("User is Blocked for TOTP.")
               .build());
     }
@@ -35,7 +35,7 @@ public class TOtpGetUserStatusHelper {
   Mono<TOtpUserStatusDto> recordNotFound() {
     return Mono.just(
         TOtpUserStatusDto.builder()
-            .statusCode("300")
+            .statusCode("404")
             .statusDescription("No Active Subscription")
             .build());
   }

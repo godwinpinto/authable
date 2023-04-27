@@ -30,6 +30,18 @@ class TOtpVerifyHelperTest {
   @Autowired private TOtpVerifyHelper tOtpVerifyHelper;
 
   @Test
+  void isUserDisabled_Active_Test() {
+
+    TOtpUserMasterDto user = TOtpUserMasterDto.builder().status("D").userId("1234").build();
+    StepVerifier.create(tOtpVerifyHelper.isUserNotActive(user))
+        .expectErrorMatches(
+            e ->
+                e instanceof NonFatalException
+                    && e.getMessage().equals("Access is disabled for the user"))
+        .verify();
+  }
+
+  @Test
   void isUserNotActive_Active_Test() {
 
     TOtpUserMasterDto user = TOtpUserMasterDto.builder().status("A").userId("1234").build();
@@ -46,7 +58,7 @@ class TOtpVerifyHelperTest {
         .expectErrorMatches(
             e ->
                 e instanceof NonFatalException
-                    && e.getMessage().equals("Access is inactive or disabled for the user"))
+                    && e.getMessage().equals("Access is inactive"))
         .verify();
   }
 

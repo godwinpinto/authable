@@ -5,15 +5,3 @@ spring:
     show_sql: true
     format_sql: true
 
-logging:
-  level:
-    root: DEBUG
-    org:
-      springframework:
-        security: TRACE
-      hibernate:
-        SQL: DEBUG
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE

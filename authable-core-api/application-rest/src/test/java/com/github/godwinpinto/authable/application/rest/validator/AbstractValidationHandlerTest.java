@@ -116,7 +116,7 @@ class AbstractValidationHandlerTest {
         .expectBody()
         .consumeWith(System.out::println)
         .jsonPath("$.statusCode")
-        .isEqualTo("300")
+        .isEqualTo("400")
         .jsonPath("$.statusDescription")
         .isEqualTo("User Id cannot be empty");
   }
@@ -138,7 +138,7 @@ class AbstractValidationHandlerTest {
         .expectBody()
         .consumeWith(System.out::println)
         .jsonPath("$.statusCode")
-        .isEqualTo("300")
+        .isEqualTo("400")
         .jsonPath("$.statusDescription")
         .isEqualTo("Invalid Parameters in request");
   }
@@ -189,9 +189,9 @@ class AbstractValidationHandlerTest {
         .isBadRequest()
         .expectBody()
         .consumeWith(System.out::println)
-        .jsonPath("$.code")
+        .jsonPath("$.statusCode")
         .isEqualTo("400")
-        .jsonPath("$.message")
+        .jsonPath("$.statusDescription")
         .isEqualTo("Some Runtime Exception");
   }
 

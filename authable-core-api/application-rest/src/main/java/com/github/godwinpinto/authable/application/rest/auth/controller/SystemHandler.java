@@ -1,8 +1,8 @@
 package com.github.godwinpinto.authable.application.rest.auth.controller;
 
-import com.github.godwinpinto.authable.application.rest.auth.json.ApiResponse;
 import com.github.godwinpinto.authable.application.rest.auth.json.LoginRequest;
 import com.github.godwinpinto.authable.application.rest.auth.json.LoginResponse;
+import com.github.godwinpinto.authable.application.rest.totp.json.GenericResponse;
 import com.github.godwinpinto.authable.application.rest.validator.AbstractValidationHandler;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
 import com.github.godwinpinto.authable.domain.auth.ports.api.AuthServiceAPI;
@@ -41,6 +41,7 @@ public class SystemHandler extends AbstractValidationHandler<LoginRequest, Valid
         .body(
             BodyInserters.fromValue(
                 LoginResponse.builder()
+                    .statusCode("200")
                     .accessToken(userDto.getPassword())
                     .expiry(userDto.getExpiryTime())
                     .build()));
@@ -48,11 +49,17 @@ public class SystemHandler extends AbstractValidationHandler<LoginRequest, Valid
 
   private Mono<ServerResponse> prepareErrorResponse(Throwable e) {
     return ServerResponse.badRequest()
-        .body(BodyInserters.fromValue(new ApiResponse(400, e.getMessage(), null)));
+        .body(BodyInserters.fromValue(GenericResponse.builder()
+            .statusCode("400")
+            .statusDescription(e.getMessage())
+            .build()));
   }
 
   private Mono<ServerResponse> prepareOnEmptyResponse() {
     return ServerResponse.badRequest()
-        .body(BodyInserters.fromValue(new ApiResponse(400, "User does not exist", null)));
+        .body(BodyInserters.fromValue(GenericResponse.builder()
+            .statusCode("400")
+            .statusDescription("User does not exist")
+            .build()));
   }
 }

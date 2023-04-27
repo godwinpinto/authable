@@ -61,7 +61,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -76,7 +78,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -91,7 +95,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -106,7 +112,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -122,7 +130,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -138,7 +148,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -154,7 +166,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -170,7 +184,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -186,7 +202,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -202,7 +220,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -218,7 +238,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -234,7 +256,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isOk()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("200");
   }
 
   @Test
@@ -250,7 +274,9 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400");
   }
 
   @Test
@@ -279,6 +305,10 @@ class AuthenticationSystemUserIT {
         .expectStatus()
         .isBadRequest()
         .expectBody()
-        .consumeWith(System.out::println);
+        .consumeWith(System.out::println)
+        .jsonPath("$.statusCode")
+        .isEqualTo("400")
+        .jsonPath("$.statusDescription")
+        .isEqualTo("Your access is inactive or disabled");
   }
 }

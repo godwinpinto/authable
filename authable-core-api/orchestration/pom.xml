@@ -1,73 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.github.godwinpinto.authable</groupId>
-    <artifactId>authable</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-
   <artifactId>orchestration</artifactId>
-
-  <dependencies>
-    <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>application-rest</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>domain</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>commons</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>infrastructure-coredb</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>infrastructure-crypto</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>domain-dto</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>domain-ports-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.godwinpinto.authable</groupId>
-      <artifactId>domain-ports-spi</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
-
   <build>
     <plugins>
       <plugin>
-        <groupId>org.springframework.boot</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <id>prepare-agent</id>
+          </execution>
+          <execution>
+            <configuration>
+              <formats>
+                <format>XML</format>
+              </formats>
+            </configuration>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <id>report</id>
+          </execution>
+        </executions>
+        <groupId>org.jacoco</groupId>
+        <version>0.8.9</version>
+      </plugin>
+   
+      <plugin>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
           <excludes>
             <exclude>
-              <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
+              <groupId>org.projectlombok</groupId>
             </exclude>
           </excludes>
         </configuration>
+        <groupId>org.springframework.boot</groupId>
       </plugin>
     </plugins>
   </build>
+  <dependencies>
+    <dependency>
+      <artifactId>application-rest</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <artifactId>domain</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <artifactId>commons</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <artifactId>infrastructure-coredb</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <artifactId>infrastructure-crypto</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <artifactId>domain-dto</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <artifactId>domain-ports-api</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <artifactId>domain-ports-spi</artifactId>
+      <groupId>com.github.godwinpinto.authable</groupId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>authable</artifactId>
+    <groupId>com.github.godwinpinto.authable</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
 </project>

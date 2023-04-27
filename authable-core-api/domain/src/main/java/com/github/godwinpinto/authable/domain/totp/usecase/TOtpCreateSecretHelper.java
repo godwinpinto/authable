@@ -32,17 +32,17 @@ public class TOtpCreateSecretHelper {
   Mono<TOtpUserMasterDto> isAllowedToReset(TOtpUserMasterDto user) {
     if (user.getStatus().equals(ApplicationConstants.RecordStatus.DISABLED.getValue())) {
       return Mono.error(
-          new NonFatalException("300", "Your TOTP is disabled. Contact administrator"));
+          new NonFatalException("405", "Your TOTP is disabled. Contact administrator"));
     } else if (user.getStatus().equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())) {
       return Mono.error(
           new NonFatalException(
-              "300",
+              "406",
               "You already have an active TOTP. "
                   + "Unsubscribe first to generate new one or contact administrator"));
     } else if (user.getStatus().equals(ApplicationConstants.RecordStatus.INACTIVE.getValue())) {
       return Mono.just(user);
     } else {
-      return Mono.error(new NonFatalException("300", UNKNOWN_ERROR_MESSAGE));
+      return Mono.error(new NonFatalException("405", UNKNOWN_ERROR_MESSAGE));
     }
   }
 
@@ -64,7 +64,7 @@ public class TOtpCreateSecretHelper {
               if (updateCount == 1) {
                 return formatSuccessResponse(userSystemId, user);
               } else {
-                return Mono.error(new NonFatalException("300", UNKNOWN_ERROR_MESSAGE));
+                return Mono.error(new NonFatalException("500", UNKNOWN_ERROR_MESSAGE));
               }
             });
   }
@@ -85,10 +85,10 @@ public class TOtpCreateSecretHelper {
               if (Boolean.TRUE.equals(status)) {
                 return formatSuccessResponse(userSystemId, user1);
               } else {
-                return Mono.error(new NonFatalException("300", UNKNOWN_ERROR_MESSAGE));
+                return Mono.error(new NonFatalException("500", UNKNOWN_ERROR_MESSAGE));
               }
             })
-        .switchIfEmpty(Mono.error(new NonFatalException("300", UNKNOWN_ERROR_MESSAGE)));
+        .switchIfEmpty(Mono.error(new NonFatalException("500", UNKNOWN_ERROR_MESSAGE)));
   }
 
   private Mono<TOtpCreateNewDto> formatSuccessResponse(

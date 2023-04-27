@@ -23,14 +23,14 @@ public class TOtpGenerateQrHelper {
   Mono<TOtpUserMasterDto> canGenerateQr(TOtpUserMasterDto user) {
     if (user.getStatus().equals(ApplicationConstants.RecordStatus.DISABLED.getValue())) {
       return Mono.error(
-          new NonFatalException("300", "Your TOTP is disabled. Contact administrator"));
+          new NonFatalException("405", "Your TOTP is disabled. Contact administrator"));
     } else if (user.getStatus().equals(ApplicationConstants.RecordStatus.ACTIVE.getValue())) {
       return Mono.just(user);
     } else if (user.getStatus().equals(ApplicationConstants.RecordStatus.INACTIVE.getValue())) {
-      return Mono.error(new NonFatalException("300", "You are not subscribed to TOTP."));
+      return Mono.error(new NonFatalException("404", "You are not subscribed to TOTP."));
     } else {
       return Mono.error(
-          new NonFatalException("300", "Unknown error occurred. Please contact administrator"));
+          new NonFatalException("500", "Unknown error occurred. Please contact administrator"));
     }
   }
 
@@ -53,7 +53,7 @@ public class TOtpGenerateQrHelper {
   public Mono<TOtpGenerateQrDto> formatNoSubscriptionMessage() {
     return Mono.just(
         TOtpGenerateQrDto.builder()
-            .statusCode("200")
+            .statusCode("404")
             .statusDescription("No active subscription found for user")
             .build());
   }

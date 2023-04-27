@@ -1,6 +1,5 @@
 package com.github.godwinpinto.authable.application.rest.validator;
 
-import com.github.godwinpinto.authable.application.rest.auth.json.ApiResponse;
 import com.github.godwinpinto.authable.application.rest.totp.json.GenericResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -58,12 +57,15 @@ public abstract class AbstractValidationHandler<T, U extends Validator> {
                     .body(
                         BodyInserters.fromValue(
                             GenericResponse.builder()
-                                .statusCode("300")
+                                .statusCode("400")
                                 .statusDescription(exception.getReason())
                                 .build()));
               } else {
                 return ServerResponse.badRequest()
-                    .body(BodyInserters.fromValue(new ApiResponse(400, e.getMessage(), null)));
+                    .body(BodyInserters.fromValue(GenericResponse.builder()
+                        .statusCode("400")
+                        .statusDescription(e.getMessage())
+                        .build()));
               }
             });
   }
