@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
+    <title>Authable - A Multi-factor Authentication Middleware</title>
+    <meta
+      content="A two factor authentication middleware so that you can focus on building your core applications"
+      name="description"
+    />
+    <meta
+      content="two factor authentication, 2FA, MFA, Multi-factor authentication, QR Login, Time based OTP"
+      name="keywords"
+    />
+
+    <!-- Favicons -->
+    <link href="assets/img/favicon.png" rel="icon" />
+    <link href="assets/img/favicon.png" rel="apple-touch-icon" />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+      rel="stylesheet"
+    />
+
+    <!-- Vendor CSS Files -->
+    <link href="assets/vendor/aos/aos.css" rel="stylesheet" />
+    <link
+      href="assets/vendor/bootstrap/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="assets/vendor/bootstrap-icons/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+    <link
+      href="assets/vendor/glightbox/css/glightbox.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet" />
+    <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet" />
+
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <script>
+      function workInProgress() {
+        alert("Work in Progress. Thank you for your patience. Coming Soon!");
+      }
+    </script>
+  </head>
+
+  <body>
+    <!-- ======= Header ======= -->
+    <header id="header" class="fixed-top">
+      <div class="container d-flex align-items-center">
+        <h1 class="logo me-auto">
+          <a href="index.html" class="logo me-auto"
+            ><img
+              src="assets/img/authable_logo.png"
+              alt=""
+              class="img-fluid"
+            />UTHABLE</a
+          >
+        </h1>
+
+        <nav id="navbar" class="navbar">
+          <ul>
+            <li><a class="nav-link scrollto active" href="#home">Home</a></li>
+            <li><a class="nav-link scrollto" href="#about">About</a></li>
+            <li>
+              <a class="nav-link scrollto" href="#" onclick="workInProgress();"
+                >Docs</a
+              >
+            </li>
+            <li>
+              <a class="nav-link scrollto" href="#" onclick="workInProgress();"
+                >API</a
+              >
+            </li>
+            <li>
+              <a class="nav-link scrollto" href="#faq">FAQ</a>
+            </li>
+            <li>
+              <a class="nav-link scrollto" href="#sponsor">Sponsor</a>
+            </li>
+            <li>
+              <a
+                class="nav-link scrollto"
+                href="https://github.com/godwinpinto/authable"
+                target="_blank"
+                >Github</a
+              >
+            </li>
+            <li>
+              <a class="nav-link scrollto" href="https://github.com/godwinpinto"
+                >Contact</a
+              >
+            </li>
+            <li>
+              <a
+                class="getstarted scrollto"
+                href="#"
+                onclick="workInProgress();"
+                >Get Started</a
+              >
+            </li>
+          </ul>
+          <i class="bi bi-list mobile-nav-toggle"></i>
+        </nav>
+        <!-- .navbar -->
+      </div>
+    </header>
+    <!-- End Header -->
+
+    <!-- ======= Home Section ======= -->
+    <section id="home" class="d-flex align-items-center">
+      <div class="container">
+        <div class="row">
+          <div
+            class="col-lg-6 d-flex flex-column justify-content-center pt-4 pt-lg-0 order-2 order-lg-1"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <h1>Your 2<sup>nd</sup> Factor Authentication</h1>
+            <h2>
+              A pluggable 2FA / MFA middleware for all your backend systems in
+              one place.
+            </h2>
+            <h2>Open Source and Free&#33;&#33;&#33;</h2>
+            <div class="d-flex justify-content-center justify-content-lg-start">
+              <div>
+                <a
+                  href="#"
+                  onclick="workInProgress();"
+                  class="btn-get-started scrollto"
+                  >Get Started</a
+                >
+              </div>
+              <div>&nbsp;</div>
+              <div>
+                <a
+                  href="https://github.com/godwinpinto/authable"
+                  target="_blank"
+                  class="btn-github scrollto"
+                >
+                  <svg
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    class="octicon octicon-mark-github"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"
+                    ></path>
+                  </svg>
+                  <span>Follow</span></a
+                >
+              </div>
+            </div>
+          </div>
+          <div
+            class="col-lg-6 order-1 order-lg-2 hero-img"
+            data-aos="zoom-in"
+            data-aos-delay="200"
+          >
+            <img
+              src="assets/img/banner.png"
+              class="img-fluid animated"
+              alt=""
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- End Home -->
+
+    <main id="main">
+      <!-- ======= Clients Section ======= -->
+      <section id="clients" class="clients section-bg">
+        <div class="container client-note">
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <h4>Companies using Authable</h4>
+              <p>
+                Thank you for considering Authable in your organization. We
+                would be glad to have your organization logo listed as an
+                adopter of Authable.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End Cliens Section -->
+
+      <!-- ======= About Us Section ======= -->
+      <section id="about" class="about">
+        <div class="container" data-aos="fade-up">
+          <div class="section-title">
+            <h2>About Authable</h2>
+          </div>
+
+          <div class="row content">
+            <div class="col-lg-6">
+              <p>
+                With Authable you can choose the 2<sup>nd</sup> factor from a
+                list of available options.
+              </p>
+              <ul>
+                <li>
+                  <i class="ri-check-double-line"></i> Time Based OTP (Ready)
+                </li>
+                <li><i class="ri-time-line"></i> QR Code scan (Coming soon)</li>
+                <li>
+                  <i class="ri-time-line"></i> Verification Code Select (Coming
+                  soon)
+                </li>
+                <li><i class="ri-time-line"></i> Regular OTP (Coming soon)</li>
+                <li>
+                  <i class="ri-time-line"></i> Security questions (Coming soon)
+                </li>
+                <li><i class="ri-time-line"></i> App Based verification</li>
+              </ul>
+            </div>
+            <div class="col-lg-6 pt-4 pt-lg-0">
+              <p>
+                Why build your own two factor authentication when you can
+                quickly leverage with Authable. Additionally, you 2nd factor
+                shouldn't be residing on the same system as your core
+                authentication.
+              </p>
+              <p>
+                Why build your own two factor authentication when you can
+                quickly leverage with Authable. Yes, you can build your own but
+                without proper knowledge could lead to vulnerabilities, putting
+                users and their data at risk.
+              </p>
+              <a href="#" onclick="workInProgress();" class="btn-learn-more"
+                >Learn More</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End About Us Section -->
+
+      <!-- ======= Why Us Section ======= -->
+      <section id="why-us" class="why-us section-bg">
+        <div class="container-fluid" data-aos="fade-up">
+          <div class="row">
+            <div
+              class="col-lg-7 d-flex flex-column justify-content-center align-items-stretch order-2 order-lg-1"
+            >
+              <div class="content">
+                <h3>Our <strong>Philosophy</strong></h3>
+                <p>Why we think Authable makes sense...</p>
+              </div>
+
+              <div class="accordion-list">
+                <ul>
+                  <li>
+                    <a
+                      data-bs-toggle="collapse"
+                      class="collapse"
+                      data-bs-target="#accordion-list-1"
+                      ><span>01</span> 2<sup>nd</sup> Factor should be a
+                      Seperate System?
+                      <i class="bx bx-chevron-down icon-show"></i
+                      ><i class="bx bx-chevron-up icon-close"></i
+                    ></a>
+                    <div
+                      id="accordion-list-1"
+                      class="collapse show"
+                      data-bs-parent=".accordion-list"
+                    >
+                      <p>
+                        If you core system's authentication was compromised
+                        assuming an internal team. The separation of the 2nd
+                        factor's independant solution protects you.
+                      </p>
+                    </div>
+                  </li>
+
+                  <li>
+                    <a
+                      data-bs-toggle="collapse"
+                      data-bs-target="#accordion-list-2"
+                      class="collapsed"
+                      ><span>02</span> Don't Re-implement?
+                      <i class="bx bx-chevron-down icon-show"></i
+                      ><i class="bx bx-chevron-up icon-close"></i
+                    ></a>
+                    <div
+                      id="accordion-list-2"
+                      class="collapse"
+                      data-bs-parent=".accordion-list"
+                    >
+                      <p>
+                        If you have more than one application that needs 2FA,
+                        you shouldn't be building 2FA in each system. Bad
+                        Practice.
+                      </p>
+                    </div>
+                  </li>
+
+                  <li>
+                    <a
+                      data-bs-toggle="collapse"
+                      data-bs-target="#accordion-list-3"
+                      class="collapsed"
+                      ><span>03</span> Leave it to the experts
+                      <i class="bx bx-chevron-down icon-show"></i
+                      ><i class="bx bx-chevron-up icon-close"></i
+                    ></a>
+                    <div
+                      id="accordion-list-3"
+                      class="collapse"
+                      data-bs-parent=".accordion-list"
+                    >
+                      <p>
+                        Best practices are important. Not just a functioning
+                        module. Choose a solution which is widely adopted.
+                      </p>
+                    </div>
+                  </li>
+
+                  <li>
+                    <a
+                      data-bs-toggle="collapse"
+                      data-bs-target="#accordion-list-4"
+                      class="collapsed"
+                      ><span>04</span> Bad User Experience
+                      <i class="bx bx-chevron-down icon-show"></i
+                      ><i class="bx bx-chevron-up icon-close"></i
+                    ></a>
+                    <div
+                      id="accordion-list-4"
+                      class="collapse"
+                      data-bs-parent=".accordion-list"
+                    >
+                      <p>
+                        Choosing a single 2FA for multiple faces to your end
+                        users is the ideal way. However, Authable allows you
+                        both options. :p
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div
+              class="col-lg-5 align-items-stretch order-1 order-lg-2 img"
+              style="background-image: url('assets/img/why-us.png')"
+              data-aos="zoom-in"
+              data-aos-delay="150"
+            >
+              &nbsp;
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End Why Us Section -->
+
+      <!-- ======= Cta Section ======= -->
+      <section id="sponsor" class="cta">
+        <div class="container" data-aos="zoom-in">
+          <div class="row">
+            <div class="col-lg-9 text-center text-lg-start">
+              <h3>Considering to Sponsor?</h3>
+              <p>
+                I’m not saying I’m Batman, but have you ever seen me and Batman
+                in the same room? Anyway, I’m looking for sponsors to help me
+                keep me going on Caffeine. If you’re interested in supporting me
+                and my work, please consider sponsoring me on GitHub.
+              </p>
+            </div>
+            <div class="col-lg-3 cta-btn-container text-center">
+              <div></div>
+              <a
+                class="cta-btn align-right"
+                href="https://github.com/sponsors/godwinpinto"
+                target="_blank"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  width="16"
+                  height="16"
+                  class="octicon octicon-heart"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="m8 14.25.345.666a.75.75 0 0 1-.69 0l-.008-.004-.018-.01a7.152 7.152 0 0 1-.31-.17 22.055 22.055 0 0 1-3.434-2.414C2.045 10.731 0 8.35 0 5.5 0 2.836 2.086 1 4.25 1 5.797 1 7.153 1.802 8 3.02 8.847 1.802 10.203 1 11.75 1 13.914 1 16 2.836 16 5.5c0 2.85-2.045 5.231-3.885 6.818a22.066 22.066 0 0 1-3.744 2.584l-.018.01-.006.003h-.002ZM4.25 2.5c-1.336 0-2.75 1.164-2.75 3 0 2.15 1.58 4.144 3.365 5.682A20.58 20.58 0 0 0 8 13.393a20.58 20.58 0 0 0 3.135-2.211C12.92 9.644 14.5 7.65 14.5 5.5c0-1.836-1.414-3-2.75-3-1.373 0-2.609.986-3.029 2.456a.749.749 0 0 1-1.442 0C6.859 3.486 5.623 2.5 4.25 2.5Z"
+                  ></path>
+                </svg>
+                Visit Github Sponsor</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- End Cta Section -->
+
+      <!-- ======= Frequently Asked Questions Section ======= -->
+      <section id="faq" class="faq section-bg">
+        <div class="container" data-aos="fade-up">
+          <div class="section-title">
+            <h2>Frequently Asked Questions</h2>
+            <p>Doubts or questions that you might have</p>
+          </div>
+
+          <div class="faq-list">
+            <ul>
+              <li data-aos="fade-up" data-aos-delay="100">
+                <i class="bx bx-help-circle icon-help"></i>
+                <a
+                  data-bs-toggle="collapse"
+                  class="collapse"
+                  data-bs-target="#faq-list-1"
+                  >Is there a paid / pro version?
+                  <i class="bx bx-chevron-down icon-show"></i
+                  ><i class="bx bx-chevron-up icon-close"></i
+                ></a>
+                <div
+                  id="faq-list-1"
+                  class="collapse show"
+                  data-bs-parent=".faq-list"
+                >
+                  <p>
+                    No this is a complete product. Fully Open Source! There is
+                    no pro version with added benefits.
+                  </p>
+                </div>
+              </li>
+
+              <li data-aos="fade-up" data-aos-delay="200">
+                <i class="bx bx-help-circle icon-help"></i>
+                <a
+                  data-bs-toggle="collapse"
+                  data-bs-target="#faq-list-2"
+                  class="collapsed"
+                  >I need professional implementation, customization and
+                  support? <i class="bx bx-chevron-down icon-show"></i
+                  ><i class="bx bx-chevron-up icon-close"></i
+                ></a>
+                <div
+                  id="faq-list-2"
+                  class="collapse"
+                  data-bs-parent=".faq-list"
+                >
+                  <p>
+                    Connect with me on Twitter@godwin_pinto or
+                    linkedin.com/in/pinto-godwin. I can direct you to a few
+                    organizations that could facilitate this.
+                  </p>
+                </div>
+              </li>
+
+              <li data-aos="fade-up" data-aos-delay="300">
+                <i class="bx bx-help-circle icon-help"></i>
+                <a
+                  data-bs-toggle="collapse"
+                  data-bs-target="#faq-list-3"
+                  class="collapsed"
+                  >I wanted your consultation time?
+                  <i class="bx bx-chevron-down icon-show"></i
+                  ><i class="bx bx-chevron-up icon-close"></i
+                ></a>
+                <div
+                  id="faq-list-3"
+                  class="collapse"
+                  data-bs-parent=".faq-list"
+                >
+                  <p>
+                    Feel free to connect with me on Twitter@godwin_pinto or
+                    linkedin.com/in/pinto-godwin, lets chat and see way forward.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <!-- End Frequently Asked Questions Section -->
+    </main>
+    <!-- End #main -->
+
+    <!-- ======= Footer ======= -->
+    <footer id="footer">
+      <div class="container footer-bottom clearfix">
+        <div class="copyright">
+          &copy; Copyright
+          <strong><span>github.com/godwinpinto/Authable</span></strong
+          >. All Rights Reserved
+        </div>
+        <div class="credits">
+          <!-- All the links in the footer should remain intact. -->
+          <!-- You can delete the links only if you purchased the pro version. -->
+          <!-- Licensing information: https://bootstrapmade.com/license/ -->
+          <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/ -->
+          Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+        </div>
+      </div>
+    </footer>
+    <!-- End Footer -->
+
+    <div id="preloader"></div>
+    <a
+      href="#"
+      class="back-to-top d-flex align-items-center justify-content-center"
+      ><i class="bi bi-arrow-up-short"></i
+    ></a>
+
+    <!-- Vendor JS Files -->
+    <script src="assets/vendor/aos/aos.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+    <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
+
+    <!-- Template Main JS File -->
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
