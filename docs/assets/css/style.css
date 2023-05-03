@@ -135,7 +135,7 @@ h6 {
 
 #header.header-scrolled,
 #header.header-inner-pages {
-  background: rgba(40, 58, 90, 0.9);
+  background: rgb(7, 71, 166, 0.9);
 }
 
 #header .logo {
@@ -939,7 +939,7 @@ section {
 # Cta
 --------------------------------------------------------------*/
 .cta {
-  background: linear-gradient(rgba(40, 58, 90, 0.9), rgba(40, 58, 90, 0.9)), url("../img/cta-bg2.jfif") fixed center center;
+  background: linear-gradient(rgb(7, 71, 166,0.9), rgb(7, 71, 166, 0.5)), url("../img/cta-bg2.jfif") fixed center center;
   background-size: cover;
   padding: 120px 0;
 }
