@@ -80,13 +80,6 @@
         </executions>
         <groupId>org.apache.maven.plugins</groupId>
       </plugin>
-      <plugin>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <mainClass>com.github.godwinpinto.authable.orchestration.AuthableApplication</mainClass>
-        </configuration>
-        <groupId>org.springframework.boot</groupId>
-      </plugin>
 
     </plugins>
   </build>
@@ -140,11 +133,6 @@
     <dependency>
       <artifactId>spring-security-test</artifactId>
       <groupId>org.springframework.security</groupId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <artifactId>reactor-test</artifactId>
-      <groupId>io.projectreactor</groupId>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -1,6 +1,6 @@
 spring:
   r2dbc:
-    url: r2dbc:tc:mysql:///authable?TC_IMAGE_TAG=8.0.33-debian
+    url: r2dbc:tc:mysql:///AUTHABLE?TC_IMAGE_TAG=8.0.33-debian
 
 #testcontainers:
 #  reuse:

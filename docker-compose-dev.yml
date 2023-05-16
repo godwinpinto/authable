@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:latest
+    container_name: authable_db
+    hostname: authabledb
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'AUTHABLE'
+      MYSQL_USER: 'authable_user'
+      MYSQL_PASSWORD: 'authable_password'
+      MYSQL_ROOT_PASSWORD: 'admin_password'
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci 
+            --default-authentication-plugin=mysql_native_password
+            --init-file /docker-entrypoint-initdb.d/scripts.sql
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - mysql-container-dev-db:/var/lib/mysql:rw
+      - './authable-core-api/orchestration/src/main/resources/scripts.sql:/docker-entrypoint-initdb.d/scripts.sql'
+
+  core-api:
+   build:
+     context: ./authable-core-api
+     dockerfile: ./Dockerfile-dev
+   image: authable-core-api:latest
+   container_name: authable-core-api 
+   environment:
+     AUTHABLE_DB_IP: 'localhost'
+     AUTHABLE_DB_PORT: '3306'
+     AUTHABLE_DB_USERNAME: 'root'
+     AUTHABLE_DB_PASSWORD: 'admin_password'
+     AUTHABLE_JWT_SECRET: 'ThisIsSecretForJWTHS512SignatureAlgorithmThatMUSTHave64ByteLength'
+     AUTHABLE_SYSTEM_SECRET: 'SYSTEM_SECRET'
+     AUTHABLE_USERNAME_SECRET: 'USERNAME_SECRET'
+     AUTHABLE_TOTP_SECRET: '1234567890123456'
+   expose:
+     - '8080'
+   ports:
+     - '8080:8080'
+   depends_on:
+     - db
+
+#  db_seeder:
+#    image: mysql:latest
+#    volumes:
+#      - ./authable-core-api/orchestration/src/main/resources/scripts.sql:/opt/scripts.sql
+#    entrypoint: [ "bash", "-c", "sleep 20 && mysql --user=root --password=admin_password --host=db --port=3306 authable < /opt/scripts.sql && exit"] 
+#    depends_on:
+#      - db
+
+volumes:
+  mysql-container-dev-db:
