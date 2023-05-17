@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AppExceptionResponse {
 
-  private String status;
+  private Integer code;
   private String message;
 }

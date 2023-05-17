@@ -49,7 +49,7 @@ public class DummyHandlerWithRequestBody
             BodyInserters.fromValue(
                 GenericResponse.builder().statusCode("200").statusDescription("Success").build()));
   }
-  
+
   private Mono<ServerResponse> prepareOnEmptyResponse() {
     return ServerResponse.badRequest()
         .body(BodyInserters.fromValue(new ApiResponse(400, "Empty Response", null)));

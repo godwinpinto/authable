@@ -3,6 +3,7 @@ package com.github.godwinpinto.authable.application.rest.validator;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 
+import com.github.godwinpinto.authable.application.rest.auth.controller.SystemHandler;
 import com.github.godwinpinto.authable.application.rest.totp.controller.WebFluxSecurityConfig;
 import com.github.godwinpinto.authable.application.rest.totp.json.GenericRequest;
 import com.github.godwinpinto.authable.domain.auth.dto.UserDto;
@@ -34,21 +35,24 @@ import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
 import reactor.test.StepVerifier;
 
-@ContextConfiguration(classes = {DummyHandlerWithoutRequestBody.class})
-@ExtendWith(SpringExtension.class)
 @WebFluxTest // to autowire validator
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureWebTestClient(timeout = "360000")
 @Import({WebFluxSecurityConfig.class})
+@ContextConfiguration(classes = {DummyHandlerWithoutRequestBody.class, SystemHandler.class})
+@ExtendWith(SpringExtension.class)
 class AbstractValidationHandlerTest {
 
-  @Autowired Validator validator;
+  @Autowired
+  Validator validator;
 
-  @MockBean AuthServiceAPI authServiceAPI;
+  @MockBean
+  AuthServiceAPI authServiceAPI;
 
   DisposableServer disposableServer;
 
-  @Autowired WebTestClient webTestClient;
+  @Autowired
+  WebTestClient webTestClient;
 
   @BeforeAll
   void setupStart() {

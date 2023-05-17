@@ -39,17 +39,17 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
         .findFirst();
 
     return exceptionRuleOptional.<Map<String, Object>>map(
-            exceptionRule -> Map.of(ErrorAttributesKey.STATUS.getKey(), exceptionRule.status().value(),
+            exceptionRule -> Map.of(ErrorAttributesKey.CODE.getKey(), exceptionRule.status().value(),
                 ErrorAttributesKey.MESSAGE.getKey(), error.getMessage()))
-        .orElseGet(() -> Map.of(ErrorAttributesKey.STATUS.getKey(), determineHttpStatus(error).value(),
+        .orElseGet(() -> Map.of(ErrorAttributesKey.CODE.getKey(), determineHttpStatus(error).value(),
             ErrorAttributesKey.MESSAGE.getKey(), error.getMessage()));
   }
 
 
-  private HttpStatusCode determineHttpStatus(Throwable error) {
+  public HttpStatusCode determineHttpStatus(Throwable error) {
     return error instanceof ResponseStatusException err ? err.getStatusCode()
         : MergedAnnotations.from(error.getClass(), MergedAnnotations.SearchStrategy.TYPE_HIERARCHY)
-            .get(ResponseStatus.class).getValue(ErrorAttributesKey.STATUS.getKey(), HttpStatus.class)
+            .get(ResponseStatus.class).getValue(ErrorAttributesKey.CODE.getKey(), HttpStatus.class)
             .orElse(HttpStatus.INTERNAL_SERVER_ERROR);
   }
 

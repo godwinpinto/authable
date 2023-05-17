@@ -2,7 +2,12 @@ package com.github.godwinpinto.authable.application.rest.config;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.godwinpinto.authable.application.rest.auth.json.ApiResponse;
@@ -20,19 +25,25 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 
 class AuthFailureHandlerTest {
-  /** Method under test: {@link AuthFailureHandler#formatResponse(ServerHttpResponse)} */
+
+  /**
+   * Method under test: {@link AuthFailureHandler#formatResponse(ServerHttpResponse)}
+   */
   @Test
   void testFormatResponse() {
     AuthFailureHandler authFailureHandler = new AuthFailureHandler();
     assertDoesNotThrow(() -> authFailureHandler.formatResponse(new MockServerHttpResponse()));
   }
 
-  /** Method under test: {@link AuthFailureHandler#formatResponse(ServerHttpResponse)} */
+  /**
+   * Method under test: {@link AuthFailureHandler#formatResponse(ServerHttpResponse)}
+   */
   @Test
   void testFormatResponse2() {
 
     AuthFailureHandler authFailureHandler = new AuthFailureHandler();
-    assertDoesNotThrow(() -> authFailureHandler.formatResponse(new HttpHeadResponseDecorator(new MockServerHttpResponse())));
+    assertDoesNotThrow(
+        () -> authFailureHandler.formatResponse(new HttpHeadResponseDecorator(new MockServerHttpResponse())));
   }
 
   @Test
@@ -48,7 +59,6 @@ class AuthFailureHandlerTest {
     assertDoesNotThrow(() -> authFailureHandler.formatResponse(head));
   }
 
-  /** Method under test: {@link AuthFailureHandler#formatResponse(ServerHttpResponse)} */
   @Test
   void testFormatResponse4() {
     AuthFailureHandler authFailureHandler = new AuthFailureHandler();

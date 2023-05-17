@@ -23,22 +23,23 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 public class SecurityConfig {
 
   private static final String[] AUTH_WHITELIST = {
-    "/swagger-resources/**",
-    "/configuration/ui",
-    "/configuration/security",
-    "/swagger-ui.html",
-    "/webjars/**",
-    "/v3/api-docs/**"
+      "/swagger-resources/**",
+      "/configuration/ui",
+      "/configuration/security",
+      "/swagger-ui.html",
+      "/webjars/**",
+      "/v3/api-docs/**"
   };
   private static final String[] SECURED_LIST = {"/totp/**"};
   private static final String[] OPEN_LIST = {"/auth/login"};
   private final AuthServiceAPI authServiceAPI;
 
   /**
-   * Suppressed as hexagonal architecture and multi-module maven will have such unable to find bean
-   * issue with IDE. Since the autowiring is in orchestration module
+   * Suppressed as hexagonal architecture and multi-module maven will have such unable to find bean issue with IDE.
+   * Since the autowiring is in orchestration module
    */
-  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+//  Suppressing warning no longer required
+//  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   SecurityConfig(AuthServiceAPI authServiceAPI) {
     this.authServiceAPI = authServiceAPI;
   }
@@ -52,9 +53,8 @@ public class SecurityConfig {
         .and()
         .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
         .exceptionHandling()
-        /*.authenticationEntryPoint(
-            (swe, e) -> Mono.fromRunnable(CustomAuthenticationEntryPoint::new))
-        .accessDeniedHandler((swe, e) -> Mono.fromRunnable(CustomAccessDeniedHandler::new))*/
+//        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+//        .accessDeniedHandler((swe, e) -> Mono.fromRunnable(CustomAccessDeniedHandler::new))
         .and()
         .csrf()
         .disable()
@@ -62,17 +62,17 @@ public class SecurityConfig {
         .disable()
         .httpBasic()
         .disable()
+        .logout().disable()
         .authorizeExchange()
         .pathMatchers(HttpMethod.OPTIONS)
         .permitAll()
-        .pathMatchers(AUTH_WHITELIST)
-        .permitAll()
-        .pathMatchers(HttpMethod.OPTIONS)
-        .permitAll()
-        .pathMatchers(OPEN_LIST)
-        .permitAll()
+//        .pathMatchers(AUTH_WHITELIST)
+//        .permitAll()
+//        .pathMatchers(OPEN_LIST)
+//        .permitAll()
         .anyExchange()
-        .authenticated()
+        .permitAll()
+//        .authenticated()
         .and()
         .addFilterAt(bearerAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
         .build();
