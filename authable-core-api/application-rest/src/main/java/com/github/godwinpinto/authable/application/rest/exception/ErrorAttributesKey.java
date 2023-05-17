@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorAttributesKey {
-  STATUS("status"),
+  CODE("code"),
   MESSAGE("message");
 
   private final String key;

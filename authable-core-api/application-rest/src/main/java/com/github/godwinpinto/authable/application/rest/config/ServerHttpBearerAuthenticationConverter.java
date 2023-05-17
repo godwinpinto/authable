@@ -17,6 +17,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 public class ServerHttpBearerAuthenticationConverter implements ServerAuthenticationConverter {
+
   private static final String BEARER = "Bearer ";
   private final Predicate<String> matchBearerLength =
       authValue -> authValue.length() > BEARER.length();
@@ -34,7 +35,6 @@ public class ServerHttpBearerAuthenticationConverter implements ServerAuthentica
         .flatMap(this::extract)
         .filter(matchBearerLength)
         .flatMap(isolateBearerValue)
-        .log()
         .flatMap(
             token ->
                 Mono.fromCallable(() -> authServiceAPI.validateToken(token))
