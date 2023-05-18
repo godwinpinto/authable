@@ -45,10 +45,7 @@
             <configuration>
               <artifactSet>
                 <excludes>
-                  <exclude>
-                    <artifactId>lombok</artifactId>
-                    <groupId>org.projectlombok</groupId>
-                  </exclude>
+                  <exclude>org.projectlombok:lombok</exclude>
                 </excludes>
               </artifactSet>
               <outputFile>
