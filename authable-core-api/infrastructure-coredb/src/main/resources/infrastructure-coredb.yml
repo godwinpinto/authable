@@ -1,6 +1,6 @@
 spring:
   r2dbc:
-    url: r2dbc:mariadb://${AUTHABLE_DB_IP}:${AUTHABLE_DB_PORT}/AUTHABLE
+    url: r2dbc:mariadb://${AUTHABLE_DB_IP}:${AUTHABLE_DB_PORT}/AUTHABLE?allowPublicKeyRetrieval=true
     username: ${AUTHABLE_DB_USERNAME}
     password: ${AUTHABLE_DB_PASSWORD}
     pool:

@@ -4,7 +4,6 @@ services:
   db:
     image: mysql:latest
     container_name: authable_db
-    hostname: authabledb
     restart: always
     environment:
       MYSQL_DATABASE: 'AUTHABLE'
@@ -14,8 +13,7 @@ services:
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci 
             --default-authentication-plugin=mysql_native_password
             --init-file /docker-entrypoint-initdb.d/scripts.sql
-    ports:
-      - '3306:3306'
+    network_mode: host
     expose:
       - '3306'
     volumes:
@@ -39,8 +37,7 @@ services:
      AUTHABLE_TOTP_SECRET: '1234567890123456'
    expose:
      - '8080'
-   ports:
-     - '8080:8080'
+   network_mode: host
    depends_on:
      - db
 
