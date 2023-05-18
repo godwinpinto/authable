@@ -70,17 +70,48 @@
       <scope>runtime</scope>
       <version>${io.jsonwebtoken.version}</version>
     </dependency>
+    <!-- override dependencies for Totp starts issue #25 -->
     <dependency>
       <artifactId>totp</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>javase</artifactId>
+          <groupId>com.google.zxing</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>core</artifactId>
+          <groupId>com.google.zxing</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-net</artifactId>
+          <groupId>commons-net</groupId>
+        </exclusion>
+      </exclusions>
       <groupId>dev.samstevens.totp</groupId>
       <version>1.7.1</version>
     </dependency>
+    <dependency>
+      <artifactId>commons-net</artifactId>
+      <groupId>commons-net</groupId>
+      <optional>true</optional>
+      <version>3.9.0</version>
+    </dependency>
+    <dependency>
+      <artifactId>core</artifactId>
+      <groupId>com.google.zxing</groupId>
+      <version>3.4.0</version>
+    </dependency>
+    <dependency>
+      <artifactId>javase</artifactId>
+      <groupId>com.google.zxing</groupId>
+      <version>3.4.1</version>
+    </dependency>
+    <!-- override dependencies for Totp end -->
     <dependency>
       <artifactId>bcprov-jdk15on</artifactId>
       <groupId>org.bouncycastle</groupId>
       <version>1.70</version>
     </dependency>
-
   </dependencies>
 
   <modelVersion>4.0.0</modelVersion>
