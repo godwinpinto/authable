@@ -41,13 +41,17 @@ services:
    depends_on:
      - db
 
-#  db_seeder:
-#    image: mysql:latest
-#    volumes:
-#      - ./authable-core-api/orchestration/src/main/resources/scripts.sql:/opt/scripts.sql
-#    entrypoint: [ "bash", "-c", "sleep 20 && mysql --user=root --password=admin_password --host=db --port=3306 authable < /opt/scripts.sql && exit"] 
-#    depends_on:
-#      - db
+  demo-api:
+    build:
+      context: ./demo
+      dockerfile: ./Dockerfile-dev
+    image: authable-demo-api:latest
+    container_name: authable-demo-api
+    expose:
+      - '8081'
+    network_mode: host
+    depends_on:
+      - core-api
 
 volumes:
   mysql-container-dev-db:

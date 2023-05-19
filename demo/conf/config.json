@@ -1,0 +1,19 @@
+{
+  "http": {
+    "port": 8081
+  },
+  "authable": {
+    "core": {
+      "host": "localhost",
+      "port": 8080
+    },
+    "auth": {
+      "realm_username": "EXAMPLE",
+      "realm_name": "DEMO",
+      "realm_password": "Test@1234",
+      "refresh_time": 3300000,
+      "first_fetch_time": 1000,
+      "retry_time": 10000
+    }
+  }
+}
