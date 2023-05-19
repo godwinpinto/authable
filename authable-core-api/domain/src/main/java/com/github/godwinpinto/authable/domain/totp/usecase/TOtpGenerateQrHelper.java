@@ -37,7 +37,10 @@ public class TOtpGenerateQrHelper {
   public Mono<TOtpGenerateQrDto> generateQr(String userSystemId, TOtpUserMasterDto user) {
     String qrCode =
         tOtpCryptoSPI.generateQRCode(
-            userSystemId, user.getUserSecret(), "godwin.pinto86@gmail.com", "Sample App Name");
+            userSystemId, user.getUserSecret(),
+            user.getUserId().replace(user.getSystemId(), "")
+                .replaceAll(ApplicationConstants.DB_PAD_CHAR, "")
+                + "@Authable", "Authable");
     return formatSuccessResponse(qrCode);
   }
 
