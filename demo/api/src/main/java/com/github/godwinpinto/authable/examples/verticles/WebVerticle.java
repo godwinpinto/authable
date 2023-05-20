@@ -67,7 +67,7 @@ public class WebVerticle extends AbstractVerticle {
     router.post("/api/v1/verify").handler(BodyHandler.create())
       .handler(tOtpRequestValidationHandler())
       .handler(this::verifyTotpHandler);
-    router.route().handler(StaticHandler.create(ApplicationConstants.WEB_DIRECTORY));
+//    router.route().handler(StaticHandler.create(ApplicationConstants.WEB_DIRECTORY));
     router.route().last().handler(this::notFound);
     Handler<RoutingContext> errorHandlerFunction = this::failureHandler;
     router.errorHandler(400, errorHandlerFunction);
